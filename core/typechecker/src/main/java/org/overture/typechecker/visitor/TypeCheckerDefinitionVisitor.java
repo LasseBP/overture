@@ -91,6 +91,8 @@ import org.overture.ast.types.ARecordInvariantType;
 import org.overture.ast.types.AUnknownType;
 import org.overture.ast.types.AVoidType;
 import org.overture.ast.types.PType;
+import org.overture.config.Release;
+import org.overture.config.Settings;
 import org.overture.typechecker.Environment;
 import org.overture.typechecker.ExcludedDefinitions;
 import org.overture.typechecker.FlatCheckedEnvironment;
@@ -746,7 +748,10 @@ public class TypeCheckerDefinitionVisitor extends AbstractTypeCheckVisitor
 			FlatEnvironment pre = new FlatEnvironment(question.assistantFactory, new Vector<PDefinition>(), local);
 			pre.setEnclosingDefinition(node.getPredef());
 
+			Release orig = Settings.release;
+			Settings.release = Release.CLASSIC;
 			PType b = node.getPredef().getBody().apply(THIS, new TypeCheckInfo(question.assistantFactory, pre, NameScope.NAMESANDSTATE));
+			Settings.release = orig;
 
 			ABooleanBasicType expected = AstFactory.newABooleanBasicType(node.getLocation());
 
@@ -771,7 +776,12 @@ public class TypeCheckerDefinitionVisitor extends AbstractTypeCheckVisitor
 			List<PDefinition> rdefs = question.assistantFactory.createPPatternAssistant().getDefinitions(rp, ((AOperationType) node.getType()).getResult(), NameScope.NAMESANDANYSTATE);
 			FlatEnvironment post = new FlatEnvironment(question.assistantFactory, rdefs, local);
 			post.setEnclosingDefinition(node.getPostdef());
+			
+			Release orig = Settings.release;
+			Settings.release = Release.CLASSIC;
 			PType b = node.getPostdef().getBody().apply(THIS, new TypeCheckInfo(question.assistantFactory, post, NameScope.NAMESANDANYSTATE));
+			Settings.release = orig;
+			
 			ABooleanBasicType expected = AstFactory.newABooleanBasicType(node.getLocation());
 
 			if (!question.assistantFactory.createPTypeAssistant().isType(b, ABooleanBasicType.class))
@@ -972,7 +982,12 @@ public class TypeCheckerDefinitionVisitor extends AbstractTypeCheckVisitor
 		{
 			FlatEnvironment pre = new FlatEnvironment(question.assistantFactory, new Vector<PDefinition>(), local);
 			pre.setEnclosingDefinition(node.getPredef());
+
+			Release orig = Settings.release;
+			Settings.release = Release.CLASSIC;
 			PType b = node.getPredef().getBody().apply(THIS, new TypeCheckInfo(question.assistantFactory, pre, NameScope.NAMESANDSTATE));
+			Settings.release = orig;
+			
 			ABooleanBasicType expected = AstFactory.newABooleanBasicType(node.getLocation());
 
 			if (!question.assistantFactory.createPTypeAssistant().isType(b, ABooleanBasicType.class))
@@ -998,6 +1013,7 @@ public class TypeCheckerDefinitionVisitor extends AbstractTypeCheckVisitor
 			}
 
 			PType expectedResult = ((AOperationType) node.getType()).getResult();
+
 			node.setActualResult(node.getBody().apply(THIS, new TypeCheckInfo(question.assistantFactory, local, NameScope.NAMESANDSTATE, null, null, expectedResult)));
 
 			boolean compatible = question.assistantFactory.getTypeComparator().compatible(expectedResult, node.getActualResult());
@@ -1058,6 +1074,8 @@ public class TypeCheckerDefinitionVisitor extends AbstractTypeCheckVisitor
 		if (node.getPostdef() != null)
 		{
 			PType b = null;
+			Release orig = Settings.release;
+			Settings.release = Release.CLASSIC;
 
 			if (node.getResult() != null)
 			{
@@ -1074,6 +1092,7 @@ public class TypeCheckerDefinitionVisitor extends AbstractTypeCheckVisitor
 				b = node.getPostdef().getBody().apply(THIS, new TypeCheckInfo(question.assistantFactory, post, NameScope.NAMESANDANYSTATE));
 			}
 
+			Settings.release = orig;
 			ABooleanBasicType expected = AstFactory.newABooleanBasicType(node.getLocation());
 
 			if (!question.assistantFactory.createPTypeAssistant().isType(b, ABooleanBasicType.class))

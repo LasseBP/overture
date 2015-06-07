@@ -34,9 +34,6 @@
 <message column="37" line="2073" message="Operation '(v2.GetPosition)' cannot be called from a function" messageType="error" number="3300" resource="VDMRT"/>
 <message column="11" line="2083" message="Operation '(v.GetDirection)' cannot be called from a function" messageType="error" number="3300" resource="VDMRT"/>
 <message column="38" line="2085" message="Operation '(ir.GetDirection)' cannot be called from a function" messageType="error" number="3300" resource="VDMRT"/>
-<message column="5" line="2616" message="Operation '(ctrl.GetVehicleID)' cannot be called from a function" messageType="error" number="3300" resource="VDMRT"/>
-<message column="5" line="2623" message="Operation '(light.GetID)' cannot be called from a function" messageType="error" number="3300" resource="VDMRT"/>
-<message column="23" line="2624" message="Operation '(light.GetID)' cannot be called from a function" messageType="error" number="3300" resource="VDMRT"/>
 <message column="12" line="2704" message="Operation '(u1.GetPosition)' cannot be called from a function" messageType="error" number="3300" resource="VDMRT"/>
 <message column="37" line="2704" message="Operation '(u2.GetPosition)' cannot be called from a function" messageType="error" number="3300" resource="VDMRT"/>
 <message column="29" line="2714" message="Operation '(u.GetDirection)' cannot be called from a function" messageType="error" number="3300" resource="VDMRT"/>
