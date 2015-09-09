@@ -1,0 +1,16 @@
+if ( $RustFormat.format($node.getIfExp()) )
+{
+	$RustFormat.format($node.getThenStm())
+}
+#foreach( $stm in $node.getElseIf() )
+else if ( $RustFormat.format($stm.getElseIf()) )
+{
+	$RustFormat.format($stm.getThenStm())
+}
+#end
+#if ( !$RustFormat.isNull($node.getElseStm()) )
+else
+{
+	$RustFormat.format($node.getElseStm())
+}
+#end

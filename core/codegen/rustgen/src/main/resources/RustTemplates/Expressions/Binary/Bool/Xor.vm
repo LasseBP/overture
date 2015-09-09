@@ -1,0 +1,1 @@
+$RustFormat.format($node.getLeft(), true) ^ $RustFormat.format($node.getRight(), false)

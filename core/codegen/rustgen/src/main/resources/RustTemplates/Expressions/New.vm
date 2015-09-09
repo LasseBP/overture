@@ -1,0 +1,1 @@
+new $RustFormat.formatName($node)($RustFormat.formatArgs($node.getArgs()))

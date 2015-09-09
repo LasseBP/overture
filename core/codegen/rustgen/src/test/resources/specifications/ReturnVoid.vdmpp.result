@@ -1,0 +1,24 @@
+import org.overture.codegen.runtime.*;
+
+import java.util.*;
+
+
+@SuppressWarnings("all")
+public class A {
+    public A() {
+    }
+
+    public void op() {
+        if (true) {
+            return;
+        } else {
+            op();
+        }
+    }
+
+    public String toString() {
+        return "A{}";
+    }
+}
+
+##########

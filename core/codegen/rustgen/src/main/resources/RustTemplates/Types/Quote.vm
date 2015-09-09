@@ -1,0 +1,3 @@
+#set( $packagePrefix = $RustFormat.getQuotePackagePrefix() )
+##
+${packagePrefix}${node.getValue()}Quote

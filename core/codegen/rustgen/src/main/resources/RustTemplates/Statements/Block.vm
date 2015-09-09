@@ -1,0 +1,19 @@
+#if ($RustFormat.isScoped($node))
+{
+#end
+##
+## Local definitions:
+##
+	#foreach( $dec in $node.getLocalDefs() )
+	$RustFormat.format($dec)
+	#end
+##
+## Statements:
+##
+	#foreach( $stm in $node.getStatements() )
+	$RustFormat.format($stm)
+	#end
+##
+#if ($RustFormat.isScoped($node))
+}
+#end

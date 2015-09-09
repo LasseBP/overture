@@ -27,6 +27,7 @@
     <module>codegen-maven-plugin</module>
     <!-- <module>cgisa</module> -->
     <!--<module>cppgen</module>-->
+	<module>rustgen</module>
   </modules>
   
 </project>

@@ -1,0 +1,74 @@
+#set( $package = "")
+#if (!$RustFormat.isNull($node.getPackage()))
+	#set( $package = "package ${node.getPackage()};")
+#end
+##
+$package
+##
+#if (!$RustFormat.isInnerClass($node))
+#**#import org.overture.codegen.runtime.*;
+#**#import java.util.*;
+#elseif ( !$RustFormat.isInnerClass($node) && !$RustFormat.isQuote($node))
+#**#import org.overture.codegen.runtime.*;
+#end
+##
+#if ($RustFormat.importTraceSupport($node))
+#**#import org.overture.codegen.runtime.traces.*;##
+#end
+##
+##
+#set( $abstract = "")
+#if ($node.getAbstract())
+	#set( $abstract = "abstract")
+#end
+#set( $final = "")
+#if ($RustFormat.isVdmSl())
+	#set( $final = "final")
+#end
+##
+#set( $static = "")
+#if ($node.getStatic())
+	#set( $static = "static")
+#end
+#set( $threadMethod = "")
+#if (!$RustFormat.isNull($node.getThread()))
+	#set( $threadMethod = $RustFormat.format($node.getThread()))
+#end
+##
+#if (!$RustFormat.isInnerClass($node))
+@SuppressWarnings("all")
+#end
+##
+$RustFormat.formatMetaData($node.getGlobalMetaData())##
+##
+$final $abstract $node.getAccess() $static class $node.getName() $RustFormat.formatSuperType($node) $RustFormat.formatInterfaces($node)
+{
+	#foreach( $class in $node.getInnerClasses() )
+	$RustFormat.format($class)
+	#end##
+	#foreach( $field in $node.getFields() )
+	$RustFormat.format($field)
+	#end
+	##
+	$RustFormat.formatMetaData($node.getMetaData())##
+	##
+	#foreach( $method in $node.getMethods() )
+	$RustFormat.format($method)
+	#end
+	##
+	#if ($RustFormat.isMainClass($node))
+	$node.getTag().getMainMethod()
+	#end
+	##
+	#if ($RustFormat.genClassInvariant($node))
+	$RustFormat.format($node.getInvariant())
+	#end	
+	
+	#foreach( $typeDecl in $node.getTypeDecls() )
+		#if ($RustFormat.genTypeDecl($typeDecl))
+		$RustFormat.format($typeDecl)
+		#end
+	#end
+	##
+	${threadMethod}##
+}

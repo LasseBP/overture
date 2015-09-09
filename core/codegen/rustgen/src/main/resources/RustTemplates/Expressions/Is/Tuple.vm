@@ -1,0 +1,3 @@
+#set( $exp = $RustFormat.format($node.getExp()) )
+#set( $typeArgs = $RustFormat.formatTypeArgs($node.getCheckedType()) )
+Utils.is_Tuple(${exp}, ${typeArgs})

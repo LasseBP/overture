@@ -1,0 +1,22 @@
+import org.overture.codegen.runtime.*;
+
+import java.util.*;
+
+
+@SuppressWarnings("all")
+public class C {
+    public C() {
+    }
+
+    public Number CalcProbCrossed(final Number n) {
+        Number retVal = 0L;
+
+        return retVal;
+    }
+
+    public String toString() {
+        return "C{}";
+    }
+}
+
+##########

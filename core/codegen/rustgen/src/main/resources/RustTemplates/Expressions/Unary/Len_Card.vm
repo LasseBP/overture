@@ -1,0 +1,8 @@
+#set( $sizeCall = "")
+#if ($RustFormat.isStringType($node.getExp().getType()))
+	#set( $sizeCall = ".length()")
+#else
+	#set( $sizeCall = ".size()")
+#end
+##
+$RustFormat.format($node.getExp())$sizeCall

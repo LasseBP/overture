@@ -1,0 +1,1 @@
+$RustFormat.format($node.getClassType()).$node.getName()

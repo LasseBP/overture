@@ -1,0 +1,15 @@
+#set( $final = "")
+#if ( $node.getFinal() )
+	#set( $final = "final")
+#end
+##
+#set( $end = ";")
+#if ( $RustFormat.isLoopVar($node) )
+	#set( $end = "")
+#end
+##
+#set( $pattern = $RustFormat.format($node.getPattern()) )
+##
+$RustFormat.formatMetaData($node.getMetaData())##
+##
+${final} $RustFormat.format($node.getType()) $pattern = $RustFormat.format($node.getExp())${end}

@@ -1,0 +1,20 @@
+#set( $stm = "")
+#if (!$RustFormat.isNull($node.getStm()))
+	#set( $stm = $RustFormat.format($node.getStm()))
+#end
+##
+#set( $finally = $RustFormat.format($node.getFinally()))
+##
+try
+{
+	${stm}
+}
+#foreach( $clause in $node.getCatchClauses() )
+$RustFormat.format($clause)
+#end
+#if (!$RustFormat.isNull(${finally}))
+finally
+{
+	${finally}
+}
+#end

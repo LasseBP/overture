@@ -1,0 +1,9 @@
+#if ($RustFormat.genDecl(${node}))
+	$node.getAccess() $RustFormat.format(${node.getDecl()})
+#end
+##
+#set( $inv = $node.getInv())
+##
+#if (!$RustFormat.isNull(${inv}))
+	$RustFormat.format(${inv})
+#end

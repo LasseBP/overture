@@ -1,0 +1,12 @@
+static class $node.getName() implements Record
+{
+	#foreach( $field in $node.getFields() )
+	$RustFormat.format($field)
+	#end
+
+
+	##
+	#foreach( $method in $node.getMethods() )
+	$RustFormat.format($method)
+	#end
+}

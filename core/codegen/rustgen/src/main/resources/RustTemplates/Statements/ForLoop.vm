@@ -1,0 +1,20 @@
+#set( $init = "" )
+#if ( !$RustFormat.isNull($node.getInit()) )
+	#set( $init = $RustFormat.format($node.getInit()) )
+#end
+##
+#set( $cond = "" )
+#if ( !$RustFormat.isNull($node.getCond()) )
+	#set( $cond = $RustFormat.format($node.getCond()) )
+#end
+##
+#set( $inc = "" )
+#if ( !$RustFormat.isNull($node.getInc()) )
+	#set( $inc = $RustFormat.format($node.getInc()) )
+#end
+##
+#set( $body = $RustFormat.format($node.getBody()) )
+for(${init}; ${cond}; ${inc})
+{
+	${body}
+}

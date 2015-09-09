@@ -1,0 +1,23 @@
+#set( $package = "")
+#set( $packageName = $node.getPackage())
+#if (!$RustFormat.isNull($packageName))
+	#set( $package = "package ${packageName};")
+#end
+##
+#set( $templateTypes = "")
+#if ($node.getTemplateTypes().size() > 0)
+	#set( $templateTypes = $RustFormat.formatTemplateTypes($node.getTemplateTypes()))
+#end
+##
+$package
+
+public interface $node.getName() $templateTypes
+{
+#foreach( $field in $node.getFields() )
+$RustFormat.format($field)
+#end
+##
+#foreach( $methodSig in $node.getMethodSignatures() )
+$RustFormat.format($methodSig)
+#end
+}

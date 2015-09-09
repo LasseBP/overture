@@ -1,0 +1,5 @@
+#set( $col = $RustFormat.format($node.getCol()) )
+#set( $index = $RustFormat.format($node.getIndex()) )
+#set( $type = $RustFormat.format($node.getType()) )
+##
+((${type}) Utils.get(${col},${index}))

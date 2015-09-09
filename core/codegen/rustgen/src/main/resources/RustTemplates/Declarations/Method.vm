@@ -1,0 +1,22 @@
+#set( $static = "")
+#if ($node.getStatic())
+	#set( $static = "static")
+#end
+##
+#set( $returnType = "")
+#if (!$node.getIsConstructor())
+	#set( $returnType = $RustFormat.format($node.getMethodType().getResult()) )
+#end
+#set( $abstract = "")
+#if ($node.getAbstract())
+	#set( $abstract = "abstract")
+#end
+##
+#set( $templateTypes = "")
+#if ($node.getTemplateTypes().size() > 0)
+	#set( $templateTypes = $RustFormat.formatTemplateTypes($node.getTemplateTypes()))
+#end
+##
+$RustFormat.formatMetaData($node.getMetaData())##
+##
+$node.getAccess() $abstract $static $templateTypes $returnType $node.getName()($RustFormat.format($node.getFormalParams()))$RustFormat.formatOperationBody($node.getBody())

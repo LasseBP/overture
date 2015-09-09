@@ -1,0 +1,10 @@
+#set( $args = $RustFormat.formatArgs($node.getArgs()) )
+#set( $field = $node.getFieldName() )
+#set( $obj = $RustFormat.format($node.getObj()) )
+##
+#set( $return = "")
+#if (!$RustFormat.isVoidType($node.getType()))
+	#set( $return = "return ")
+#end
+##
+${return}${obj}.${field}(${args});

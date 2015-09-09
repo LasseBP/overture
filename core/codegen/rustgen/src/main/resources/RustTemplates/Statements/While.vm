@@ -1,0 +1,7 @@
+#set( $exp = $RustFormat.format($node.getExp()) )
+#set( $body = $RustFormat.format($node.getBody()) )
+##
+while(${exp})
+{
+	${body}
+}
