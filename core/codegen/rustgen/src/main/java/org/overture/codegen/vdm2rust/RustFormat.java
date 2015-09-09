@@ -26,6 +26,11 @@ public class RustFormat {
 		this.mergeVisitor = new MergeVisitor(templateManager, templateCallables);
 	}
 	
+	public void init()
+	{
+		mergeVisitor.init();
+	}
+	
 	public String format(INode node) throws AnalysisException
 	{
 		StringWriter writer = new StringWriter();
@@ -37,6 +42,11 @@ public class RustFormat {
 	public MergeVisitor GetMergeVisitor()
 	{
 		return mergeVisitor;
+	}
+	
+	public boolean isNull(INode node)
+	{
+		return node == null;
 	}
 	
 	public String formatOperationBody(SStmCG body) throws AnalysisException

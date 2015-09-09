@@ -1,2 +1,2 @@
 #set ($start = ".start()")
-${JavaFormat.formatStartStmExp($node)}${start};
+${RustFormat.formatStartStmExp($node)}${start};

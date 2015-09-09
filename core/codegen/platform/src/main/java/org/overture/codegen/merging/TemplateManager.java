@@ -785,13 +785,14 @@ public class TemplateManager
 	{
 		try
 		{
+			String templateFilename = getTemplateFileRelativePath(nodeClass);
 			StringBuffer buffer;
 			if (isBase)
 			{
-				buffer = GeneralUtils.readFromFile(getTemplateFileRelativePath(nodeClass));
+				buffer = GeneralUtils.readFromFile(templateFilename);
 			} else
 			{
-				buffer = GeneralUtils.readFromFile(getTemplateFileRelativePath(nodeClass), templateLoadRef);
+				buffer = GeneralUtils.readFromFile(templateFilename, templateLoadRef);
 			}
 
 			if (buffer == null)
@@ -799,7 +800,7 @@ public class TemplateManager
 				return null;
 			}
 
-			return constructTemplate(buffer);
+			return constructTemplate(buffer, templateFilename);
 
 		} catch (IOException e)
 		{
@@ -807,21 +808,18 @@ public class TemplateManager
 		}
 	}
 
-	private Template constructTemplate(StringBuffer buffer) throws ParseException
+	private Template constructTemplate(StringBuffer buffer, String templateFilename) throws ParseException
 	{
 		Template template = new Template();
 		RuntimeServices runtimeServices = RuntimeSingleton.getRuntimeServices();
 		StringReader reader = new StringReader(buffer.toString());
-
 		
-			SimpleNode simpleNode = runtimeServices.parse(reader, "Template name");
-			template.setRuntimeServices(runtimeServices);
-			template.setData(simpleNode);
-			template.initDocument();
+		SimpleNode simpleNode = runtimeServices.parse(reader, templateFilename);
+		template.setRuntimeServices(runtimeServices);
+		template.setData(simpleNode);
+		template.initDocument();
 
-			return template;
-
-		
+		return template;		
 	}
 
 	private String getTemplateFileRelativePath(Class<? extends INode> nodeClass)

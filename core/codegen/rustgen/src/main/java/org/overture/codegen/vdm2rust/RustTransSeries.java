@@ -1,5 +1,6 @@
 package org.overture.codegen.vdm2rust;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,15 +17,15 @@ import org.overture.codegen.trans.iterator.JavaLanguageIterator;
 public class RustTransSeries {
 
 	private RustCodeGen codeGen;
+	private List<DepthFirstAnalysisAdaptor> transformations;
 
 	public RustTransSeries(RustCodeGen codeGen)
 	{
 		this.codeGen = codeGen;
+		init();
 	}
 	
-	
-	public List<DepthFirstAnalysisAdaptor> consAnalyses(
-			List<AClassDeclCG> classes)
+	public void init()
 	{
 		// Data and functionality to support the transformations
 		//IRInfo irInfo = codeGen.getIRGenerator().getIRInfo();
@@ -61,7 +62,7 @@ public class RustTransSeries {
 		// End concurrency transformations
 
 		// Set up order of transformations
-		List<DepthFirstAnalysisAdaptor> transformations = new LinkedList<DepthFirstAnalysisAdaptor>();
+		transformations = new ArrayList<DepthFirstAnalysisAdaptor>();
 
 		transformations.add(setTrans);
 		
@@ -86,8 +87,9 @@ public class RustTransSeries {
 //		transformations.add(seqConversionTransformation);
 //		transformations.add(instanceVarPPEval);
 //		transformations.add(recTransformation);
-
-		return transformations;
 	}
-	
+
+	public List<DepthFirstAnalysisAdaptor> getTransformations() {
+		return transformations;
+	}	
 }

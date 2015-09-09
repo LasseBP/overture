@@ -1,1 +1,1 @@
-${JavaFormat.format($node.getTuple())}.size()
+${RustFormat.format($node.getTuple())}.size()
