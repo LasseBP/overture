@@ -7,12 +7,14 @@ import java.util.Map;
 
 import org.apache.velocity.runtime.RuntimeServices;
 import org.apache.velocity.runtime.log.LogChute;
+import org.overture.codegen.logging.ILogger;
+import org.overture.codegen.logging.Logger;
 
 public class VelocityLogger implements LogChute {
 
-	List<String> messages = new ArrayList<>();
-
 	private int minLogLevel;
+
+	private ILogger logger;
 	
 	private static final Map<Integer, String> logLevels;
     
@@ -31,17 +33,13 @@ public class VelocityLogger implements LogChute {
     	return logLevels.get(Integer.valueOf(lvl));
     }
     
-    public void clearMessages()
-	{
-		messages.clear();
-	}
-    
     public VelocityLogger() {
-		this(LogChute.TRACE_ID);
+		this(LogChute.TRACE_ID, Logger.getLog());
 	}
     
-    public VelocityLogger(int minLogLevel) {
+    public VelocityLogger(int minLogLevel, ILogger logger) {
 		this.minLogLevel = minLogLevel;
+		this.logger = logger;
 	}
 	
 	@Override
@@ -50,22 +48,26 @@ public class VelocityLogger implements LogChute {
 
 	@Override
 	public void log(int level, String message) {
-		messages.add(getLevelName(level) + ": " + message);
+		String msg = "VELOCITY: " + getLevelName(level) + ": " + message;
+		
+		if(level >= LogChute.WARN_ID)
+		{
+			logger.printErrorln(msg);
+		}
+		else
+		{
+			logger.println(msg);
+		}
 	}
 
 	@Override
 	public void log(int level, String message, Throwable t) {
-		messages.add(getLevelName(level) + ": " + message + " EXCEPTION: " + t.toString());
+		String msg = message + " EXCEPTION: " + t.toString();
+		log(level, msg);
 	}
 
 	@Override
 	public boolean isLevelEnabled(int level) {		
 		return level >= minLogLevel;
 	}
-	
-	public List<String> getMessages()
-	{
-		return messages;
-	}
-
 }

@@ -46,10 +46,7 @@ public class RustGenMain {
 				return;
 			}
 			
-			
 			GeneratedData data = rustGen.generateRustFromVdm(tcResult.result);
-			
-			logVelocityMsgs(rustGen.getVelocityLog());
 			
 			processData(true, null, rustGen, data);
 			
@@ -132,14 +129,5 @@ public class RustGenMain {
 		}
 	}
 	
-	private static void logVelocityMsgs(VelocityLogger velocityLog) {
-		ILogger log = Logger.getLog();
-		
-		log.println("*** Velocity log Starts ***");
-		for(String msg : velocityLog.getMessages())
-		{
-			log.println(msg);
-		}
-		log.println("*** Velocity log Ends ***");
-	}
+	
 }
