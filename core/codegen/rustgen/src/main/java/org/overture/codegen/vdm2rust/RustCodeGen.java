@@ -25,7 +25,7 @@ import org.overture.codegen.ir.IrNodeInfo;
 import org.overture.codegen.ir.VdmNodeInfo;
 import org.overture.codegen.logging.Logger;
 import org.overture.codegen.merging.MergeVisitor;
-import org.overture.codegen.merging.TemplateStructure;
+import org.overture.codegen.merging.VelocityLogger;
 import org.overture.codegen.trans.assistants.TransAssistantCG;
 import org.overture.codegen.utils.GeneratedData;
 import org.overture.codegen.utils.GeneratedModule;

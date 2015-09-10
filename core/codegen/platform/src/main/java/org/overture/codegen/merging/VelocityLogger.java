@@ -1,4 +1,4 @@
-package org.overture.codegen.vdm2rust;
+package org.overture.codegen.merging;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,9 +11,12 @@ import org.apache.velocity.runtime.log.LogChute;
 public class VelocityLogger implements LogChute {
 
 	List<String> messages = new ArrayList<>();
+
+	private int minLogLevel;
 	
 	private static final Map<Integer, String> logLevels;
-    static
+    
+	static
     {
         logLevels = new HashMap<Integer, String>();
         logLevels.put(Integer.valueOf(LogChute.ERROR_ID), LogChute.ERROR_PREFIX);
@@ -27,10 +30,22 @@ public class VelocityLogger implements LogChute {
     {
     	return logLevels.get(Integer.valueOf(lvl));
     }
+    
+    public void clearMessages()
+	{
+		messages.clear();
+	}
+    
+    public VelocityLogger() {
+		this(LogChute.TRACE_ID);
+	}
+    
+    public VelocityLogger(int minLogLevel) {
+		this.minLogLevel = minLogLevel;
+	}
 	
 	@Override
 	public void init(RuntimeServices rs) throws Exception {
-		messages.clear();
 	}
 
 	@Override
@@ -45,7 +60,7 @@ public class VelocityLogger implements LogChute {
 
 	@Override
 	public boolean isLevelEnabled(int level) {		
-		return true;
+		return level >= minLogLevel;
 	}
 	
 	public List<String> getMessages()

@@ -14,6 +14,7 @@ import org.overture.codegen.analysis.violations.InvalidNamesResult;
 import org.overture.codegen.ir.IrNodeInfo;
 import org.overture.codegen.logging.ILogger;
 import org.overture.codegen.logging.Logger;
+import org.overture.codegen.merging.VelocityLogger;
 import org.overture.codegen.utils.GeneralCodeGenUtils;
 import org.overture.codegen.utils.GeneratedData;
 import org.overture.codegen.utils.GeneratedModule;
