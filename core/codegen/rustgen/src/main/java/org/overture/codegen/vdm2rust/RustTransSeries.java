@@ -1,18 +1,32 @@
 package org.overture.codegen.vdm2rust;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
-import org.overture.codegen.cgast.declarations.AClassDeclCG;
 import org.overture.codegen.ir.IRInfo;
-import org.overture.codegen.ir.ITempVarGen;
-import org.overture.codegen.traces.TraceNames;
-import org.overture.codegen.trans.IPostCheckCreator;
+import org.overture.codegen.traces.TracesTrans;
+import org.overture.codegen.trans.AssignStmTrans;
+import org.overture.codegen.trans.CallObjStmTrans;
+import org.overture.codegen.trans.DivideTrans;
+import org.overture.codegen.trans.Exp2StmTrans;
+import org.overture.codegen.trans.IsExpTrans;
+import org.overture.codegen.trans.LetBeStTrans;
+import org.overture.codegen.trans.PostCheckTrans;
+import org.overture.codegen.trans.PreCheckTrans;
+import org.overture.codegen.trans.PrePostTrans;
+import org.overture.codegen.trans.SeqConvTrans;
+import org.overture.codegen.trans.WhileStmTrans;
 import org.overture.codegen.trans.assistants.TransAssistantCG;
+import org.overture.codegen.trans.funcvalues.FuncValTrans;
 import org.overture.codegen.trans.iterator.ILanguageIterator;
 import org.overture.codegen.trans.iterator.JavaLanguageIterator;
+import org.overture.codegen.trans.letexps.FuncTrans;
+import org.overture.codegen.trans.letexps.IfExpTrans;
+import org.overture.codegen.trans.patterns.PatternTrans;
+import org.overture.codegen.trans.uniontypes.UnionTypeTrans;
+import org.overture.codegen.vdm2rust.Transforms.AccessModfierTrans;
+import org.overture.codegen.vdm2rust.Transforms.VdmSetTrans;
 
 public class RustTransSeries {
 
@@ -28,31 +42,33 @@ public class RustTransSeries {
 	public void init()
 	{
 		// Data and functionality to support the transformations
-		//IRInfo irInfo = codeGen.getIRGenerator().getIRInfo();
+		//IRInfo irInfo = codeGen.getInfo();
 		TransAssistantCG transAssistant = codeGen.getTransAssistant();
-//		IPostCheckCreator postCheckCreator = new JavaPostCheckCreator(POST_CHECK_METHOD_NAME);
 		
-		VdmSetCppTrans setTrans = new VdmSetCppTrans(transAssistant); 
+		VdmSetTrans setTrans = new VdmSetTrans(transAssistant); 
 		
 		// Construct the transformations
-//		FuncTransformation funcTransformation = new FuncTransformation(transAssistant);
-//		DivideTransformation divideTrans = new DivideTransformation(irInfo);
-//		CallObjStmTransformation callObjTransformation = new CallObjStmTransformation(irInfo, classes);
-//		AssignStmTransformation assignTransformation = new AssignStmTransformation(irInfo, classes, transAssistant);
-//		PrePostTransformation prePostTransformation = new PrePostTransformation(irInfo);
-//		IfExpTransformation ifExpTransformation = new IfExpTransformation(transAssistant);
-//		FunctionValueTransformation funcValueTransformation = new FunctionValueTransformation(irInfo, transAssistant, functionValueAssistant, INTERFACE_NAME_PREFIX, TEMPLATE_TYPE_PREFIX, EVAL_METHOD_PREFIX, PARAM_NAME_PREFIX);
-//		ILanguageIterator langIterator = new JavaLanguageIterator(transAssistant, nameGen, varPrefixes);
-//		TransformationVisitor transVisitor = new TransformationVisitor(irInfo, classes, varPrefixes, transAssistant, consExists1CounterData(), langIterator, TERNARY_IF_EXP_NAME_PREFIX, CASES_EXP_RESULT_NAME_PREFIX, AND_EXP_NAME_PREFIX, OR_EXP_NAME_PREFIX, WHILE_COND_NAME_PREFIX, REC_MODIFIER_NAME_PREFIX);
-//		PatternTransformation patternTransformation = new PatternTransformation(classes, varPrefixes, irInfo, transAssistant, new PatternMatchConfig(), CASES_EXP_NAME_PREFIX);
-//		PreCheckTransformation preCheckTransformation = new PreCheckTransformation(irInfo, transAssistant, new JavaValueSemanticsTag(false));
-//		PostCheckTransformation postCheckTransformation = new PostCheckTransformation(postCheckCreator, irInfo, transAssistant, FUNC_RESULT_NAME_PREFIX, new JavaValueSemanticsTag(false));
-//		IsExpTransformation isExpTransformation = new IsExpTransformation(irInfo, transAssistant, IS_EXP_SUBJECT_NAME_PREFIX);
-//		SeqConversionTransformation seqConversionTransformation = new SeqConversionTransformation(transAssistant);
-//		TracesTransformation tracesTransformation = new TracesTransformation(irInfo, classes, transAssistant, varPrefixes, traceNamePrefixes, langIterator, new JavaCallStmToStringBuilder());
-//		UnionTypeTransformation unionTypeTransformation = new UnionTypeTransformation(transAssistant, irInfo, classes, APPLY_EXP_NAME_PREFIX, OBJ_EXP_NAME_PREFIX, CALL_STM_OBJ_NAME_PREFIX, MISSING_OP_MEMBER, MISSING_MEMBER);
-//		JavaClassToStringTrans javaToStringTransformation = new JavaClassToStringTrans(irInfo);
-//		RecordMetodsTransformation recTransformation = new RecordMetodsTransformation(codeGen.getJavaFormat().getRecCreator());
+		FuncTrans funcTr = new FuncTrans(transAssistant);
+//		DivideTrans divideTr = new DivideTrans(info);
+//		CallObjStmTrans callObjTr = new CallObjStmTrans(info);
+//		AssignStmTrans assignTr = new AssignStmTrans(transAssist);
+//		PrePostTrans prePostTr = new PrePostTrans(info);
+//		IfExpTrans ifExpTr = new IfExpTrans(transAssist);
+//		FuncValTrans funcValTr = new FuncValTrans(transAssist, funcValAssist, funcValPrefixes);
+//		ILanguageIterator langIte = new JavaLanguageIterator(transAssist, iteVarPrefixes);
+//		LetBeStTrans letBeStTr = new LetBeStTrans(transAssist, langIte, iteVarPrefixes);
+//		WhileStmTrans whileTr = new WhileStmTrans(transAssist, varMan.whileCond());
+//		Exp2StmTrans exp2stmTr = new Exp2StmTrans(iteVarPrefixes, transAssist, consExists1CounterData(), langIte, exp2stmPrefixes);
+//		PatternTrans patternTr = new PatternTrans(iteVarPrefixes, transAssist, patternPrefixes, varMan.casesExp());
+//		PreCheckTrans preCheckTr = new PreCheckTrans(transAssist, new JavaValueSemanticsTag(false));
+//		PostCheckTrans postCheckTr = new PostCheckTrans(postCheckCreator, transAssist, varMan.funcRes(), new JavaValueSemanticsTag(false));
+//		IsExpTrans isExpTr = new IsExpTrans(transAssist, varMan.isExpSubject());
+//		SeqConvTrans seqConvTr = new SeqConvTrans(transAssist);
+//		TracesTrans tracesTr = new TracesTrans(transAssist, iteVarPrefixes, tracePrefixes, langIte, new JavaCallStmToStringBuilder());
+//		UnionTypeTrans unionTypeTr = new UnionTypeTrans(transAssist, unionTypePrefixes, codeGen.getJavaFormat().getValueSemantics().getCloneFreeNodes());
+//		JavaToStringTrans javaToStringTr = new JavaToStringTrans(info);
+//		RecMethodsTrans recTr = new RecMethodsTrans(codeGen.getJavaFormat().getRecCreator());
+		AccessModfierTrans accTrans = new AccessModfierTrans();
 
 		// Start concurrency transformations
 //		SentinelTransformation concurrencytransform = new SentinelTransformation(irInfo, classes);
@@ -66,27 +82,31 @@ public class RustTransSeries {
 
 		transformations.add(setTrans);
 		
-//		transformations.add(divideTrans);
-//		transformations.add(assignTransformation);
-//		transformations.add(callObjTransformation);
-//		transformations.add(funcTransformation);
-//		transformations.add(prePostTransformation);
-//		transformations.add(ifExpTransformation);
-//		transformations.add(funcValueTransformation);
-//		transformations.add(transVisitor);
-//		transformations.add(tracesTransformation);
-//		transformations.add(patternTransformation);
-//		transformations.add(preCheckTransformation);
-//		transformations.add(postCheckTransformation);
-//		transformations.add(isExpTransformation);
-//		transformations.add(unionTypeTransformation);
-//		transformations.add(javaToStringTransformation);
-//		transformations.add(concurrencytransform);
-//		transformations.add(mutexTransform);
-//		transformations.add(mainclassTransform);
-//		transformations.add(seqConversionTransformation);
-//		transformations.add(instanceVarPPEval);
-//		transformations.add(recTransformation);
+//		series.add(atomicTr);
+//		series.add(divideTr);
+//		series.add(assignTr);
+//		series.add(callObjTr);
+		transformations.add(funcTr);
+//		series.add(prePostTr);
+//		series.add(ifExpTr);
+//		series.add(funcValTr);
+//		series.add(letBeStTr);
+//		series.add(whileTr);
+//		series.add(exp2stmTr);
+//		series.add(tracesTr);
+//		series.add(patternTr);
+//		series.add(preCheckTr);
+//		series.add(postCheckTr);
+//		series.add(isExpTr);
+//		series.add(unionTypeTr);
+//		series.add(javaToStringTr);
+//		series.add(sentinelTr);
+//		series.add(mutexTr);
+//		series.add(mainClassTr);
+//		series.add(seqConvTr);
+//		series.add(evalPermPredTr);
+//		series.add(recTr);
+		transformations.add(accTrans);
 	}
 
 	public List<DepthFirstAnalysisAdaptor> getTransformations() {

@@ -1,6 +1,6 @@
 #set( $final = "")
 #if ( $node.getFinal() )
-	#set( $final = "final")
+	#set( $final = "mut")
 #end
 ##
 #set( $end = ";")
@@ -12,4 +12,4 @@
 ##
 $RustFormat.formatMetaData($node.getMetaData())##
 ##
-${final} $RustFormat.format($node.getType()) $pattern = $RustFormat.format($node.getExp())${end}
+let ${final} $pattern: $RustFormat.format($node.getType())  = $RustFormat.format($node.getExp())${end}

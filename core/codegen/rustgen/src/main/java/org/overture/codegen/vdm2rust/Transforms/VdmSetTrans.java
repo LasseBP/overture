@@ -1,4 +1,4 @@
-package org.overture.codegen.vdm2rust;
+package org.overture.codegen.vdm2rust.Transforms;
 
 import java.util.LinkedList;
 
@@ -16,13 +16,15 @@ import org.overture.codegen.cgast.expressions.ASetProperSubsetBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ASetSubsetBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ASetUnionBinaryExpCG;
 import org.overture.codegen.trans.assistants.BaseTransformationAssistant;
+import org.overture.codegen.trans.assistants.TransAssistantCG;
+import org.overture.codegen.vdm2rust.ConstructionUtils;
 
-public class VdmSetCppTrans extends DepthFirstAnalysisAdaptor {
+public class VdmSetTrans extends DepthFirstAnalysisAdaptor {
 	
-	private BaseTransformationAssistant baseAssistant;
+	private TransAssistantCG transAssistant;
 	
-	public VdmSetCppTrans(BaseTransformationAssistant baseAss) {
-		baseAssistant = baseAss;
+	public VdmSetTrans(TransAssistantCG transAss) {
+		transAssistant = transAss;
 	}
 	
 	@Override
@@ -33,18 +35,18 @@ public class VdmSetCppTrans extends DepthFirstAnalysisAdaptor {
 		args.add(node.getLeft());
 		args.add(node.getRight());
 		n.setArgs(args);
-		baseAssistant.replaceNodeWith(node, n);
+		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
 	public void caseAEnumSetExpCG(AEnumSetExpCG node) throws AnalysisException {
-		// TODO Auto-generated method stub
-		//super.caseAEnumSetExpCG(node);
+		
+		
 		AApplyExpCG n = ConstructionUtils.consUtilCall("vdm_set", "create_set", node.getType().clone());
 		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
 		args.addAll(node.getMembers());
 		n.setArgs(args);
-		baseAssistant.replaceNodeWith(node, n);
+		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
@@ -55,7 +57,7 @@ public class VdmSetCppTrans extends DepthFirstAnalysisAdaptor {
 		args.add(node.getLeft());
 		args.add(node.getRight());
 		n.setArgs(args);
-		baseAssistant.replaceNodeWith(node, n);
+		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
@@ -66,7 +68,7 @@ public class VdmSetCppTrans extends DepthFirstAnalysisAdaptor {
 		args.add(node.getLeft());
 		args.add(node.getRight());
 		n.setArgs(args);
-		baseAssistant.replaceNodeWith(node, n);
+		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
@@ -77,7 +79,7 @@ public class VdmSetCppTrans extends DepthFirstAnalysisAdaptor {
 		args.add(node.getLeft());
 		args.add(node.getRight());
 		n.setArgs(args);
-		baseAssistant.replaceNodeWith(node, n);
+		transAssistant.replaceNodeWith(node, n);
 	}
 	@Override
 	public void caseASetProperSubsetBinaryExpCG(ASetProperSubsetBinaryExpCG node)
@@ -87,7 +89,7 @@ public class VdmSetCppTrans extends DepthFirstAnalysisAdaptor {
 		args.add(node.getLeft());
 		args.add(node.getRight());
 		n.setArgs(args);
-		baseAssistant.replaceNodeWith(node, n);
+		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	
@@ -99,7 +101,7 @@ public class VdmSetCppTrans extends DepthFirstAnalysisAdaptor {
 		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
 		args.add(node.getExp());
 		n.setArgs(args);
-		baseAssistant.replaceNodeWith(node, n);
+		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
@@ -109,7 +111,7 @@ public class VdmSetCppTrans extends DepthFirstAnalysisAdaptor {
 		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
 		args.add(node.getExp());
 		n.setArgs(args);
-		baseAssistant.replaceNodeWith(node, n);
+		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
@@ -120,7 +122,7 @@ public class VdmSetCppTrans extends DepthFirstAnalysisAdaptor {
 		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
 		args.add(node.getExp());
 		n.setArgs(args);
-		baseAssistant.replaceNodeWith(node, n);
+		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	

@@ -2,19 +2,14 @@ package org.overture.codegen.vdm2rust;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
 import org.overture.ast.analysis.AnalysisException;
 import org.overture.ast.definitions.SClassDefinition;
 import org.overture.ast.lex.Dialect;
-import org.overture.codegen.analysis.vdm.Renaming;
-import org.overture.codegen.analysis.violations.InvalidNamesResult;
 import org.overture.codegen.ir.IrNodeInfo;
-import org.overture.codegen.logging.ILogger;
 import org.overture.codegen.logging.Logger;
-import org.overture.codegen.merging.VelocityLogger;
 import org.overture.codegen.utils.GeneralCodeGenUtils;
 import org.overture.codegen.utils.GeneratedData;
 import org.overture.codegen.utils.GeneratedModule;

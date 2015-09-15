@@ -1,1 +1,1 @@
-new $RustFormat.formatName($node)($RustFormat.formatArgs($node.getArgs()))
+$RustFormat.formatName($node)::new($RustFormat.formatArgs($node.getArgs()))

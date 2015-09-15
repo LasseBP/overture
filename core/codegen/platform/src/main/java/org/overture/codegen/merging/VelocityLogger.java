@@ -1,8 +1,6 @@
 package org.overture.codegen.merging;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.velocity.runtime.RuntimeServices;
@@ -13,8 +11,8 @@ import org.overture.codegen.logging.Logger;
 public class VelocityLogger implements LogChute {
 
 	private int minLogLevel;
-
 	private ILogger logger;
+	private boolean isVelocityInit = false;
 	
 	private static final Map<Integer, String> logLevels;
     
@@ -44,10 +42,17 @@ public class VelocityLogger implements LogChute {
 	
 	@Override
 	public void init(RuntimeServices rs) throws Exception {
+		isVelocityInit = false;
 	}
 
 	@Override
 	public void log(int level, String message) {
+		if(!isVelocityInit)
+		{
+			isVelocityInit = message.equals("RuntimeInstance successfully initialized.");
+			return;
+		}
+		
 		String msg = "VELOCITY: " + getLevelName(level) + ": " + message;
 		
 		if(level >= LogChute.WARN_ID)

@@ -1,18 +1,2 @@
-#set( $final = "")
-#if ($node.getFinal())
-	#set( $final = "final")
-#end
-##
-#set( $static = "")
-#if ($node.getStatic())
-	#set( $static = "static")
-#end
-##
-#set( $volatile = "")
-#if ($node.getVolatile())
-	#set( $volatile = "volatile")
-#end
-##
-$RustFormat.formatMetaData($node.getMetaData())##
-##
-$node.getAccess() $static $volatile $final $RustFormat.format($node.getType()) $node.getName() $RustFormat.formatInitialExp($node.getInitial());
+$node.getAccess() $node.getName(): $RustFormat.format($node.getType()), 
+## $RustFormat.formatInitialExp($node.getInitial())

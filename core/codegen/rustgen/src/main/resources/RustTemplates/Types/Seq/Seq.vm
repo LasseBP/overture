@@ -1,1 +1,1 @@
-VDMSeq
+Seq<$RustFormat.format($node.getSeqOf())>

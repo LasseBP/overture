@@ -1,1 +1,1 @@
-$RustFormat.format($node.getType()) $RustFormat.format($node.getPattern())
+$RustFormat.format($node.getPattern()): $RustFormat.format($node.getType())

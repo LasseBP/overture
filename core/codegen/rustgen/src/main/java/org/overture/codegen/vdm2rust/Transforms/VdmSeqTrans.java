@@ -1,4 +1,4 @@
-package org.overture.codegen.vdm2rust;
+package org.overture.codegen.vdm2rust.Transforms;
 
 
 import java.util.LinkedList;
@@ -10,14 +10,13 @@ import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.ASeqConcatBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ASeqModificationBinaryExpCG;
 import org.overture.codegen.trans.assistants.BaseTransformationAssistant;
-import org.overture.codegen.trans.assistants.TransAssistantCG;
+import org.overture.codegen.vdm2rust.ConstructionUtils;
 
-public class VdmSeqCppTrans extends DepthFirstAnalysisAdaptor {
+public class VdmSeqTrans extends DepthFirstAnalysisAdaptor {
 	
 		private BaseTransformationAssistant baseAssistant;
-		private TransAssistantCG trans;
 
-		public VdmSeqCppTrans(BaseTransformationAssistant baseAssistant)
+		public VdmSeqTrans(BaseTransformationAssistant baseAssistant)
 		{
 			this.baseAssistant = baseAssistant;
 		}

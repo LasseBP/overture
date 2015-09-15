@@ -1,4 +1,4 @@
-package org.overture.codegen.vdm2rust;
+package org.overture.codegen.vdm2rust.Transforms;
 
 import java.util.LinkedList;
 
@@ -22,14 +22,13 @@ import org.overture.codegen.cgast.statements.AMapSeqStateDesignatorCG;
 import org.overture.codegen.cgast.statements.AMapSeqUpdateStmCG;
 import org.overture.codegen.cgast.types.AMapMapTypeCG;
 import org.overture.codegen.trans.assistants.BaseTransformationAssistant;
-import org.overture.codegen.trans.assistants.TransAssistantCG;
+import org.overture.codegen.vdm2rust.ConstructionUtils;
 
-public class VdmMapCppTrans extends DepthFirstAnalysisAdaptor {
+public class VdmMapTrans extends DepthFirstAnalysisAdaptor {
 	
 	private BaseTransformationAssistant baseAssistant;
-	private TransAssistantCG trans;
 	
-	public VdmMapCppTrans(BaseTransformationAssistant baseAss) {
+	public VdmMapTrans(BaseTransformationAssistant baseAss) {
 		// TODO Auto-generated constructor stub
 		baseAssistant = baseAss;
 	}
@@ -37,7 +36,6 @@ public class VdmMapCppTrans extends DepthFirstAnalysisAdaptor {
 	@Override
 	public void caseAMapDomainUnaryExpCG(AMapDomainUnaryExpCG node)
 			throws AnalysisException {
-		// TODO Auto-generated method stub
 		STypeCG a = node.getType();
 		if(a instanceof AMapMapTypeCG)
 		{

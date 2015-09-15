@@ -1,1 +1,1 @@
-$RustFormat.format($node.getCondition(), false) ? $RustFormat.format($node.getTrueValue(), false) : $RustFormat.format($node.getFalseValue(), false)
+if $RustFormat.format($node.getCondition()) { $RustFormat.format($node.getTrueValue()) } else { $RustFormat.format($node.getFalseValue()) }

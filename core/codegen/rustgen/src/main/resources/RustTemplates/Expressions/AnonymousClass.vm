@@ -1,6 +1,0 @@
-new $RustFormat.format($node.getType())()
-{
-	#foreach( $method in $node.getMethods() )
-	$RustFormat.format($method)
-	#end
-}

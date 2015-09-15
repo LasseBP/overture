@@ -3,23 +3,17 @@ package org.overture.codegen.vdm2rust;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.velocity.app.Velocity;
-import org.apache.velocity.runtime.log.NullLogChute;
 import org.overture.ast.analysis.AnalysisException;
 import org.overture.ast.definitions.SClassDefinition;
-import org.overture.ast.modules.AModuleModules;
 import org.overture.ast.node.INode;
 import org.overture.codegen.assistant.DeclAssistantCG;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.declarations.AClassDeclCG;
-import org.overture.codegen.cgast.declarations.AModuleDeclCG;
 import org.overture.codegen.ir.CodeGenBase;
-import org.overture.codegen.ir.IRInfo;
 import org.overture.codegen.ir.IRStatus;
 import org.overture.codegen.ir.IrNodeInfo;
 import org.overture.codegen.ir.VdmNodeInfo;
@@ -40,7 +34,7 @@ public class RustCodeGen extends CodeGenBase {
 		initVelocity();
 
 		this.transAssistant = new TransAssistantCG(generator.getIRInfo());
-		this.rustFormatter = new RustFormat();
+		this.rustFormatter = new RustFormat(this.getInfo());
 		this.rustTransSeries = new RustTransSeries(this);
 	}
 	
@@ -200,20 +194,25 @@ public class RustCodeGen extends CodeGenBase {
 			return false;
 		}
 
-		String name = null;
-		
-		if(node instanceof SClassDefinition)
-		{
-			name = ((SClassDefinition) node).getName().getName();
-		}
-		else if(node instanceof AModuleModules)
-		{
-			name = ((AModuleModules) node).getName().getName();
-		}
-		else
-		{
-			return true;
-		}
+//		String name = null;
+//		
+//		if(node instanceof SClassDefinition)
+//		{
+//			name = ((SClassDefinition) node).getName().getName();
+//		}
+//		else if(node instanceof AModuleModules)
+//		{
+//			name = ((AModuleModules) node).getName().getName();
+//		}
+//		else
+//		{
+//			return true;
+//		}
+//		
+//		if (getJavaSettings().getModulesToSkip().contains(name))
+//		{
+//			return false;
+//		}
 
 		// for (SClassDefinition superDef : classDef.getSuperDefs())
 		// {

@@ -1,1 +1,1 @@
-Tuple.mk_($RustFormat.formatArgs($node.getArgs()))
+($RustFormat.formatArgs($node.getArgs()))

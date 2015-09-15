@@ -1,1 +1,1 @@
-VDMSet
+Set<$RustFormat.format($node.getSetOf())>
