@@ -1,1 +1,2 @@
+## &a as *const int == &b as *const int
 $RustFormat.format($node.getLeft(), true) == $RustFormat.format($node.getRight(), false)

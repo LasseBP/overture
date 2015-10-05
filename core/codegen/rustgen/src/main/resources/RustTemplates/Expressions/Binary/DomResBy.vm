@@ -1,4 +1,4 @@
 #set( $left = $RustFormat.format($node.getLeft()) )
 #set( $right = $RustFormat.format($node.getRight()) )
 ##
-MapUtil.domResBy(${left}, ${right})
+${left}.dom_restrict_by(&${right})

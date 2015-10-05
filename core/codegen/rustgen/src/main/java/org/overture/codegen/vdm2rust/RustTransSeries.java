@@ -26,6 +26,7 @@ import org.overture.codegen.trans.letexps.IfExpTrans;
 import org.overture.codegen.trans.patterns.PatternTrans;
 import org.overture.codegen.trans.uniontypes.UnionTypeTrans;
 import org.overture.codegen.vdm2rust.Transforms.AccessModfierTrans;
+import org.overture.codegen.vdm2rust.Transforms.ConstructorTrans;
 import org.overture.codegen.vdm2rust.Transforms.VdmSetTrans;
 
 public class RustTransSeries {
@@ -45,7 +46,7 @@ public class RustTransSeries {
 		//IRInfo irInfo = codeGen.getInfo();
 		TransAssistantCG transAssistant = codeGen.getTransAssistant();
 		
-		VdmSetTrans setTrans = new VdmSetTrans(transAssistant); 
+		//VdmSetTrans setTrans = new VdmSetTrans(transAssistant); 
 		
 		// Construct the transformations
 		FuncTrans funcTr = new FuncTrans(transAssistant);
@@ -69,6 +70,7 @@ public class RustTransSeries {
 //		JavaToStringTrans javaToStringTr = new JavaToStringTrans(info);
 //		RecMethodsTrans recTr = new RecMethodsTrans(codeGen.getJavaFormat().getRecCreator());
 		AccessModfierTrans accTrans = new AccessModfierTrans();
+		ConstructorTrans constructorTrans = new ConstructorTrans();
 
 		// Start concurrency transformations
 //		SentinelTransformation concurrencytransform = new SentinelTransformation(irInfo, classes);
@@ -80,8 +82,7 @@ public class RustTransSeries {
 		// Set up order of transformations
 		transformations = new ArrayList<DepthFirstAnalysisAdaptor>();
 
-		transformations.add(setTrans);
-		
+//		transformations.add(setTrans);
 //		series.add(atomicTr);
 //		series.add(divideTr);
 //		series.add(assignTr);
@@ -107,6 +108,7 @@ public class RustTransSeries {
 //		series.add(evalPermPredTr);
 //		series.add(recTr);
 		transformations.add(accTrans);
+		transformations.add(constructorTrans);
 	}
 
 	public List<DepthFirstAnalysisAdaptor> getTransformations() {

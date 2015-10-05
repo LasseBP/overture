@@ -1,4 +1,4 @@
 #set( $first = $RustFormat.format($node.getFirst()) )
 #set( $last = $RustFormat.format($node.getLast()) )
 ##
-SetUtil.range(${first}, ${last})
+(${first}..${last})
