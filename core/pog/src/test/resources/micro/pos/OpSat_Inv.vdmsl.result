@@ -1,1 +1,1 @@
-["state invariant satisfiable obligation in \u0027DEFAULT\u0027 (OpSat_Inv.vdmsl) at line 1:7: (exists x:int, y:int \u0026 ((s.x) \u003d (s.y)))","operation postcondition satisfiable obligation in \u0027DEFAULT\u0027 (OpSat_Inv.vdmsl) at line 8:1: (exists newstate:S \u0026 post_op(oldstate, newstate))"]
+[{"poKind":"state invariant initialized","poExp":"(x \u003d y)"},{"poKind":"state invariant satisfiable","poExp":"(exists x:int, y:int \u0026 (x \u003d y))"},{"poKind":"operation satisfiability","poExp":"((x \u003d y) \u003d\u003e (exists x1:int, y2:int \u0026 true))"}]

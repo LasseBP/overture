@@ -1,1 +1,1 @@
-["operation postcondition satisfiable obligation in \u0027DEFAULT\u0027 (OpSat_PreStateResult.vdmsl) at line 8:1: (pre_op(oldstate) \u003d\u003e (exists n:nat \u0026 post_op(oldstate, n, oldstate, newstate)))"]
+[{"poKind":"operation satisfiability","poExp":"((y \u003e 0) \u003d\u003e (exists y1:int, x2:nat, n:nat \u0026 (y1 \u003d n)))"}]
