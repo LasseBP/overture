@@ -7,6 +7,8 @@ import org.overture.codegen.cgast.declarations.AClassDeclCG;
 import org.overture.codegen.cgast.declarations.AFieldDeclCG;
 import org.overture.codegen.cgast.declarations.AFuncDeclCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
+import org.overture.codegen.cgast.declarations.ANamedTypeDeclCG;
+import org.overture.codegen.cgast.declarations.ATypeDeclCG;
 
 /**
  * Changes access modifiers from public/private to pub/""
@@ -15,6 +17,11 @@ public class AccessModfierTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
 	public void inAClassDeclCG(AClassDeclCG node) throws AnalysisException {
+		node.setAccess(getNewAccess(node.getAccess()));
+	}
+			
+	@Override
+	public void inATypeDeclCG(ATypeDeclCG node) throws AnalysisException {
 		node.setAccess(getNewAccess(node.getAccess()));
 	}
 	

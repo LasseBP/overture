@@ -1,19 +1,25 @@
-#set( $static = "")
-#if ($node.getStatic())
-	#set( $static = "static")
-#end
 ##
 #set( $returnType = $RustFormat.format($node.getMethodType().getResult()))
-#set( $abstract = "")
-#if ($node.getAbstract())
-	#set( $abstract = "abstract")
-#end
 ##
 #set( $templateTypes = "")
 #if ($node.getTemplateTypes().size() > 0)
 	#set( $templateTypes = $RustFormat.formatTemplateTypes($node.getTemplateTypes()))
 #end
 ##
+#if( $node.getIsConstructor() )
+#set( $params = "") ## hack: new must be a function, but has statements.
+#else
+#set( $params = "&mut self")
+#end
+#if ($node.getFormalParams().size() > 0)
+	#if( !$node.getIsConstructor() )
+	#set( $params = ${params} + ", ")
+	#end
+	#set( $params = ${params} + $RustFormat.format($node.getFormalParams()))
+#end
+##
 $RustFormat.formatMetaData($node.getMetaData())##
 ##
-$node.getAccess() fn $node.getName()$templateTypes($RustFormat.format($node.getFormalParams())) -> $returnType $RustFormat.formatOperationBody($node.getBody())
+$node.getAccess() fn $node.getName()$templateTypes($params) -> $returnType {
+	$RustFormat.format($node.getBody())
+} 

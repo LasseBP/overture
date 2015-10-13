@@ -35,13 +35,6 @@
 		${mapRead}
 	#end
 ##
-#elseif ($RustFormat.isStringType($node.getRoot()))
-	#set( $index = $RustFormat.format($node.getArgs().get(0)))
-	${root}.charAt(Utils.index($index))##
-##
-#elseif ($RustFormat.isLambda($node))
-	${root}.eval(${args})##
-##
 #else
 	${root}($args)##
 #end

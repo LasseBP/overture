@@ -1,0 +1,1 @@
+type $node.getName().getName() = $RustFormat.format($node.getType());

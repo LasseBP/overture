@@ -497,7 +497,8 @@ public class GeneralCodeGenUtils
 		for (IrNodeInfo nodeInfo : nodesSorted)
 		{
 			INode vdmNode = locationAssistant.getVdmNode(nodeInfo);
-			Logger.getLog().print(vdmNode != null ? vdmNode.toString() : nodeInfo.getNode().getClass().getSimpleName());
+			Logger.getLog().print(vdmNode != null ? vdmNode.toString(): "");
+			Logger.getLog().print("(" + nodeInfo.getNode().getClass().getSimpleName() + ")");
 
 			ILexLocation location = locationAssistant.findLocation(nodeInfo);
 

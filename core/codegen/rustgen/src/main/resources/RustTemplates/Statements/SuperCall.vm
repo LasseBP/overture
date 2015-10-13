@@ -2,11 +2,6 @@
 ##
 #set( $super = "super")
 ##
-#set( $return = "")
-#if (!$RustFormat.isVoidType($node.getType()))
-	#set( $return = "return ")
-#end
-##
 #set( $name = "$node.getName()")
 ##
-${return}${super}.${name}($RustFormat.formatArgs($node.getArgs()));
+${super}.${name}($RustFormat.formatArgs($node.getArgs()));

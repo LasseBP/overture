@@ -3,7 +3,7 @@
 #set( $class = "" )
 ##
 #if (!$RustFormat.isNull($node.getClassType()))
-	#set( $separator = ".")
+	#set( $separator = "::")
 	#set( $classType = "$RustFormat.format($node.getClassType())")
 	#set( $class = "$classType$separator")
 #end
@@ -15,4 +15,4 @@
 ##
 #set( $name = "$node.getName()")
 ##
-$return$class$name($RustFormat.formatArgs($node.getArgs()));
+${return}$class$name($RustFormat.formatArgs($node.getArgs()));

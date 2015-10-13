@@ -37,6 +37,7 @@ import org.overture.ast.definitions.PDefinition;
 import org.overture.ast.definitions.SClassDefinition;
 import org.overture.ast.definitions.SFunctionDefinition;
 import org.overture.ast.definitions.SOperationDefinition;
+import org.overture.ast.expressions.AUndefinedExp;
 import org.overture.ast.expressions.PExp;
 import org.overture.ast.intf.lex.ILexNameToken;
 import org.overture.ast.modules.AModuleModules;
@@ -45,6 +46,7 @@ import org.overture.ast.patterns.APatternListTypePair;
 import org.overture.ast.patterns.PPattern;
 import org.overture.ast.statements.AIdentifierStateDesignator;
 import org.overture.ast.statements.ASubclassResponsibilityStm;
+import org.overture.ast.util.ClonableString;
 import org.overture.codegen.cgast.SDeclCG;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.SPatternCG;
@@ -59,6 +61,7 @@ import org.overture.codegen.cgast.declarations.ARecordDeclCG;
 import org.overture.codegen.cgast.declarations.ATypeDeclCG;
 import org.overture.codegen.cgast.declarations.AVarDeclCG;
 import org.overture.codegen.cgast.expressions.ANotImplementedExpCG;
+import org.overture.codegen.cgast.expressions.AUndefinedExpCG;
 import org.overture.codegen.cgast.name.ATypeNameCG;
 import org.overture.codegen.cgast.statements.ABlockStmCG;
 import org.overture.codegen.cgast.statements.ANotImplementedStmCG;
@@ -99,6 +102,7 @@ public class DeclAssistantCG extends AssistantBase
 		String name = node.getName();
 		SExpCG body = node.getBody();
 		SourceNode sourceNode = node.getSourceNode();
+		List<? extends ClonableString> metaData = node.getMetaData();
 
 		AMethodDeclCG method = new AMethodDeclCG();
 		method.setSourceNode(sourceNode);
@@ -119,6 +123,7 @@ public class DeclAssistantCG extends AssistantBase
 		method.setStatic(true);
 		method.setIsConstructor(false);
 		method.setImplicit(node.getImplicit());
+		method.setMetaData(metaData);
 
 		if (!(body instanceof ANotImplementedExpCG))
 		{

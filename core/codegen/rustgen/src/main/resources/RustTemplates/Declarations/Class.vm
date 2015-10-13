@@ -1,27 +1,50 @@
 use codegen_runtime::*;
 
-#set( $threadMethod = "")
-#if (!$RustFormat.isNull($node.getThread()))
-	#set( $threadMethod = $RustFormat.format($node.getThread()))
+/* types */
+#foreach( $typeDecl in $node.getTypeDecls() )
+$RustFormat.format($typeDecl)
 #end
+
+#set( $hasFields = !$node.getFields().isEmpty())
 ##
 $RustFormat.formatMetaData($node.getGlobalMetaData())##
 ##
-$node.getAccess() struct $node.getName() {
+$node.getAccess() struct $node.getName()#if(!$hasFields);#else {
 	#foreach( $field in $node.getFields() )
 	$RustFormat.format($field)
 	#end
 }
+#end
 
 impl $node.getName() {
+/* operations */
 	#foreach( $method in $node.getMethods() )
 	$RustFormat.format($method)
 	#end
 	##
-	${threadMethod}
-	##
+
+/* functions */
+	#foreach( $func in $node.getFunctions() )
+	$RustFormat.format($func)
+	#end
 }
 
+impl Default for $node.getName() {
+	fn default() -> $node.getName() {
+		#foreach( $field in $node.getFields() )		
+		let $field.getName(): $RustFormat.format($field.getType()) = $RustFormat.formatInitialExp($node.getInitial());
+		#end
+		
+		$node.getName()
+		#if($hasFields)
+		{
+			#foreach( $field in $node.getFields() )
+			$field.getName(): $field.getName(),
+			#end
+		}
+		#end		
+	}
+}
 	
 
 	

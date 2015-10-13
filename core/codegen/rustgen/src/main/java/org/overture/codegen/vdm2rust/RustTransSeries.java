@@ -43,15 +43,14 @@ public class RustTransSeries {
 	public void init()
 	{
 		// Data and functionality to support the transformations
-		//IRInfo irInfo = codeGen.getInfo();
+		IRInfo irInfo = codeGen.getInfo();
 		TransAssistantCG transAssistant = codeGen.getTransAssistant();
 		
 		//VdmSetTrans setTrans = new VdmSetTrans(transAssistant); 
 		
 		// Construct the transformations
-		FuncTrans funcTr = new FuncTrans(transAssistant);
 //		DivideTrans divideTr = new DivideTrans(info);
-//		CallObjStmTrans callObjTr = new CallObjStmTrans(info);
+		CallObjStmTrans callObjTr = new CallObjStmTrans(irInfo);
 //		AssignStmTrans assignTr = new AssignStmTrans(transAssist);
 //		PrePostTrans prePostTr = new PrePostTrans(info);
 //		IfExpTrans ifExpTr = new IfExpTrans(transAssist);
@@ -70,7 +69,7 @@ public class RustTransSeries {
 //		JavaToStringTrans javaToStringTr = new JavaToStringTrans(info);
 //		RecMethodsTrans recTr = new RecMethodsTrans(codeGen.getJavaFormat().getRecCreator());
 		AccessModfierTrans accTrans = new AccessModfierTrans();
-		ConstructorTrans constructorTrans = new ConstructorTrans();
+		ConstructorTrans constructorTrans = new ConstructorTrans(transAssistant);
 
 		// Start concurrency transformations
 //		SentinelTransformation concurrencytransform = new SentinelTransformation(irInfo, classes);
@@ -83,30 +82,29 @@ public class RustTransSeries {
 		transformations = new ArrayList<DepthFirstAnalysisAdaptor>();
 
 //		transformations.add(setTrans);
-//		series.add(atomicTr);
-//		series.add(divideTr);
-//		series.add(assignTr);
-//		series.add(callObjTr);
-		transformations.add(funcTr);
-//		series.add(prePostTr);
-//		series.add(ifExpTr);
-//		series.add(funcValTr);
-//		series.add(letBeStTr);
-//		series.add(whileTr);
-//		series.add(exp2stmTr);
-//		series.add(tracesTr);
-//		series.add(patternTr);
-//		series.add(preCheckTr);
-//		series.add(postCheckTr);
-//		series.add(isExpTr);
-//		series.add(unionTypeTr);
-//		series.add(javaToStringTr);
-//		series.add(sentinelTr);
-//		series.add(mutexTr);
-//		series.add(mainClassTr);
-//		series.add(seqConvTr);
-//		series.add(evalPermPredTr);
-//		series.add(recTr);
+//		transformations.add(atomicTr);
+//		transformations.add(divideTr);
+//		transformations.add(assignTr);
+		transformations.add(callObjTr);
+//		transformations.add(prePostTr);
+//		transformations.add(ifExpTr);
+//		transformations.add(funcValTr);
+//		transformations.add(letBeStTr);
+//		transformations.add(whileTr);
+//		transformations.add(exp2stmTr);
+//		transformations.add(tracesTr);
+//		transformations.add(patternTr);
+//		transformations.add(preCheckTr);
+//		transformations.add(postCheckTr);
+//		transformations.add(isExpTr);
+//		transformations.add(unionTypeTr);
+//		transformations.add(javaToStringTr);
+//		transformations.add(sentinelTr);
+//		transformations.add(mutexTr);
+//		transformations.add(mainClassTr);
+//		transformations.add(seqConvTr);
+//		transformations.add(evalPermPredTr);
+//		transformations.add(recTr);
 		transformations.add(accTrans);
 		transformations.add(constructorTrans);
 	}

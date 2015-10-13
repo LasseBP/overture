@@ -1,12 +1,6 @@
-static class $node.getName() implements Record
-{
+#[derive(PartialEq, Eq, Clone, Hash, Debug)]
+$node.parent().getAccess() struct $node.getName() {
 	#foreach( $field in $node.getFields() )
 	$RustFormat.format($field)
-	#end
-
-
-	##
-	#foreach( $method in $node.getMethods() )
-	$RustFormat.format($method)
 	#end
 }

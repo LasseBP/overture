@@ -1,0 +1,12 @@
+#set( $returnType = $RustFormat.format($node.getMethodType().getResult()))
+##
+#set( $templateTypes = "")
+#if ($node.getTemplateTypes().size() > 0)
+	#set( $templateTypes = $RustFormat.formatTemplateTypes($node.getTemplateTypes()))
+#end
+##
+$RustFormat.formatMetaData($node.getMetaData())##
+##
+$node.getAccess() fn $node.getName()$templateTypes($RustFormat.format($node.getFormalParams())) -> $returnType {
+	$RustFormat.format($node.getBody())
+} 

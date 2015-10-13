@@ -35,8 +35,10 @@ import org.overture.codegen.cgast.declarations.ACatchClauseDeclCG;
 import org.overture.codegen.cgast.declarations.AClassDeclCG;
 import org.overture.codegen.cgast.declarations.AFieldDeclCG;
 import org.overture.codegen.cgast.declarations.AFormalParamLocalParamCG;
+import org.overture.codegen.cgast.declarations.AFuncDeclCG;
 import org.overture.codegen.cgast.declarations.AInterfaceDeclCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
+import org.overture.codegen.cgast.declarations.ANamedTypeDeclCG;
 import org.overture.codegen.cgast.declarations.ARecordDeclCG;
 import org.overture.codegen.cgast.declarations.AThreadDeclCG;
 import org.overture.codegen.cgast.declarations.ATypeDeclCG;
@@ -177,6 +179,9 @@ public class TemplateManager
 
 		nodeTemplateFileNames.put(AMethodDeclCG.class, templateStructure.DECL_PATH
 				+ "Method");
+		
+		nodeTemplateFileNames.put(AFuncDeclCG.class, templateStructure.DECL_PATH
+				+ "Function");
 
 		nodeTemplateFileNames.put(AVarDeclCG.class, templateStructure.DECL_PATH
 				+ "LocalVar");
@@ -186,6 +191,9 @@ public class TemplateManager
 
 		nodeTemplateFileNames.put(ATypeDeclCG.class, templateStructure.DECL_PATH
 				+ "Type");
+		
+		nodeTemplateFileNames.put(ANamedTypeDeclCG.class, templateStructure.DECL_PATH
+				+ "NamedType");
 
 		nodeTemplateFileNames.put(ACatchClauseDeclCG.class, templateStructure.DECL_PATH
 				+ "CatchClause");

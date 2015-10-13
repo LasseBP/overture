@@ -1,1 +1,1 @@
-$RustFormat.formatName($node)
+$node.getName()

@@ -1,1 +1,1 @@
-Utils.mod($RustFormat.format($node.getLeft()), $RustFormat.format($node.getRight()))
+$RustFormat.format($node.getLeft()) mod $RustFormat.format($node.getRight())

@@ -6,15 +6,19 @@ import java.util.List;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.overture.ast.util.ClonableString;
 import org.overture.codegen.cgast.INode;
+import org.overture.codegen.cgast.SDeclCG;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.SStmCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.declarations.AFormalParamLocalParamCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
+import org.overture.codegen.cgast.declarations.ARecordDeclCG;
+import org.overture.codegen.cgast.expressions.AUndefinedExpCG;
 import org.overture.codegen.cgast.types.AObjectTypeCG;
 import org.overture.codegen.cgast.types.AUnionTypeCG;
 import org.overture.codegen.cgast.types.AUnknownTypeCG;
+import org.overture.codegen.cgast.types.AVoidTypeCG;
 import org.overture.codegen.cgast.types.SBasicTypeCG;
 import org.overture.codegen.ir.IRInfo;
 import org.overture.codegen.logging.Logger;
@@ -58,6 +62,16 @@ public class RustFormat {
 	public boolean isNull(INode node)
 	{
 		return node == null;
+	}
+	
+	public boolean isVoidType(STypeCG node)
+	{
+		return node instanceof AVoidTypeCG;
+	}
+	
+	public static boolean hasAccessInTemplate(SDeclCG declaration)
+	{
+		return declaration instanceof ARecordDeclCG;
 	}
 	
 	public static String formatMetaData(List<ClonableString> metaData)
@@ -122,9 +136,13 @@ public class RustFormat {
 		return escaped;
 	}
 
-	public static boolean castNotNeeded(STypeCG type)
+	public String formatInitialExp(SExpCG exp) throws AnalysisException
 	{
-		return type instanceof AObjectTypeCG || type instanceof AUnknownTypeCG || type instanceof AUnionTypeCG;
+		// Examples:
+		// private int a; (exp == null || exp instanceof AUndefinedExpCG)
+		// private int a = 2; (otherwise)
+
+		return exp == null || exp instanceof AUndefinedExpCG ? "Default::default()" : format(exp);
 	}
 	
 	public String escapeChar(char c)
@@ -132,43 +150,6 @@ public class RustFormat {
 		return GeneralUtils.isEscapeSequence(c) ? StringEscapeUtils.escapeJavaScript(c
 				+ "")
 				: c + "";
-	}
-	
-	public String formatOperationBody(SStmCG body) throws AnalysisException
-	{
-		String NEWLINE = "\n";
-		if (body == null)
-		{
-			return ";";
-		}
-
-		StringWriter generatedBody = new StringWriter();
-
-		generatedBody.append("{" + NEWLINE + NEWLINE);
-		generatedBody.append(handleOpBody(body));
-		generatedBody.append(NEWLINE + "}");
-
-		return generatedBody.toString();
-	}
-
-	private String handleOpBody(SStmCG body) throws AnalysisException
-	{
-		AMethodDeclCG method = body.getAncestor(AMethodDeclCG.class);
-		
-		if(method == null)
-		{
-			Logger.getLog().printErrorln("Could not find enclosing method when formatting operation body. Got: " + body);
-		}
-		else if(method.getAsync() != null && method.getAsync())
-		{
-			return "new VDMThread(){ "
-			+ "\tpublic void run() {"
-			+ "\t " + format(body)
-			+ "\t} "
-			+ "}.start();";
-		}
-		
-		return format(body);
 	}
 	
 	public String formatArgs(List<? extends SExpCG> exps)

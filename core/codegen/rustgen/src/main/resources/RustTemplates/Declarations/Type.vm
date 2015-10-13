@@ -1,9 +1,6 @@
-#if ($RustFormat.genDecl(${node}))
-	$node.getAccess() $RustFormat.format(${node.getDecl()})
-#end
+#if(!$RustFormat.hasAccessInTemplate(${node.getDecl()}))$node.getAccess()#end $RustFormat.format(${node.getDecl()})
+
 ##
-#set( $inv = $node.getInv())
-##
-#if (!$RustFormat.isNull(${inv}))
-	$RustFormat.format(${inv})
+#if (!$RustFormat.isNull($node.getInv()))
+	$RustFormat.format($node.getInv())
 #end

@@ -1,5 +1,5 @@
 #set( $final = "")
-#if ( $node.getFinal() )
+#if ( !$node.getFinal() )
 	#set( $final = "mut")
 #end
 ##
