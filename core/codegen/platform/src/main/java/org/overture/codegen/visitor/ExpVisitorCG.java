@@ -1343,10 +1343,10 @@ public class ExpVisitorCG extends AbstractVisitorCG<IRInfo, SExpCG>
 					|| explicit
 					&& !question.getTcFactory().createPDefinitionAssistant().isStatic(varDef))
 			{
-				return consIdVar(name, isLambda, typeCg, isLocalDef);
+				return consIdVar(name, isLambda, typeCg, isLocalDef || isAssignmentDef);
 			} else if (explicit)
 			{
-				return consExplicitVar(node.getName().getModule(), name, isLambda, typeCg, isLocalDef);
+				return consExplicitVar(node.getName().getModule(), name, isLambda, typeCg, isLocalDef || isAssignmentDef);
 			} else
 			{
 				question.addUnsupportedNode(node, "Reached unexpected case when generating a variable expression in a PP model in '" + this.getClass().getSimpleName() + "'");
