@@ -386,6 +386,21 @@ public class IRInfo
 	{
 		return classes;
 	}
+	
+	public AClassDeclCG getClass(String name) 
+	{
+		if(classes != null && name != null && !name.isEmpty())
+		{
+			for(AClassDeclCG clazz: classes )
+			{
+				if(clazz.getName().equals(name))
+				{
+					return clazz;
+				}
+			}
+		}
+		return null;
+	}
 
 	public void addClass(AClassDeclCG irClass)
 	{

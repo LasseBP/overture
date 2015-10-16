@@ -58,6 +58,7 @@ import org.overture.codegen.cgast.statements.AForLoopStmCG;
 import org.overture.codegen.cgast.statements.AIfStmCG;
 import org.overture.codegen.cgast.statements.AIncrementStmCG;
 import org.overture.codegen.cgast.statements.ALocalPatternAssignmentStmCG;
+import org.overture.codegen.cgast.statements.APlainCallStmCG;
 import org.overture.codegen.cgast.types.ABoolBasicTypeCG;
 import org.overture.codegen.cgast.types.AClassTypeCG;
 import org.overture.codegen.cgast.types.AIntNumericBasicTypeCG;
@@ -253,6 +254,18 @@ public class TransAssistantCG extends BaseTransformationAssistant
 		classType.setName(classTypeName);
 
 		return classType;
+	}
+	
+	public SStmCG consStaticCall(STypeCG classType, String name, STypeCG returnType, List<SExpCG> args)
+	{
+		APlainCallStmCG plainCall = new APlainCallStmCG();
+		plainCall.setClassType(classType);
+		plainCall.setName(name);
+		plainCall.setIsStatic(true);
+		plainCall.setType(returnType);
+		plainCall.setArgs(args);
+	
+		return plainCall;
 	}
 
 	public SExpCG consInstanceCall(STypeCG instanceType, String instanceName,
