@@ -1,0 +1,7 @@
+class NumericTest
+
+functions
+public Run : ()  -> int
+Run () == 2+3;
+
+end NumericTest

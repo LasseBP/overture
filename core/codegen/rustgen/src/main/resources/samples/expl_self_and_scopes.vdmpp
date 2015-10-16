@@ -1,0 +1,29 @@
+class A
+
+instance variables
+kek: int;
+
+functions
+public five : int -> int
+five (i) == 2+3;
+
+operations
+public A: () ==> A
+A() == (
+	dcl i: int := 123;
+	dcl a: A := self;
+	voidOp(); --APlainCallStm (name = "voidOp")
+	self.voidOp(); --ACallObjectExpStmCG (fieldname = "voidOp", obj = ASelfExpCG)
+	i := self.fiveop(i); --AApplyExpCG (root = fieldExp)
+	i := fiveop(i); --AApplyExpCG (root = identifierVarExp(type = AMethodType))
+	kek := five(kek); --identifierVarExp + applyExp
+	kek := self.five(kek); --identifierVarExp + applyExp
+	a.kek := A`five(a.kek); --FieldExp(field="kek", obj=identifierVarExp) + Apply
+ );
+ 
+public fiveop : int  ==> int
+fiveop (i) == return 2+3;
+
+public voidOp: () ==> ()
+voidOp() == skip;
+end A

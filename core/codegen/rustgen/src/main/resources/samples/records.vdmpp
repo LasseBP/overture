@@ -1,0 +1,11 @@
+class RecordTest
+
+types
+public foo :: value : nat
+              val2  : char;
+
+operations
+public create_and_use_record : () ==> int
+Run3 () == let f = mk_foo(1337, 'C') in return f.value;
+
+end RecordTest

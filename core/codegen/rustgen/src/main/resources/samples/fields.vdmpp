@@ -1,0 +1,10 @@
+class Fields
+
+values 
+val = 1;
+
+instance variables
+kek: int := 1337;
+public static s: nat := 123;
+
+end Fields

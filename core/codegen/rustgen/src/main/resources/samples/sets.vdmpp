@@ -1,0 +1,7 @@
+class SetTest
+
+operations
+public createSet : () ==> set of int
+createSet () == return {1,2,3};
+
+end SetTest

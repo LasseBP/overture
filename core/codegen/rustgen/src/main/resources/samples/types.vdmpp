@@ -1,0 +1,9 @@
+class TypeTest
+
+types
+public foo :: value : nat
+              val2  : char;
+
+public StringSeq = seq of char;
+
+end TypeTest

@@ -1,0 +1,11 @@
+class FuncOp
+
+functions
+public five : int  -> int
+five (i) == 2+3;
+
+operations
+public fiveop : int  ==> int
+fiveop (i) == return 2+3;
+
+end FuncOp
