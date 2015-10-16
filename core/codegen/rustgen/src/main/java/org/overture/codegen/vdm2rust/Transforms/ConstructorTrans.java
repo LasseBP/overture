@@ -1,5 +1,6 @@
 package org.overture.codegen.vdm2rust.Transforms;
 
+import org.junit.experimental.runners.Enclosed;
 import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.SStmCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
@@ -45,6 +46,7 @@ public class ConstructorTrans extends DepthFirstAnalysisAdaptor {
 			
 			AClassDeclCG enclosingClass = node.getAncestor(AClassDeclCG.class);
 			SStmCG oldBody = node.getBody();
+			boolean hasCustomConstructor = oldBody instanceof APlainCallStmCG;
 			
 			AClassTypeCG type = new AClassTypeCG();
 			type.setName(enclosingClass.getName());
@@ -64,7 +66,7 @@ public class ConstructorTrans extends DepthFirstAnalysisAdaptor {
 			objPattern.setName("instance");
 			
 			AVarDeclCG classVar = new AVarDeclCG();
-			classVar.setFinal(false);
+			classVar.setFinal(!hasCustomConstructor);
 			classVar.setExp(applyDefaultFunc);
 			classVar.setPattern(objPattern);	
 			classVar.setType(type.clone());
@@ -75,7 +77,7 @@ public class ConstructorTrans extends DepthFirstAnalysisAdaptor {
 			instanceVarExp.setIsLocal(true);
 			instanceVarExp.setName("instance");
 			
-			if(oldBody instanceof APlainCallStmCG)
+			if(hasCustomConstructor)
 			{
 				// we need to call the custom constructor in the new body too.
 				APlainCallStmCG cg_init_call_old = (APlainCallStmCG)oldBody;

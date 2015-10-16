@@ -4,3 +4,5 @@ $node.parent().getAccess() struct $node.getName() {
 	$RustFormat.format($field)
 	#end
 }
+#set( $last_field = $node.getFields().getLast())
+impl_record! { $node.getName():#foreach( $field in $node.getFields() ) $field.getName() as $RustFormat.format($field.getType())#if($field != $last_field), #end#end }
