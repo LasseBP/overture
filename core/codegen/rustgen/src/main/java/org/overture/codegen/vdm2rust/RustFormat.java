@@ -43,6 +43,11 @@ public class RustFormat {
 		mergeVisitor.init();
 	}
 	
+	public static String getQuoteModuleName()
+	{
+		return "quotes";
+	}
+	
 	public String format(INode node) throws AnalysisException
 	{
 		StringWriter writer = new StringWriter();
