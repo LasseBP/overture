@@ -1,6 +1,6 @@
 #set( $package = "")
 #set( $packageName = $node.getPackage())
-#if (!$RustFormat.isNull($packageName))
+#if (!$Util.isNull($packageName))
 	#set( $package = "package ${packageName};")
 #end
 ##

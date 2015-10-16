@@ -8,7 +8,7 @@ else if ( $RustFormat.format($stm.getElseIf()) )
 	$RustFormat.format($stm.getThenStm())
 }
 #end
-#if ( !$RustFormat.isNull($node.getElseStm()) )
+#if ( !$Util.isNull($node.getElseStm()) )
 else
 {
 	$RustFormat.format($node.getElseStm())

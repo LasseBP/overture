@@ -3,7 +3,7 @@
 #set( $obj = $RustFormat.format($node.getObj()) )
 ##
 #set( $return = "")
-#if (!$RustFormat.isVoidType($node.getType()))
+#if (!$Util.isVoidType($node.getType()))
 	#set( $return = "return ")
 #end
 ##

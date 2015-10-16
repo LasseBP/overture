@@ -3,7 +3,7 @@
 #set( $toExp = $RustFormat.formatIgnoreContext($node.getTo()) )
 #set( $body = $RustFormat.format($node.getBody()) )
 #set( $toVar = $RustFormat.genForIndexToVarName() )
-#set( $bySpecified = !$RustFormat.isNull($node.getBy()) )
+#set( $bySpecified = !$Util.isNull($node.getBy()) )
 ##
 long ${toVar} = ${toExp};
 ##

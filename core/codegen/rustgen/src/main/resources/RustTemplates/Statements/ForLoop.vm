@@ -1,15 +1,15 @@
 #set( $init = "" )
-#if ( !$RustFormat.isNull($node.getInit()) )
+#if ( !$Util.isNull($node.getInit()) )
 	#set( $init = $RustFormat.format($node.getInit()) )
 #end
 ##
 #set( $cond = "" )
-#if ( !$RustFormat.isNull($node.getCond()) )
+#if ( !$Util.isNull($node.getCond()) )
 	#set( $cond = $RustFormat.format($node.getCond()) )
 #end
 ##
 #set( $inc = "" )
-#if ( !$RustFormat.isNull($node.getInc()) )
+#if ( !$Util.isNull($node.getInc()) )
 	#set( $inc = $RustFormat.format($node.getInc()) )
 #end
 ##

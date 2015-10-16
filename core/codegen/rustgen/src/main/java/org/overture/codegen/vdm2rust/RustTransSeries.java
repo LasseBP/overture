@@ -5,30 +5,12 @@ import java.util.List;
 
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.ir.IRInfo;
-import org.overture.codegen.traces.TracesTrans;
 import org.overture.codegen.trans.AssignStmTrans;
 import org.overture.codegen.trans.CallObjStmTrans;
-import org.overture.codegen.trans.DivideTrans;
-import org.overture.codegen.trans.Exp2StmTrans;
-import org.overture.codegen.trans.IsExpTrans;
-import org.overture.codegen.trans.LetBeStTrans;
-import org.overture.codegen.trans.PostCheckTrans;
-import org.overture.codegen.trans.PreCheckTrans;
-import org.overture.codegen.trans.PrePostTrans;
-import org.overture.codegen.trans.SeqConvTrans;
-import org.overture.codegen.trans.WhileStmTrans;
 import org.overture.codegen.trans.assistants.TransAssistantCG;
-import org.overture.codegen.trans.funcvalues.FuncValTrans;
-import org.overture.codegen.trans.iterator.ILanguageIterator;
-import org.overture.codegen.trans.iterator.JavaLanguageIterator;
-import org.overture.codegen.trans.letexps.FuncTrans;
-import org.overture.codegen.trans.letexps.IfExpTrans;
-import org.overture.codegen.trans.patterns.PatternTrans;
-import org.overture.codegen.trans.uniontypes.UnionTypeTrans;
 import org.overture.codegen.vdm2rust.Transforms.AccessModfierTrans;
 import org.overture.codegen.vdm2rust.Transforms.ConstructorTrans;
 import org.overture.codegen.vdm2rust.Transforms.FuncScopeAdderTrans;
-import org.overture.codegen.vdm2rust.Transforms.VdmSetTrans;
 
 public class RustTransSeries {
 

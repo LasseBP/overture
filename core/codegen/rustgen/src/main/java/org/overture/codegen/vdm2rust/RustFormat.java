@@ -8,21 +8,14 @@ import org.overture.ast.util.ClonableString;
 import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.SDeclCG;
 import org.overture.codegen.cgast.SExpCG;
-import org.overture.codegen.cgast.SStmCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.declarations.AFormalParamLocalParamCG;
-import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.declarations.ARecordDeclCG;
 import org.overture.codegen.cgast.expressions.AUndefinedExpCG;
 import org.overture.codegen.cgast.statements.ABlockStmCG;
-import org.overture.codegen.cgast.types.AObjectTypeCG;
-import org.overture.codegen.cgast.types.AUnionTypeCG;
-import org.overture.codegen.cgast.types.AUnknownTypeCG;
 import org.overture.codegen.cgast.types.AVoidTypeCG;
-import org.overture.codegen.cgast.types.SBasicTypeCG;
 import org.overture.codegen.ir.IRInfo;
-import org.overture.codegen.logging.Logger;
 import org.overture.codegen.merging.MergeVisitor;
 import org.overture.codegen.merging.TemplateCallable;
 import org.overture.codegen.merging.TemplateManager;
@@ -33,11 +26,14 @@ public class RustFormat {
 	
 	private MergeVisitor mergeVisitor;
 	private IRInfo info;
+	private FormatUtils util;
 
 	public RustFormat(IRInfo info)
 	{
+		util = new FormatUtils();
 		TemplateManager templateManager = new TemplateManager(new TemplateStructure("RustTemplates"));
-		TemplateCallable[] templateCallables = new TemplateCallable[]{new TemplateCallable("RustFormat", this)};
+		TemplateCallable[] templateCallables = new TemplateCallable[]{new TemplateCallable("RustFormat", this), 
+																	  new TemplateCallable("Util", util)};
 		this.mergeVisitor = new MergeVisitor(templateManager, templateCallables);
 		this.info = info;
 	}
@@ -58,21 +54,6 @@ public class RustFormat {
 	public MergeVisitor GetMergeVisitor()
 	{
 		return mergeVisitor;
-	}
-	
-	public boolean isNull(INode node)
-	{
-		return node == null;
-	}
-	
-	public boolean isVoidType(STypeCG node)
-	{
-		return node instanceof AVoidTypeCG;
-	}
-	
-	public static boolean hasAccessInTemplate(SDeclCG declaration)
-	{
-		return declaration instanceof ARecordDeclCG;
 	}
 	
 	public static String formatMetaData(List<ClonableString> metaData)
@@ -195,10 +176,5 @@ public class RustFormat {
 			writer.append(format(param));
 		}
 		return writer.toString();
-	}
-	
-	public static boolean isScoped(ABlockStmCG block)
-	{
-		return block != null && block.getScoped() != null && block.getScoped();
 	}
 }

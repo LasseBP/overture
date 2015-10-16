@@ -1,4 +1,4 @@
-#if ($RustFormat.isScoped($node))
+#if ($Util.isScoped($node))
 {
 #end
 ##
@@ -14,6 +14,6 @@
 	$RustFormat.format($stm)
 	#end
 ##
-#if ($RustFormat.isScoped($node))
+#if ($Util.isScoped($node))
 }
 #end

@@ -4,9 +4,9 @@
 #end
 ##
 #set( $end = ";")
-#if ( $RustFormat.isLoopVar($node) )
-	#set( $end = "")
-#end
+##if ( $RustFormat.isLoopVar($node) )
+##	#set( $end = "")
+###end
 ##
 #set( $pattern = $RustFormat.format($node.getPattern()) )
 ##

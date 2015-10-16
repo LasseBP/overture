@@ -1,5 +1,5 @@
 #set( $stm = "")
-#if (!$RustFormat.isNull($node.getStm()))
+#if (!$Util.isNull($node.getStm()))
 	#set( $stm = $RustFormat.format($node.getStm()))
 #end
 ##
@@ -12,7 +12,7 @@ try
 #foreach( $clause in $node.getCatchClauses() )
 $RustFormat.format($clause)
 #end
-#if (!$RustFormat.isNull(${finally}))
+#if (!$Util.isNull(${finally}))
 finally
 {
 	${finally}
