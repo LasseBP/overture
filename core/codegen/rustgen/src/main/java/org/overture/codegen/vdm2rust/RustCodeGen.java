@@ -5,11 +5,18 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.velocity.app.Velocity;
 import org.overture.ast.analysis.AnalysisException;
+import org.overture.ast.definitions.PDefinition;
 import org.overture.ast.definitions.SClassDefinition;
+import org.overture.ast.modules.AModuleModules;
 import org.overture.ast.node.INode;
+import org.overture.ast.statements.AIdentifierStateDesignator;
+import org.overture.ast.util.modules.CombinedDefaultModule;
+import org.overture.codegen.analysis.vdm.IdStateDesignatorDefCollector;
+import org.overture.codegen.analysis.vdm.Renaming;
 import org.overture.codegen.assistant.DeclAssistantCG;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.declarations.AClassDeclCG;
@@ -47,6 +54,10 @@ public class RustCodeGen extends CodeGenBase {
 	public GeneratedData generateRustFromVdm(List<SClassDefinition> ast)
 			throws AnalysisException
 	{
+		List<INode> userModules = getUserModules(ast);
+		
+		computeDefTable(userModules);
+		
 		List<IRStatus<org.overture.codegen.cgast.INode>> iRstatuses = genIrStatus(ast);		
 		List<GeneratedModule> generated = new LinkedList<GeneratedModule>();
 		
@@ -223,5 +234,52 @@ public class RustCodeGen extends CodeGenBase {
 		// }
 
 		return true;
+	}
+	
+	private List<INode> getUserModules(
+			List<? extends INode> mergedParseLists)
+	{
+		List<INode> userModules = new LinkedList<INode>();
+		
+		if(mergedParseLists.size() == 1 && mergedParseLists.get(0) instanceof CombinedDefaultModule)
+		{
+			CombinedDefaultModule combined = (CombinedDefaultModule) mergedParseLists.get(0);
+			
+			for(AModuleModules m : combined.getModules())
+			{
+				userModules.add(m);
+			}
+			
+			return userModules;
+		}
+		else
+		{
+			for (INode node : mergedParseLists)
+			{
+				if(!getInfo().getDeclAssistant().isLibrary(node))
+				{
+					userModules.add(node);
+				}
+			}
+			
+			return userModules;
+		}
+	}
+	
+	private void computeDefTable(List<INode> mergedParseLists)
+			throws AnalysisException
+	{
+		List<INode> classesToConsider = new LinkedList<>();
+
+		for (INode node : mergedParseLists)
+		{
+			if (!getInfo().getDeclAssistant().isLibrary(node))
+			{
+				classesToConsider.add(node);
+			}
+		}
+		
+		Map<AIdentifierStateDesignator, PDefinition> idDefs = IdStateDesignatorDefCollector.getIdDefs(classesToConsider, getInfo().getTcFactory());
+		getInfo().setIdStateDesignatorDefs(idDefs);
 	}
 }
