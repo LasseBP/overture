@@ -15,6 +15,7 @@ import org.overture.codegen.cgast.declarations.AFormalParamLocalParamCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.declarations.ARecordDeclCG;
 import org.overture.codegen.cgast.expressions.AUndefinedExpCG;
+import org.overture.codegen.cgast.statements.ABlockStmCG;
 import org.overture.codegen.cgast.types.AObjectTypeCG;
 import org.overture.codegen.cgast.types.AUnionTypeCG;
 import org.overture.codegen.cgast.types.AUnknownTypeCG;
@@ -194,5 +195,10 @@ public class RustFormat {
 			writer.append(format(param));
 		}
 		return writer.toString();
+	}
+	
+	public static boolean isScoped(ABlockStmCG block)
+	{
+		return block != null && block.getScoped() != null && block.getScoped();
 	}
 }

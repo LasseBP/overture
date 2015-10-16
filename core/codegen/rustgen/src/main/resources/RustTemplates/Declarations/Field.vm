@@ -1,2 +1,1 @@
 $node.getAccess() $node.getName(): $RustFormat.format($node.getType()), 
-## $RustFormat.formatInitialExp($node.getInitial())
