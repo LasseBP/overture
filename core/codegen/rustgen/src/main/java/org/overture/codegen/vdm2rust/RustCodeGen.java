@@ -18,7 +18,7 @@ import org.overture.ast.util.modules.CombinedDefaultModule;
 import org.overture.codegen.analysis.vdm.IdStateDesignatorDefCollector;
 import org.overture.codegen.assistant.DeclAssistantCG;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
-import org.overture.codegen.cgast.declarations.AClassDeclCG;
+import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.ir.CodeGenBase;
 import org.overture.codegen.ir.IRStatus;
 import org.overture.codegen.ir.IrNodeInfo;
@@ -63,12 +63,12 @@ public class RustCodeGen extends CodeGenBase {
 		//filter based on unsupported nodes
 		iRstatuses = filter(iRstatuses, generated);
 		
-		List<IRStatus<AClassDeclCG>> classStatuses = IRStatus.extract(iRstatuses, AClassDeclCG.class);
+		List<IRStatus<SClassDeclCG>> classStatuses = IRStatus.extract(iRstatuses, SClassDeclCG.class);
 		
 		//apply transformations
 		for (DepthFirstAnalysisAdaptor trans : rustTransSeries.getTransformations())
 		{
-			for (IRStatus<AClassDeclCG> status : classStatuses)
+			for (IRStatus<SClassDeclCG> status : classStatuses)
 			{
 				try
 				{
@@ -93,10 +93,10 @@ public class RustCodeGen extends CodeGenBase {
 		
 		MergeVisitor mergeVisitor = rustFormatter.GetMergeVisitor();
 		
-		for(IRStatus<AClassDeclCG> status : classStatuses)
+		for(IRStatus<SClassDeclCG> status : classStatuses)
 		{
 			StringWriter writer = new StringWriter();
-			AClassDeclCG classCg = status.getIrNode();
+			SClassDeclCG classCg = status.getIrNode();
 			String className = status.getIrNodeName();
 			INode vdmClass = status.getIrNode().getSourceNode().getVdmNode();
 			

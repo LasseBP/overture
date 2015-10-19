@@ -388,11 +388,11 @@ public class IRInfo
 		return classes;
 	}
 	
-	public AClassDeclCG getClass(String name) 
+	public SClassDeclCG getClass(String name) 
 	{
 		if(classes != null && name != null && !name.isEmpty())
 		{
-			for(AClassDeclCG clazz: classes )
+			for(SClassDeclCG clazz: classes )
 			{
 				if(clazz.getName().equals(name))
 				{

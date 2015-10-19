@@ -8,7 +8,7 @@ import org.overture.codegen.cgast.SStmCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
-import org.overture.codegen.cgast.declarations.AClassDeclCG;
+import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.AExplicitVarExpCG;
 import org.overture.codegen.cgast.expressions.AIdentifierVarExpCG;
@@ -45,7 +45,7 @@ public class FuncScopeAdderTrans extends DepthFirstAnalysisAdaptor {
 		if(objType instanceof AClassTypeCG)
 		{
 			AClassTypeCG objClass = (AClassTypeCG)objType;
-			AClassDeclCG clazz = irInfo.getClass(objClass.getName());
+			SClassDeclCG clazz = irInfo.getClass(objClass.getName());
 			
 			if(clazz != null)
 			{
@@ -63,7 +63,7 @@ public class FuncScopeAdderTrans extends DepthFirstAnalysisAdaptor {
 			 */
 			
 			AIdentifierVarExpCG ident = (AIdentifierVarExpCG)node.getRoot();
-			AClassDeclCG enclosingClass = node.getAncestor(AClassDeclCG.class);
+			SClassDeclCG enclosingClass = node.getAncestor(SClassDeclCG.class);
 			
 			AClassTypeCG classT = new AClassTypeCG();
 			classT.setName(enclosingClass.getName());
@@ -99,7 +99,7 @@ public class FuncScopeAdderTrans extends DepthFirstAnalysisAdaptor {
 			arg.apply(this);
 		}
 		
-		AClassDeclCG enclosingClass = node.getAncestor(AClassDeclCG.class);
+		SClassDeclCG enclosingClass = node.getAncestor(SClassDeclCG.class);
 		
 		/*
 		 * Check enclosing class for operations of the same name.
@@ -129,7 +129,7 @@ public class FuncScopeAdderTrans extends DepthFirstAnalysisAdaptor {
 		// else: this is a free-standing function added by some IR transformation.
 	}
 	
-	protected void replaceIfFunc(PCG node, AClassDeclCG enclosingClass, AClassTypeCG classT, String funcName,
+	protected void replaceIfFunc(PCG node, SClassDeclCG enclosingClass, AClassTypeCG classT, String funcName,
 			STypeCG funcReturnType, LinkedList<SExpCG> args) {
 		/*
 		 * Check enclosing class for functions of the same name.

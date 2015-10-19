@@ -3,7 +3,7 @@ package org.overture.codegen.vdm2rust.Transforms;
 import org.apache.commons.lang.StringUtils;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
-import org.overture.codegen.cgast.declarations.AClassDeclCG;
+import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.declarations.AFieldDeclCG;
 import org.overture.codegen.cgast.declarations.AFuncDeclCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
@@ -15,7 +15,7 @@ import org.overture.codegen.cgast.declarations.ATypeDeclCG;
 public class AccessModfierTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
-	public void inAClassDeclCG(AClassDeclCG node) throws AnalysisException {
+	public void inSClassDeclCG(SClassDeclCG node) throws AnalysisException {
 		node.setAccess(getNewAccess(node.getAccess()));
 	}
 			

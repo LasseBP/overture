@@ -3,7 +3,7 @@ package org.overture.codegen.vdm2rust.Transforms;
 import org.overture.codegen.cgast.SStmCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
-import org.overture.codegen.cgast.declarations.AClassDeclCG;
+import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.declarations.AVarDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
@@ -39,7 +39,7 @@ public class ConstructorTrans extends DepthFirstAnalysisAdaptor {
 			// conventional name in Rust.
 			node.setName("new");			
 			
-			AClassDeclCG enclosingClass = node.getAncestor(AClassDeclCG.class);
+			SClassDeclCG enclosingClass = node.getAncestor(SClassDeclCG.class);
 			SStmCG oldBody = node.getBody();
 			boolean hasCustomConstructor = oldBody instanceof APlainCallStmCG;
 			
