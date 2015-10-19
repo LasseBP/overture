@@ -10,16 +10,17 @@ five (i) == 2+3;
 operations
 public expl_self_and_scopes: () ==> expl_self_and_scopes
 expl_self_and_scopes() == (
+	let x = 1337 in (
 	dcl i: int := 123;
 	dcl a: expl_self_and_scopes := self;
 	voidOp(); --APlainCallStm (name = "voidOp")
 	self.voidOp(); --ACallObjectExpStmCG (fieldname = "voidOp", obj = ASelfExpCG)
 	i := self.fiveop(i); --AApplyExpCG (root = fieldExp)
-	i := fiveop(i); --AApplyExpCG (root = identifierVarExp(type = AMethodType))
+	i := fiveop(x); --AApplyExpCG (root = identifierVarExp(type = AMethodType))
 	kek := five(kek); --identifierVarExp + applyExp
 	kek := self.five(kek); --identifierVarExp + applyExp
 	a.kek := expl_self_and_scopes`five(a.kek); --FieldExp(field="kek", obj=identifierVarExp) + Apply
- );
+ ));
  
 public fiveop : int  ==> int
 fiveop (i) == return 2+3;
