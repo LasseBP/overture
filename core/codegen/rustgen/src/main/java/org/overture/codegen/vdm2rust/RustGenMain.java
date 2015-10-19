@@ -1,6 +1,8 @@
 package org.overture.codegen.vdm2rust;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -43,7 +45,7 @@ public class RustGenMain {
 			
 			GeneratedData data = rustGen.generateRustFromVdm(tcResult.result);
 			
-			processData(true, null, rustGen, data);
+			processData(true, new File(file.getParent()), rustGen, data);
 			
 		} catch (AnalysisException e) {
 			Logger.getLog().println("Could not code generate model: "
@@ -86,7 +88,15 @@ public class RustGenMain {
 	
 				} else
 				{
-					
+					if (outputDir != null)
+					{
+						try (PrintWriter outFile = new PrintWriter(outputDir.toString() + File.separator + generatedClass.getName() + ".rs")) {
+							outFile.println(generatedClass.getContent());
+						} catch (FileNotFoundException e) {
+							e.printStackTrace();
+						}
+					}
+										
 					if (printCode)
 					{
 						Logger.getLog().println("**********");

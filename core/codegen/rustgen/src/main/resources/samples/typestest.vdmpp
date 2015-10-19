@@ -1,4 +1,4 @@
-class TypeTest
+class typestest
 
 types
 public foo :: value : nat
@@ -6,4 +6,4 @@ public foo :: value : nat
 
 public StringSeq = seq of char;
 
-end TypeTest
+end typestest

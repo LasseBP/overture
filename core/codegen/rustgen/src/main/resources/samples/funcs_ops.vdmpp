@@ -1,4 +1,4 @@
-class FuncOp
+class funcs_ops
 
 functions
 public five : int  -> int
@@ -8,4 +8,4 @@ operations
 public fiveop : int  ==> int
 fiveop (i) == return 2+3;
 
-end FuncOp
+end funcs_ops

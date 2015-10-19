@@ -1,7 +1,7 @@
-class NumericTest
+class numerics
 
 functions
 public Run : ()  -> int
 Run () == 2+3;
 
-end NumericTest
+end numerics

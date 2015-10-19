@@ -1,4 +1,4 @@
-class RecordTest
+class records
 
 types
 public foo :: value : nat
@@ -6,6 +6,6 @@ public foo :: value : nat
 
 operations
 public create_and_use_record : () ==> int
-Run3 () == let f = mk_foo(1337, 'C') in return f.value;
+create_and_use_record () == let f = mk_foo(1337, 'C') in return f.value;
 
-end RecordTest
+end records
