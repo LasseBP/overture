@@ -34,10 +34,12 @@ import org.overture.codegen.cgast.SStmCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
-import org.overture.codegen.cgast.declarations.AClassDeclCG;
+import org.overture.codegen.cgast.declarations.ADefaultClassDeclCG;
+import org.overture.codegen.cgast.declarations.AFieldDeclCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.declarations.ARecordDeclCG;
 import org.overture.codegen.cgast.declarations.AVarDeclCG;
+import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.ACardUnaryExpCG;
 import org.overture.codegen.cgast.expressions.ACastUnaryExpCG;
@@ -56,6 +58,7 @@ import org.overture.codegen.cgast.expressions.ANotUnaryExpCG;
 import org.overture.codegen.cgast.expressions.ANullExpCG;
 import org.overture.codegen.cgast.expressions.ARemNumericBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ASeqConcatBinaryExpCG;
+import org.overture.codegen.cgast.expressions.AUndefinedExpCG;
 import org.overture.codegen.cgast.expressions.SNumericBinaryExpCG;
 import org.overture.codegen.cgast.expressions.SUnaryExpCG;
 import org.overture.codegen.cgast.expressions.SVarExpBase;
@@ -234,6 +237,20 @@ public class UnionTypeTrans extends DepthFirstAnalysisAdaptor
 		else
 		{
 			return new ARealNumericBasicTypeCG();
+		}
+	}
+	
+	@Override
+	public void caseAFieldDeclCG(AFieldDeclCG node) throws AnalysisException
+	{
+		if (node.getInitial() != null)
+		{
+			if (node.getInitial().getType() instanceof AUnionTypeCG)
+			{
+				correctTypes(node.getInitial(), node.getType());
+			}
+			
+			node.getInitial().apply(this);
 		}
 	}
 	
@@ -612,7 +629,7 @@ public class UnionTypeTrans extends DepthFirstAnalysisAdaptor
 
 		if (type instanceof AClassTypeCG)
 		{
-			for (AClassDeclCG classCg : transAssistant.getInfo().getClasses())
+			for (SClassDeclCG classCg : transAssistant.getInfo().getClasses())
 			{
 				for (AMethodDeclCG method : classCg.getMethods())
 				{
@@ -633,7 +650,7 @@ public class UnionTypeTrans extends DepthFirstAnalysisAdaptor
 			String definingClassName = recordType.getName().getDefiningClass();
 			String recordName = recordType.getName().getName();
 
-			AClassDeclCG classDecl = transAssistant.getInfo().getAssistantManager().getDeclAssistant().findClass(transAssistant.getInfo().getClasses(), definingClassName);
+			SClassDeclCG classDecl = transAssistant.getInfo().getAssistantManager().getDeclAssistant().findClass(transAssistant.getInfo().getClasses(), definingClassName);
 			ARecordDeclCG record = transAssistant.getInfo().getAssistantManager().getDeclAssistant().findRecord(classDecl, recordName);
 
 			List<STypeCG> fieldTypes = transAssistant.getInfo().getAssistantManager().getTypeAssistant().getFieldTypes(record);
@@ -666,7 +683,7 @@ public class UnionTypeTrans extends DepthFirstAnalysisAdaptor
 		STypeCG classType = node.getClassType();
 		
 		String className = classType instanceof AClassTypeCG ? ((AClassTypeCG) classType).getName()
-				: node.getAncestor(AClassDeclCG.class).getName();
+				: node.getAncestor(ADefaultClassDeclCG.class).getName();
 		
 		handleCallStm(node, className);
 	}
@@ -831,17 +848,52 @@ public class UnionTypeTrans extends DepthFirstAnalysisAdaptor
 	public void inAVarDeclCG(AVarDeclCG node)
 			throws AnalysisException
 	{
-		STypeCG expectedType = node.getType();
-
-		if(expectedType instanceof AUnknownTypeCG || node.getExp() instanceof ANullExpCG)
+		SExpCG exp = node.getExp();
+		
+		if(exp != null)
+		{
+			exp.apply(this);
+		}
+		
+		STypeCG type = node.getType();
+		
+		if(castNotNeeded(exp, type))
 		{
 			return;
 		}
 		
-		if (!(expectedType instanceof AUnionTypeCG))
+		if (!(type instanceof AUnionTypeCG))
 		{
-			correctTypes(node.getExp(), expectedType);
+			correctTypes(exp, type);
 		}
+	}
+	
+	@Override
+	public void caseAAssignToExpStmCG(AAssignToExpStmCG node) throws AnalysisException
+	{
+		SExpCG exp = node.getExp();
+		
+		if(exp != null)
+		{
+			exp.apply(this);
+		}
+		
+		STypeCG type = node.getTarget().getType();
+		
+		if(castNotNeeded(exp, type))
+		{
+			return;
+		}
+		
+		if (!(type instanceof AUnionTypeCG))
+		{
+			correctTypes(exp, type);
+		}
+	}
+
+	private boolean castNotNeeded(SExpCG exp, STypeCG type)
+	{
+		return type instanceof AUnknownTypeCG || exp instanceof ANullExpCG || exp instanceof AUndefinedExpCG;
 	}
 
 	@Override

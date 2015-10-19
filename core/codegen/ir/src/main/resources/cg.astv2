@@ -157,25 +157,7 @@ CG {-> package='org.overture.codegen.cgast'
     	[type]:CG.#type
     	[name]:java_String
     	[initial]:CG.#exp
-   	|	{class}
-   	    (globalMetaData):eString*
-   		[package]:java_String
-      	[access]:java_String
-      	[abstract]:java_Boolean
-      	[static]:java_Boolean 
-    	[name]:java_String
-    	[fields]:field*
-    	[invariant]:CG.#decl
-    	[methods]:CG.#decl.method*
-    	[functions]:CG.#decl.func*
-    	[traces]:CG.#decl.namedTrace*
-    	[superName]:java_String
-    	[thread]:CG.#decl.thread
-    	[innerClasses]:CG.#decl.class*
-    	[interfaces]:CG.#decl.interface*
-    	[typeDecls]:CG.#decl.type*
-    	[perSyncs]:CG.#decl.persync*
-    	[mutexSyncs]:CG.#decl.mutexSync*
+   	|	#Class
     |	{module}
     	[name]:java_String
     	[import]:CG.#imports.module
@@ -236,6 +218,31 @@ CG {-> package='org.overture.codegen.cgast'
     	[pathname]:CG.#name.token*
     	[terms]:CG.#term.traceDecl*
 	;
+	
+#Class {-> package='org.overture.codegen.cgast.declarations'
+  | (globalMetaData):eString*
+  | [package]:java_String
+  | [access]:java_String
+  | [abstract]:java_Boolean
+  | [static]:java_Boolean 
+  | [name]:java_String
+  | [fields]:field*
+  | [invariant]:CG.#decl
+  | [methods]:CG.#decl.method*
+  | [functions]:CG.#decl.func*
+  | [traces]:CG.#decl.namedTrace*
+  | [superName]:java_String
+  | [thread]:CG.#decl.thread
+  | [innerClasses]:CG.#decl.class*
+  | [interfaces]:CG.#decl.interface*
+  | [typeDecls]:CG.#decl.type*
+  | [perSyncs]:CG.#decl.persync*
+  | [mutexSyncs]:CG.#decl.mutexSync*}
+   = {bus}
+   | {cpu}
+   | {system}
+   | {default}
+  ;
 	
 #stateDesignator {-> package='org.overture.codegen.cgast.statements'
 	| [type]:CG.#type }
@@ -298,6 +305,8 @@ CG {-> package='org.overture.codegen.cgast'
 			|	{mapSeqUpdate} [col]:CG.#exp [index]:CG.#exp [value]:CG.#exp
 			|	{invCheck} [subject]:CG.#exp
 			|	{atomic} [statements]:CG.#stm*
+			| {cycles} [cycles]:CG.#exp [stm]:CG.#stm
+			| {duration} [duration]:CG.#exp [stm]:CG.#stm
 			|	{meta}
            ;
 
@@ -572,12 +581,14 @@ externalType {-> package='org.overture.codegen.cgast.utils'}
     
 #seq {-> package='org.overture.codegen.cgast.types'
 	| [empty]:java_Boolean
+	| [seq1]:java_Boolean
 	| [seqOf]:CG.#type}
     =   {seq}
     ;
     
 #map {-> package='org.overture.codegen.cgast.types'
 	| [empty]:java_Boolean
+	| [injective]:java_Boolean
 	| [from]:CG.#type
 	| [to]:CG.#type }
     =   {map}

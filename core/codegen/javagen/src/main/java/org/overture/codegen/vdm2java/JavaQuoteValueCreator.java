@@ -2,7 +2,7 @@ package org.overture.codegen.vdm2java;
 
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.STypeCG;
-import org.overture.codegen.cgast.declarations.AClassDeclCG;
+import org.overture.codegen.cgast.declarations.ADefaultClassDeclCG;
 import org.overture.codegen.cgast.declarations.AFieldDeclCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
@@ -27,6 +27,8 @@ import org.overture.codegen.trans.assistants.TransAssistantCG;
 
 public class JavaQuoteValueCreator extends JavaClassCreatorBase
 {
+	public static final String JAVA_QUOTE_NAME_SUFFIX = "Quote";
+	
 	private static final String GET_INSTANCE_METHOD = "getInstance";
 	private static final String HASH_CODE_METHOD = "hashCode";
 
@@ -43,24 +45,19 @@ public class JavaQuoteValueCreator extends JavaClassCreatorBase
 		this.transAssistant = transformationAssistant;
 	}
 	
-	public AClassDeclCG consQuoteValue(String quoteClassName, String quoteName, String userCodePackage)
+	public ADefaultClassDeclCG consQuoteValue(String quoteClassName, String quoteName, String userCodePackage)
 	{
-		AClassDeclCG decl = new AClassDeclCG();
+		quoteClassName = quoteClassName + JavaQuoteValueCreator.JAVA_QUOTE_NAME_SUFFIX;
+		ADefaultClassDeclCG decl = new ADefaultClassDeclCG();
 		decl.setAbstract(false);
 		decl.setAccess(IJavaConstants.PUBLIC);
 		decl.setName(quoteClassName);
 		decl.setStatic(false);
 		
 		// The package where the quotes are put is userCode.quotes
-		if(JavaCodeGenUtil.isValidJavaPackage(userCodePackage))
-		{
-			String quotePackage = userCodePackage + "." + JavaCodeGen.JAVA_QUOTES_PACKAGE;
-			decl.setPackage(quotePackage);
-		}
-		else
-		{
-			decl.setPackage(JavaCodeGen.JAVA_QUOTES_PACKAGE);
-		}
+		String quotePackage = consQuotePackage(userCodePackage);
+		
+		decl.setPackage(quotePackage);
 		
 		decl.getFields().add(consHashcodeField());
 		decl.getFields().add(consInstanceField(quoteClassName));
@@ -72,6 +69,23 @@ public class JavaQuoteValueCreator extends JavaClassCreatorBase
 		decl.getMethods().add(consToStringMethod(quoteName));
 		
 		return decl;
+	}
+
+	public static String consQuotePackage(String userCodePackage)
+	{
+		if(JavaCodeGenUtil.isValidJavaPackage(userCodePackage))
+		{
+			return userCodePackage + "." + JavaCodeGen.JAVA_QUOTES_PACKAGE;
+		}
+		else
+		{
+			return JavaCodeGen.JAVA_QUOTES_PACKAGE;
+		}
+	}
+	
+	public static String fullyQualifiedQuoteName(String userCodePackage, String vdmValueName)
+	{
+		return consQuotePackage(userCodePackage) + "." + vdmValueName + JAVA_QUOTE_NAME_SUFFIX;
 	}
 	
 	private AFieldDeclCG consHashcodeField()

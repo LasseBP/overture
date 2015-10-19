@@ -7,12 +7,13 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.overture.ast.modules.AModuleModules;
-import org.overture.ast.types.ACharBasicType;
-import org.overture.ast.types.ANatNumericBasicType;
+import org.overture.codegen.cgast.types.ACharBasicTypeCG;
+import org.overture.codegen.cgast.types.ANatNumericBasicTypeCG;
 import org.overture.codegen.utils.GeneralCodeGenUtils;
-import org.overture.codegen.vdm2jml.LeafTypeInfo;
-import org.overture.codegen.vdm2jml.NamedTypeInfo;
-import org.overture.codegen.vdm2jml.NamedTypeInvDepCalculator;
+import org.overture.codegen.vdm2jml.JmlGenerator;
+import org.overture.codegen.vdm2jml.predgen.info.LeafTypeInfo;
+import org.overture.codegen.vdm2jml.predgen.info.NamedTypeInfo;
+import org.overture.codegen.vdm2jml.predgen.info.NamedTypeInvDepCalculator;
 import org.overture.typechecker.util.TypeCheckerUtil;
 import org.overture.typechecker.util.TypeCheckerUtil.TypeCheckResult;
 
@@ -47,7 +48,10 @@ public class TypeDependencyTests extends AnnotationTestsBase
 
 			AModuleModules module = modules.get(0);
 
-			NamedTypeInvDepCalculator depCalc = new NamedTypeInvDepCalculator();
+			JmlGenerator jmlGen = new JmlGenerator();
+			initJmlGen(jmlGen);
+			
+			NamedTypeInvDepCalculator depCalc = new NamedTypeInvDepCalculator(jmlGen.getJavaGen().getInfo());
 
 			module.apply(depCalc);
 
@@ -71,12 +75,6 @@ public class TypeDependencyTests extends AnnotationTestsBase
 		Assert.assertEquals("Expected type name to be '" + typeName + "'", typeName, info.getTypeName());
 	}
 
-	private void assertNamedChildren(NamedTypeInfo info, int no)
-	{
-		Assert.assertTrue("Expected " + no + " named types for type "
-				+ infoStr(info), info.getNamedTypes().size() == no);
-	}
-
 	private String infoStr(NamedTypeInfo info)
 	{
 		String message = info.getDefModule() + "." + info.getTypeName();
@@ -85,13 +83,13 @@ public class TypeDependencyTests extends AnnotationTestsBase
 
 	private void assertNoOfLeafs(NamedTypeInfo info, int no)
 	{
-		Assert.assertEquals("Number of actual leaf types differs from those expected", no, info.getLeafTypes().size());
+		Assert.assertEquals("Number of actual leaf types differs from those expected", no, info.getLeafTypesRecursively().size());
 	}
 
 	private void assertLeafType(NamedTypeInfo info, Class<?> leafType,
 			boolean nullAllowed)
 	{
-		for (LeafTypeInfo leaf : info.getLeafTypes())
+		for (LeafTypeInfo leaf : info.getLeafTypesRecursively())
 		{
 			if (leafType == leaf.getType().getClass())
 			{
@@ -152,9 +150,8 @@ public class TypeDependencyTests extends AnnotationTestsBase
 		NamedTypeInfo info = getInfo(typeName);
 
 		assertTotalNoOfNamedInvTypes(1);
-		assertNamedChildren(info, 0);
 		assertNoOfLeafs(info, 1);
-		assertLeafType(info, ANatNumericBasicType.class, false);
+		assertLeafType(info, ANatNumericBasicTypeCG.class, false);
 		assertNullNotAllowed(info);
 		assertNoInv(info);
 	}
@@ -169,9 +166,8 @@ public class TypeDependencyTests extends AnnotationTestsBase
 		NamedTypeInfo info = getInfo(typeName);
 
 		assertTotalNoOfNamedInvTypes(1);
-		assertNamedChildren(info, 0);
 		assertNoOfLeafs(info, 1);
-		assertLeafType(info, ANatNumericBasicType.class, true);
+		assertLeafType(info, ANatNumericBasicTypeCG.class, true);
 		assertNullAllowed(info);
 		assertNoInv(info);
 	}
@@ -186,10 +182,9 @@ public class TypeDependencyTests extends AnnotationTestsBase
 		NamedTypeInfo info = getInfo(typeName);
 
 		assertTotalNoOfNamedInvTypes(1);
-		assertNamedChildren(info, 0);
 		assertNoOfLeafs(info, 2);
-		assertLeafType(info, ANatNumericBasicType.class, false);
-		assertLeafType(info, ACharBasicType.class, true);
+		assertLeafType(info, ANatNumericBasicTypeCG.class, false);
+		assertLeafType(info, ACharBasicTypeCG.class, true);
 		assertNullAllowed(info);
 		assertNoInv(info);
 	}
@@ -207,26 +202,23 @@ public class TypeDependencyTests extends AnnotationTestsBase
 		NamedTypeInfo info = getInfo(typeName);
 
 		assertTotalNoOfNamedInvTypes(3);
-		assertNamedChildren(info, 2);
-		assertNoOfLeafs(info, 0);
+		assertNoOfLeafs(info, 2);
 		assertNullAllowed(info);
 		assertNoInv(info);
 
 		typeName = "N";
 		info = getInfo(typeName);
 
-		assertNamedChildren(info, 0);
 		assertNoOfLeafs(info, 1);
-		assertLeafType(info, ANatNumericBasicType.class, false);
+		assertLeafType(info, ANatNumericBasicTypeCG.class, false);
 		assertNullNotAllowed(info);
 		assertNoInv(info);
 
 		typeName = "C";
 		info = getInfo(typeName);
 
-		assertNamedChildren(info, 0);
 		assertNoOfLeafs(info, 1);
-		assertLeafType(info, ACharBasicType.class, true);
+		assertLeafType(info, ACharBasicTypeCG.class, true);
 		assertNullAllowed(info);
 		assertNoInv(info);
 	}
@@ -258,6 +250,19 @@ public class TypeDependencyTests extends AnnotationTestsBase
 		assertNullNotAllowed(getInfo("N"));
 		assertNullNotAllowed(getInfo("C"));
 	}
+	
+	@Test
+	public void optionalNamed()
+	{
+		load("OptionalNamedType.vdmsl");
+		//CN = [C]|N;
+		//N = nat;
+		//C = char;
+		
+		assertNullAllowed(getInfo("CN"));
+		assertNullNotAllowed(getInfo("C"));
+		assertNullNotAllowed(getInfo("N"));
+	}
 
 	@Test
 	public void record()
@@ -273,7 +278,6 @@ public class TypeDependencyTests extends AnnotationTestsBase
 
 		// We do not expect the record to be included
 		assertTotalNoOfNamedInvTypes(1);
-		assertNamedChildren(info, 0);
 		// We expect to have the record type 'R' registered as a leaf type
 		assertNoOfLeafs(info, 2);
 	}
@@ -289,9 +293,8 @@ public class TypeDependencyTests extends AnnotationTestsBase
 		NamedTypeInfo info = getInfo(typeName);
 
 		assertTotalNoOfNamedInvTypes(1);
-		assertNamedChildren(info, 0);
 		assertNoOfLeafs(info, 1);
-		assertLeafType(info, ANatNumericBasicType.class, false);
+		assertLeafType(info, ANatNumericBasicTypeCG.class, false);
 	}
 	
 	@Test

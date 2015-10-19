@@ -12,7 +12,10 @@ final public class St implements Record {
 
     //@ public instance invariant project.Entry.invChecksOn ==> inv_St(x);
     public St(final Number _x) {
+        //@ assert Utils.is_int(_x);
         x = _x;
+
+        //@ assert Utils.is_int(x);
     }
 
     /*@ pure @*/
@@ -43,11 +46,17 @@ final public class St implements Record {
 
     /*@ pure @*/
     public Number get_x() {
-        return x;
+        Number ret_1 = x;
+
+        //@ assert project.Entry.invChecksOn ==> (Utils.is_int(ret_1));
+        return ret_1;
     }
 
     public void set_x(final Number _x) {
+        //@ assert project.Entry.invChecksOn ==> (Utils.is_int(_x));
         x = _x;
+
+        //@ assert project.Entry.invChecksOn ==> (Utils.is_int(x));
     }
 
     /*@ pure @*/

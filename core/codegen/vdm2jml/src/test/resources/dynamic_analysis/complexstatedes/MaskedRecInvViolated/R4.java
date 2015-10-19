@@ -12,7 +12,10 @@ final public class R4 implements Record {
 
     //@ public instance invariant project.Entry.invChecksOn ==> inv_R4(x);
     public R4(final Number _x) {
+        //@ assert Utils.is_int(_x);
         x = _x;
+
+        //@ assert Utils.is_int(x);
     }
 
     /*@ pure @*/
@@ -43,11 +46,17 @@ final public class R4 implements Record {
 
     /*@ pure @*/
     public Number get_x() {
-        return x;
+        Number ret_6 = x;
+
+        //@ assert project.Entry.invChecksOn ==> (Utils.is_int(ret_6));
+        return ret_6;
     }
 
     public void set_x(final Number _x) {
+        //@ assert project.Entry.invChecksOn ==> (Utils.is_int(_x));
         x = _x;
+
+        //@ assert project.Entry.invChecksOn ==> (Utils.is_int(x));
     }
 
     /*@ pure @*/
@@ -64,11 +73,6 @@ final public class R4 implements Record {
     /*@ pure @*/
     /*@ helper @*/
     public static Boolean inv_Entry_T3(final Object check_t3) {
-        if ((Utils.equals(check_t3, null)) ||
-                !(Utils.is_(check_t3, project.Entrytypes.R3.class))) {
-            return false;
-        }
-
         project.Entrytypes.R3 t3 = ((project.Entrytypes.R3) check_t3);
 
         return !(Utils.equals(t3.get_r4().get_x(), 10L));

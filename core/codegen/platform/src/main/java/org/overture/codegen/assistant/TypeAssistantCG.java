@@ -36,6 +36,7 @@ import org.overture.ast.types.ABracketType;
 import org.overture.ast.types.ANamedInvariantType;
 import org.overture.ast.types.AOptionalType;
 import org.overture.ast.types.AProductType;
+import org.overture.ast.types.ASeq1SeqType;
 import org.overture.ast.types.AUnionType;
 import org.overture.ast.types.PType;
 import org.overture.ast.types.SSeqTypeBase;
@@ -44,10 +45,10 @@ import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.SObjectDesignatorCG;
 import org.overture.codegen.cgast.STypeCG;
-import org.overture.codegen.cgast.declarations.AClassDeclCG;
 import org.overture.codegen.cgast.declarations.AFieldDeclCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.declarations.ARecordDeclCG;
+import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.SBinaryExpCG;
 import org.overture.codegen.cgast.statements.AApplyObjectDesignatorCG;
@@ -107,7 +108,7 @@ public class TypeAssistantCG extends AssistantBase
 			if (fieldModule != null)
 			{
 				// It is a class
-				AClassDeclCG clazz = info.getDeclAssistant().findClass(info.getClasses(), fieldModule);
+				SClassDeclCG clazz = info.getDeclAssistant().findClass(info.getClasses(), fieldModule);
 				AFieldDeclCG field = info.getDeclAssistant().getFieldDecl(clazz, fieldModule);
 				
 				if(field != null)
@@ -163,7 +164,7 @@ public class TypeAssistantCG extends AssistantBase
 			String fieldModule, String fieldName, List<SExpCG> args)
 			throws org.overture.codegen.cgast.analysis.AnalysisException
 	{
-		AClassDeclCG classDecl = assistantManager.getDeclAssistant().findClass(info.getClasses(), fieldModule);
+		SClassDeclCG classDecl = assistantManager.getDeclAssistant().findClass(info.getClasses(), fieldModule);
 
 		List<AMethodDeclCG> methods = assistantManager.getDeclAssistant().getAllMethods(classDecl, info.getClasses());
 
@@ -193,8 +194,8 @@ public class TypeAssistantCG extends AssistantBase
 		return null;
 	}
 
-	public STypeCG getFieldType(AClassDeclCG classDecl, String fieldName,
-			List<AClassDeclCG> classes)
+	public STypeCG getFieldType(SClassDeclCG classDecl, String fieldName,
+			List<SClassDeclCG> classes)
 	{
 		for (AFieldDeclCG field : assistantManager.getDeclAssistant().getAllFields(classDecl, classes))
 		{
@@ -207,7 +208,7 @@ public class TypeAssistantCG extends AssistantBase
 		return null;
 	}
 	
-	public STypeCG getFieldType(List<AClassDeclCG> classes,
+	public STypeCG getFieldType(List<SClassDeclCG> classes,
 			ARecordTypeCG recordType, String memberName)
 	{
 		AFieldDeclCG field = assistantManager.getDeclAssistant().getFieldDecl(classes, recordType, memberName);
@@ -231,10 +232,10 @@ public class TypeAssistantCG extends AssistantBase
 		return fieldTypes;
 	}
 
-	public STypeCG getFieldType(List<AClassDeclCG> classes, String moduleName,
+	public STypeCG getFieldType(List<SClassDeclCG> classes, String moduleName,
 			String fieldName)
 	{
-		AClassDeclCG classDecl = assistantManager.getDeclAssistant().findClass(classes, moduleName);
+		SClassDeclCG classDecl = assistantManager.getDeclAssistant().findClass(classes, moduleName);
 		return getFieldType(classDecl, fieldName, classes);
 	}
 
@@ -303,6 +304,8 @@ public class TypeAssistantCG extends AssistantBase
 	{
 		STypeCG seqOfCg = node.getSeqof().apply(question.getTypeVisitor(), question);
 		boolean emptyCg = node.getEmpty();
+		
+		boolean isSeq1 = node instanceof ASeq1SeqType;
 
 		// This is a special case since sequence of characters are strings
 		if (seqOfCg instanceof ACharBasicTypeCG
@@ -317,6 +320,7 @@ public class TypeAssistantCG extends AssistantBase
 		ASeqSeqTypeCG seqType = new ASeqSeqTypeCG();
 		seqType.setSeqOf(seqOfCg);
 		seqType.setEmpty(emptyCg);
+		seqType.setSeq1(isSeq1);
 
 		return seqType;
 	}
@@ -781,7 +785,14 @@ public class TypeAssistantCG extends AssistantBase
 	{
 		if(type instanceof AUnionTypeCG)
 		{
-			for(STypeCG t : ((AUnionTypeCG) type).getTypes())
+			AUnionTypeCG unionType = (AUnionTypeCG) type;
+			
+			if(BooleanUtils.isTrue(unionType.getOptional()))
+			{
+				return true;
+			}
+			
+			for(STypeCG t : unionType.getTypes())
 			{
 				if(allowsNull(t))
 				{

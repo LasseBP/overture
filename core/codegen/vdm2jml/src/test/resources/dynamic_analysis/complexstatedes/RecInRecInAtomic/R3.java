@@ -12,7 +12,10 @@ final public class R3 implements Record {
 
     //@ public instance invariant project.Entry.invChecksOn ==> inv_R3(x);
     public R3(final Number _x) {
+        //@ assert Utils.is_int(_x);
         x = _x;
+
+        //@ assert Utils.is_int(x);
     }
 
     /*@ pure @*/
@@ -43,11 +46,17 @@ final public class R3 implements Record {
 
     /*@ pure @*/
     public Number get_x() {
-        return x;
+        Number ret_5 = x;
+
+        //@ assert project.Entry.invChecksOn ==> (Utils.is_int(ret_5));
+        return ret_5;
     }
 
     public void set_x(final Number _x) {
+        //@ assert project.Entry.invChecksOn ==> (Utils.is_int(_x));
         x = _x;
+
+        //@ assert project.Entry.invChecksOn ==> (Utils.is_int(x));
     }
 
     /*@ pure @*/

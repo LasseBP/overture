@@ -12,7 +12,10 @@ final public class R2 implements Record {
 
     //@ public instance invariant project.Entry.invChecksOn ==> inv_R2(r3);
     public R2(final project.Entrytypes.R3 _r3) {
+        //@ assert Utils.is_(_r3,project.Entrytypes.R3.class);
         r3 = (_r3 != null) ? Utils.copy(_r3) : null;
+
+        //@ assert Utils.is_(r3,project.Entrytypes.R3.class);
     }
 
     /*@ pure @*/
@@ -43,11 +46,17 @@ final public class R2 implements Record {
 
     /*@ pure @*/
     public project.Entrytypes.R3 get_r3() {
-        return r3;
+        project.Entrytypes.R3 ret_4 = r3;
+
+        //@ assert project.Entry.invChecksOn ==> (Utils.is_(ret_4,project.Entrytypes.R3.class));
+        return ret_4;
     }
 
     public void set_r3(final project.Entrytypes.R3 _r3) {
+        //@ assert project.Entry.invChecksOn ==> (Utils.is_(_r3,project.Entrytypes.R3.class));
         r3 = _r3;
+
+        //@ assert project.Entry.invChecksOn ==> (Utils.is_(r3,project.Entrytypes.R3.class));
     }
 
     /*@ pure @*/

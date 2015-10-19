@@ -37,14 +37,15 @@ public class Entry {
                 Rec apply_1 = null;
 
                 if (obj_1 instanceof Entry) {
-                    apply_1 = ((Entry) obj_1).x;
+                    apply_1 = ((Rec) ((Entry) obj_1).x);
                 } else {
                     throw new RuntimeException("Missing member: x");
                 }
 
                 mapCompResult_1 = MapUtil.munion(Utils.copy(mapCompResult_1),
                         MapUtil.map(
-                            new Maplet(Utils.copy(hr), S(Utils.copy(apply_1)))));
+                            new Maplet(Utils.copy(hr),
+                                Entry.S(Utils.copy(apply_1)))));
             }
 
             ternaryIfExp_2 = Utils.copy(mapCompResult_1);

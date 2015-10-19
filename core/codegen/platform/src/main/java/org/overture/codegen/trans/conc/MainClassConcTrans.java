@@ -7,12 +7,13 @@ import java.util.LinkedList;
 
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
-import org.overture.codegen.cgast.declarations.AClassDeclCG;
+import org.overture.codegen.cgast.declarations.ADefaultClassDeclCG;
 import org.overture.codegen.cgast.declarations.AFieldDeclCG;
 import org.overture.codegen.cgast.declarations.AFormalParamLocalParamCG;
 import org.overture.codegen.cgast.declarations.AInterfaceDeclCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.declarations.APersyncDeclCG;
+import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.expressions.ABoolLiteralExpCG;
 import org.overture.codegen.cgast.expressions.ACastUnaryExpCG;
 import org.overture.codegen.cgast.expressions.AEqualsBinaryExpCG;
@@ -46,6 +47,7 @@ import org.overture.codegen.ir.IRInfo;
  */
 public class MainClassConcTrans extends DepthFirstAnalysisAdaptor
 {
+	private static final String VDM_THREAD = "VDMThread";
 	private IRInfo info;
 
 	public MainClassConcTrans(IRInfo info)
@@ -55,7 +57,7 @@ public class MainClassConcTrans extends DepthFirstAnalysisAdaptor
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public void caseAClassDeclCG(AClassDeclCG node) throws AnalysisException
+	public void caseADefaultClassDeclCG(ADefaultClassDeclCG node) throws AnalysisException
 	{
 		if(!info.getSettings().generateConc())
 		{
@@ -297,23 +299,23 @@ public class MainClassConcTrans extends DepthFirstAnalysisAdaptor
 		return method.getTag() instanceof IRGeneratedTag;
 	}
 	
-	private void makeThread(AClassDeclCG node)
+	private void makeThread(ADefaultClassDeclCG node)
 	{
-		AClassDeclCG threadClass = getThreadClass(node.getSuperName(), node);
-		threadClass.setSuperName("VDMThread");
+		SClassDeclCG threadClass = getThreadClass(node.getSuperName(), node);
+		threadClass.setSuperName(VDM_THREAD);
 	}
 
-	private AClassDeclCG getThreadClass(String superName, AClassDeclCG classCg)
+	private SClassDeclCG getThreadClass(String superName, SClassDeclCG classCg)
 	{
-		if(superName == null || superName.equals("VDMThread"))
+		if(superName == null || superName.equals(VDM_THREAD))
 		{
 			return classCg;
 		}
 		else
 		{
-			AClassDeclCG superClass = null;
+			SClassDeclCG superClass = null;
 
-			for(AClassDeclCG c : info.getClasses())
+			for(SClassDeclCG c : info.getClasses())
 			{
 				if(c.getName().equals(superName))
 				{
