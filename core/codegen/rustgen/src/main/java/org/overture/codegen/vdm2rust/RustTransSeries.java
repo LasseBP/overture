@@ -11,6 +11,7 @@ import org.overture.codegen.trans.assistants.TransAssistantCG;
 import org.overture.codegen.vdm2rust.Transforms.AccessModfierTrans;
 import org.overture.codegen.vdm2rust.Transforms.ConstructorTrans;
 import org.overture.codegen.vdm2rust.Transforms.FuncScopeAdderTrans;
+import org.overture.codegen.vdm2rust.Transforms.ValueSemanticsTrans;
 
 public class RustTransSeries {
 
@@ -35,11 +36,13 @@ public class RustTransSeries {
 		ConstructorTrans constructorTrans = new ConstructorTrans(transAssistant);
 		AssignStmTrans assignTr = new AssignStmTrans(transAssistant);
 		FuncScopeAdderTrans selfAndScope = new FuncScopeAdderTrans(transAssistant);
+		ValueSemanticsTrans valueTrans = new ValueSemanticsTrans();
 
 
 		// Set up order of transformations
 		transformations = new ArrayList<DepthFirstAnalysisAdaptor>();
 
+		transformations.add(valueTrans);
 		transformations.add(assignTr);
 		transformations.add(callObjTr);
 		transformations.add(accTrans);
