@@ -420,6 +420,9 @@ public class TemplateManager
 
 		nodeTemplateFileNames.put(AExplicitVarExpCG.class, templateStructure.EXP_PATH
 				+ "ExplicitVariable");
+		
+		nodeTemplateFileNames.put(AStaticVarExpCG.class, templateStructure.EXP_PATH
+				+ "StaticVariable");
 
 		nodeTemplateFileNames.put(ASuperVarExpCG.class, templateStructure.EXP_PATH
 				+ "SuperVariable");

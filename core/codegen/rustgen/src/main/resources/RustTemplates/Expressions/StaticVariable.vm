@@ -1,0 +1,6 @@
+#set( $name = $node.getName() )
+#if( $node.getIsFinal() )
+::$node.getPackage()::${name}##
+#else
+::$node.getPackage()::${name}.lock()##
+#end

@@ -419,6 +419,7 @@ CG {-> package='org.overture.codegen.cgast'
 	|	[name]:java_String}
     =   {identifier}
 	|	{explicit} [classType]:CG.#type
+	|	{static} [package]:java_String [isFinal]:java_Boolean
 	|	{super}
     ;
     
