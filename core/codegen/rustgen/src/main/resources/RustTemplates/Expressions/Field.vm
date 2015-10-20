@@ -1,7 +1,1 @@
-#set ( $field = "$RustFormat.format($node.getObject()).$node.getMemberName()" )
-##
-#if ($ValueSemantics.cloneMember($node))
-	Utils.copy(${field})##
-#else
-	${field}##
-#end
+$RustFormat.format($node.getObject()).$node.getMemberName()##

@@ -46,7 +46,8 @@ public class RustCodeGen extends CodeGenBase {
 	
 	private void initVelocity() {
 		this.velocityLog = new VelocityLogger(); //implementerer LogChute interface fra Velocity.
-		Velocity.setProperty(Velocity.RUNTIME_LOG_LOGSYSTEM, velocityLog);                        
+		Velocity.setProperty(Velocity.RUNTIME_LOG_LOGSYSTEM, velocityLog);      
+		Velocity.setProperty(Velocity.RUNTIME_REFERENCES_STRICT, true);
 		Velocity.init();
 	}
 

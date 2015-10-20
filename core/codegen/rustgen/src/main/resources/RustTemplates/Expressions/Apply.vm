@@ -5,36 +5,4 @@
 #set( $root = $RustFormat.format($node.getRoot()) )
 #set( $args = $RustFormat.formatArgs($node.getArgs()) )
 ##
-#if ($RustFormat.isSeqType($node.getRoot()) && $node.getArgs().size() == 1)
-##
-	#set( $index = $RustFormat.format($node.getArgs().get(0)))
-	#set ( $seqRead = "" )
-	#if ($RustFormat.castNotNeeded($node.getType()))
-		#set ( $seqRead = "Utils.get(${root},${index})" )
-	#else
-		#set ( $seqRead = "(($RustFormat.format($node.getType())) Utils.get(${root},${index}))" )
-	#end
-##
-	#if ($ValueSemantics.shouldClone($node))
-		Utils.copy(${seqRead})
-	#else
-		${seqRead}
-	#end
-##
-#elseif ($RustFormat.isMapType($node.getRoot()) && $node.getArgs().size() == 1)
-	#set( $key = $RustFormat.format($node.getArgs().get(0)))
-	#set ( $mapRead = "" )
-	#if ($RustFormat.castNotNeeded($node.getType()))
-		#set ( $mapRead = "Utils.get(${root},${key})" )
-	#else
-		#set ( $mapRead = "(($RustFormat.format($node.getType())) Utils.get(${root},${key}))" )
-	#end
-	#if ($ValueSemantics.shouldClone($node))
-		Utils.copy(${mapRead})
-	#else
-		${mapRead}
-	#end
-##
-#else
-	${root}($args)##
-#end
+${root}($args)
