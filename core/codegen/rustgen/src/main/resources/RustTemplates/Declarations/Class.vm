@@ -5,15 +5,25 @@ use codegen_runtime::*;
 $RustFormat.format($typeDecl)
 #end
 ##
-##set( $instanceVars = $node.getFields().stream().filter(field -> !field.getStatic()).collect(Collectors.toList()))
-##set( $staticVars = $node.getFields().stream().filter(field -> field.getStatic() && !field.getFinal()).collect(Collectors.toList()))
-##set( $values = $node.getFields().stream().filter(field -> field.getStatic() && field.getFinal()).collect(Collectors.toList()))
-#set( $hasFields = !$node.getFields().isEmpty())
+#set( $instanceVars = $Util.getInstanceVarFields($node.getFields()) )
+#set( $staticVars = $Util.getStaticVarFields($node.getFields()) )
+#set( $values = $Util.getValueFields($node.getFields()) )
+#set( $hasInstanceVars = !$instanceVars.isEmpty())
+##
+#if( !$values.isEmpty() )
+/* values */
+lazy_static! {
+	#foreach( $valueField in $values )
+	$valueField.getAccess() static ref $valueField.getName(): $RustFormat.format($valueField.getType()) = $RustFormat.formatInitialExp($valueField.getInitial());
+	#end
+}
+
+#end
 ##
 #[derive(PartialEq, Eq, Clone, Hash, Debug)]
-$node.getAccess() struct $node.getName()#if(!$hasFields);#else {
-	#foreach( $field in $node.getFields() )
-	$RustFormat.format($field)
+$node.getAccess() struct $node.getName() #if(!$hasInstanceVars);#else {
+	#foreach( $field in $instanceVars )
+	$RustFormat.format($field),
 	#end
 }
 #end
@@ -33,14 +43,14 @@ impl $node.getName() {
 
 impl Default for $node.getName() {
 	fn default() -> $node.getName() {
-		#foreach( $field in $node.getFields() )		
+		#foreach( $field in $instanceVars )		
 		let $field.getName(): $RustFormat.format($field.getType()) = $RustFormat.formatInitialExp($field.getInitial());
 		#end
 		
 		$node.getName()
-		#if($hasFields)
+		#if($hasInstanceVars)
 		{
-			#foreach( $field in $node.getFields() )
+			#foreach( $field in $instanceVars )
 			$field.getName(): $field.getName(),
 			#end
 		}

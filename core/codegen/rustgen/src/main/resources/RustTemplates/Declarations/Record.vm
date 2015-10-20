@@ -1,7 +1,7 @@
 #[derive(PartialEq, Eq, Clone, Hash, Debug)]
 $node.parent().getAccess() struct $node.getName() {
 	#foreach( $field in $node.getFields() )
-	$RustFormat.format($field)
+	$RustFormat.format($field),
 	#end
 }
 #set( $last_field = $node.getFields().getLast())
