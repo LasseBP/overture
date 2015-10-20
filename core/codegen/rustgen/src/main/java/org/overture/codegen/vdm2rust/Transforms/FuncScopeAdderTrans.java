@@ -11,6 +11,7 @@ import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.AExplicitVarExpCG;
+import org.overture.codegen.cgast.expressions.AFieldExpCG;
 import org.overture.codegen.cgast.expressions.AIdentifierVarExpCG;
 import org.overture.codegen.cgast.expressions.ASelfExpCG;
 import org.overture.codegen.cgast.statements.ACallObjectExpStmCG;
@@ -49,14 +50,27 @@ public class FuncScopeAdderTrans extends DepthFirstAnalysisAdaptor {
 			
 			if(clazz != null)
 			{
-				replaceIfFunc(node, clazz, objClass, node.getFieldName(), node.getType(), node.getArgs());
+				replaceStmIfFunc(node, clazz, objClass, node.getFieldName(), node.getType(), node.getArgs());
 			}
 		}		
 	}	
 	
 	@Override
 	public void caseAApplyExpCG(AApplyExpCG node) throws AnalysisException {
-		if(node.getRoot() instanceof AIdentifierVarExpCG)
+		if(node.getRoot() instanceof AFieldExpCG)
+		{
+			// self.func() -> SelfT`func()
+			AFieldExpCG fieldExp = (AFieldExpCG)node.getRoot();
+			STypeCG objType = fieldExp.getObject().getType();
+			if(objType instanceof AClassTypeCG)
+			{
+				AClassTypeCG objClass = (AClassTypeCG)objType;
+				SClassDeclCG clazz = irInfo.getClass(objClass.getName());
+				
+				changeRootToExplicitVar(node, fieldExp, clazz, objClass, fieldExp.getMemberName());
+			}			
+		}		
+		else if(node.getRoot() instanceof AIdentifierVarExpCG)
 		{
 			/*
 			 * funcCall() -> ClazzT`funcCall().
@@ -70,21 +84,26 @@ public class FuncScopeAdderTrans extends DepthFirstAnalysisAdaptor {
 			
 			String funcName = ident.getName();
 			
-			boolean isFunction = enclosingClass.getFunctions()
-					.stream()
-					.anyMatch(func -> func.getName().equals(funcName));
+			changeRootToExplicitVar(node, ident, enclosingClass, classT, funcName);			
+		}
+	}
+
+	protected void changeRootToExplicitVar(AApplyExpCG node, SExpCG rootExp, SClassDeclCG definingClass,
+			AClassTypeCG classT, String fieldName) {
+		boolean isFunction = definingClass.getFunctions()
+				.stream()
+				.anyMatch(func -> func.getName().equals(fieldName));
+		
+		if(isFunction) {
+			AExplicitVarExpCG explIdent = new AExplicitVarExpCG();
+			explIdent.setClassType(classT);
+			explIdent.setName(fieldName);
+			explIdent.setIsLambda(false);
+			explIdent.setIsLocal(false);
+			explIdent.setSourceNode(rootExp.getSourceNode());
+			explIdent.setType(rootExp.getType());
 			
-			if(isFunction) {
-				AExplicitVarExpCG explIdent = new AExplicitVarExpCG();
-				explIdent.setClassType(classT);
-				explIdent.setName(funcName);
-				explIdent.setIsLambda(false);
-				explIdent.setIsLocal(false);
-				explIdent.setSourceNode(ident.getSourceNode());
-				explIdent.setType(ident.getType());
-				
-				node.replaceChild(ident, explIdent);				
-			}			
+			node.replaceChild(rootExp, explIdent);				
 		}
 	}	
 	
@@ -129,7 +148,7 @@ public class FuncScopeAdderTrans extends DepthFirstAnalysisAdaptor {
 		// else: this is a free-standing function added by some IR transformation.
 	}
 	
-	protected void replaceIfFunc(PCG node, SClassDeclCG enclosingClass, AClassTypeCG classT, String funcName,
+	protected void replaceStmIfFunc(PCG node, SClassDeclCG enclosingClass, AClassTypeCG classT, String funcName,
 			STypeCG funcReturnType, LinkedList<SExpCG> args) {
 		/*
 		 * Check enclosing class for functions of the same name.
