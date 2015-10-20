@@ -11,6 +11,9 @@ import org.overture.codegen.trans.assistants.TransAssistantCG;
 import org.overture.codegen.vdm2rust.Transforms.AccessModfierTrans;
 import org.overture.codegen.vdm2rust.Transforms.ConstructorTrans;
 import org.overture.codegen.vdm2rust.Transforms.FuncScopeAdderTrans;
+import org.overture.codegen.vdm2rust.Transforms.InitialExpTrans;
+import org.overture.codegen.vdm2rust.Transforms.PackageTrans;
+import org.overture.codegen.vdm2rust.Transforms.StaticVarTrans;
 import org.overture.codegen.vdm2rust.Transforms.ValueSemanticsTrans;
 
 public class RustTransSeries {
@@ -37,17 +40,22 @@ public class RustTransSeries {
 		AssignStmTrans assignTr = new AssignStmTrans(transAssistant);
 		FuncScopeAdderTrans selfAndScope = new FuncScopeAdderTrans(transAssistant);
 		ValueSemanticsTrans valueTrans = new ValueSemanticsTrans();
-
+		InitialExpTrans initExp = new InitialExpTrans();
+		StaticVarTrans staticVar = new StaticVarTrans(irInfo);
+		PackageTrans packageTrans = new PackageTrans();
 
 		// Set up order of transformations
 		transformations = new ArrayList<DepthFirstAnalysisAdaptor>();
 
+		transformations.add(packageTrans);
+		transformations.add(accTrans);
 		transformations.add(valueTrans);
 		transformations.add(assignTr);
 		transformations.add(callObjTr);
-		transformations.add(accTrans);
 		transformations.add(constructorTrans);
 		transformations.add(selfAndScope);
+		transformations.add(initExp);
+		transformations.add(staticVar);
 	}
 
 	public List<DepthFirstAnalysisAdaptor> getTransformations() {

@@ -18,8 +18,8 @@ impl_record! { R2: r1 as R1,  x as u64 }
 lazy_static! {
 		 static ref a: R2 = R2::new(R1::new(2), 3);
 		 static ref b: R2 = A::a.clone();
-		 static ref c: R1 = self.a.r1.clone();
-		 static ref d: u64 = self.a.r1.x;
+		 static ref c: R1 = ::A_cg_mod::a.r1.clone();
+		 static ref d: u64 = ::A_cg_mod::a.r1.x;
 	}
 
 #[derive(PartialEq, Eq, Clone, Hash, Debug)]
