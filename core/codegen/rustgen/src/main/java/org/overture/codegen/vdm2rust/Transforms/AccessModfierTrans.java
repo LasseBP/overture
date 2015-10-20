@@ -15,7 +15,7 @@ import org.overture.codegen.cgast.declarations.ATypeDeclCG;
 public class AccessModfierTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
-	public void inSClassDeclCG(SClassDeclCG node) throws AnalysisException {
+	public void defaultInSClassDeclCG(SClassDeclCG node) throws AnalysisException {
 		node.setAccess(getNewAccess(node.getAccess()));
 	}
 			
