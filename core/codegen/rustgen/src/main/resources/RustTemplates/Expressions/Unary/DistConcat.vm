@@ -1,6 +1,2 @@
 #set( $exp = $RustFormat.format($node.getExp()) )
-#if ($RustFormat.isStringType($node.getType()))
-	SeqUtil.distConcStrings($exp)
-#else
-	SeqUtil.distConc($exp)
-#end
+($exp).dconc()

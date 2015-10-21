@@ -1,3 +1,3 @@
 #set( $exp = $RustFormat.format($node.getExp()) )
 ##
-MapUtil.merge($exp)
+($exp).merge()
