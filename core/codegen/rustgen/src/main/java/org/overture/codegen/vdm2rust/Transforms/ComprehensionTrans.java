@@ -51,8 +51,18 @@ public class ComprehensionTrans extends DepthFirstAnalysisAdaptor {
 
 	@Override
 	public void caseACompSeqExpCG(ACompSeqExpCG node) throws AnalysisException {
-		// TODO Auto-generated method stub
-		super.caseACompSeqExpCG(node);
+		
+		//setExp over which to perform the comprehension
+		SExpCG cartSetExp = node.getSetBind().getSet();		
+		ASetSetTypeCG setExpT = (ASetSetTypeCG)cartSetExp.getType();
+		
+		//create lambdas
+		SPatternCG argPattern = node.getSetBind().getPattern();
+		AFormalParamLocalParamCG param = createLambdaParam(argPattern, setExpT);			
+		ALambdaExpCG predLambda = createPredicateLambdaExp(setExpT, param, node.getPredicate());		
+		ALambdaExpCG firstLambda = createFirstLambdaExp(setExpT, param, node.getFirst());
+
+		replaceCompWithMethodCallExp(node, cartSetExp, predLambda, firstLambda, "seq_compr");
 	}
 	
 	@Override
