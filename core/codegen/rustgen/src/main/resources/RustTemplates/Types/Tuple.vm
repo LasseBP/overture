@@ -1,1 +1,1 @@
-($RustFormat.formattedTypes($node.getTypes(),""))
+($RustFormat.formatList($node.getTypes()))

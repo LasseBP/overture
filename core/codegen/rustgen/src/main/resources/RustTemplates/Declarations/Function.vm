@@ -7,6 +7,6 @@
 ##
 $RustFormat.formatMetaData($node.getMetaData())##
 ##
-$node.getAccess() fn $node.getName()$templateTypes($RustFormat.format($node.getFormalParams())) -> $returnType {
+$node.getAccess() fn $node.getName()$templateTypes($RustFormat.formatList($node.getFormalParams())) -> $returnType {
 	$RustFormat.format($node.getBody())
 } 

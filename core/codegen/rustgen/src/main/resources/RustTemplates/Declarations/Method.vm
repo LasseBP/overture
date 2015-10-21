@@ -15,7 +15,7 @@
 	#if( !$node.getIsConstructor() )
 	#set( $params = ${params} + ", ")
 	#end
-	#set( $params = ${params} + $RustFormat.format($node.getFormalParams()))
+	#set( $params = ${params} + $RustFormat.formatList($node.getFormalParams()))
 #end
 ##
 $RustFormat.formatMetaData($node.getMetaData())##

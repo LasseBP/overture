@@ -15,4 +15,4 @@
 ##
 #set( $name = "$node.getName()")
 ##
-${return}$class$name($RustFormat.formatArgs($node.getArgs()));
+${return}$class$name($RustFormat.formatList($node.getArgs()));

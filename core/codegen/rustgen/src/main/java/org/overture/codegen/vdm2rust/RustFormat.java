@@ -9,7 +9,6 @@ import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
-import org.overture.codegen.cgast.declarations.AFormalParamLocalParamCG;
 import org.overture.codegen.cgast.expressions.AUndefinedExpCG;
 import org.overture.codegen.ir.IRInfo;
 import org.overture.codegen.merging.MergeVisitor;
@@ -43,6 +42,11 @@ public class RustFormat {
 	{
 		return "quotes";
 	}
+
+	public MergeVisitor GetMergeVisitor()
+	{
+		return mergeVisitor;
+	}
 	
 	public String format(INode node) throws AnalysisException
 	{
@@ -51,10 +55,50 @@ public class RustFormat {
 
 		return writer.toString();
 	}
-
-	public MergeVisitor GetMergeVisitor()
+	
+	public String formatList(List<? extends INode> nodes)
+			throws AnalysisException
 	{
-		return mergeVisitor;
+		if (nodes.isEmpty())
+		{
+			return "";
+		}
+		
+		INode firstnodes = nodes.get(0);
+
+		StringWriter writer = new StringWriter();
+		writer.append(format(firstnodes));
+
+		for (int i = 1; i < nodes.size(); i++)
+		{
+			INode currentnodes = nodes.get(i);
+
+			writer.append(", " + format(currentnodes));
+		}
+
+		String result = writer.toString();
+		
+		return result;
+	}
+	
+	public String formatGenericTypes(List<STypeCG> types)
+			throws AnalysisException
+	{
+		if (types.isEmpty())
+		{
+			return "";
+		}
+
+		return "<" + formatList(types) + ">";
+	}
+
+	public String formatInitialExp(SExpCG exp) throws AnalysisException
+	{
+		// Examples:
+		// private int a; (exp == null || exp instanceof AUndefinedExpCG)
+		// private int a = 2; (otherwise)
+
+		return exp == null || exp instanceof AUndefinedExpCG ? "Default::default()" : format(exp);
 	}
 	
 	public static String formatMetaData(List<ClonableString> metaData)
@@ -74,37 +118,6 @@ public class RustFormat {
 		return sb.append('\n').toString();
 	}
 	
-	public String formatGenericTypes(List<STypeCG> types)
-			throws AnalysisException
-	{
-		if (types.isEmpty())
-		{
-			return "";
-		}
-
-		return "<" + formattedTypes(types, "") + ">";
-	}
-
-	public String formattedTypes(List<STypeCG> types, String typePostFix)
-			throws AnalysisException
-	{
-		STypeCG firstType = types.get(0);
-
-		StringWriter writer = new StringWriter();
-		writer.append(format(firstType) + typePostFix);
-
-		for (int i = 1; i < types.size(); i++)
-		{
-			STypeCG currentType = types.get(i);
-
-			writer.append(", " + format(currentType) + typePostFix);
-		}
-
-		String result = writer.toString();
-		
-		return result;
-	}
-	
 	public String escapeStr(String str)
 	{
 		String escaped = "";
@@ -118,64 +131,11 @@ public class RustFormat {
 
 		return escaped;
 	}
-
-	public String formatInitialExp(SExpCG exp) throws AnalysisException
-	{
-		// Examples:
-		// private int a; (exp == null || exp instanceof AUndefinedExpCG)
-		// private int a = 2; (otherwise)
-
-		return exp == null || exp instanceof AUndefinedExpCG ? "Default::default()" : format(exp);
-	}
 	
 	public String escapeChar(char c)
 	{
 		return GeneralUtils.isEscapeSequence(c) ? StringEscapeUtils.escapeJavaScript(c
 				+ "")
 				: c + "";
-	}
-	
-	public String formatArgs(List<? extends SExpCG> exps)
-			throws AnalysisException
-	{
-		StringWriter writer = new StringWriter();
-
-		if (exps.size() <= 0)
-		{
-			return "";
-		}
-
-		SExpCG firstExp = exps.get(0);
-		writer.append(format(firstExp));
-
-		for (int i = 1; i < exps.size(); i++)
-		{
-			SExpCG exp = exps.get(i);
-			writer.append(", " + format(exp));
-		}
-
-		return writer.toString();
-	}
-	
-	public String format(List<AFormalParamLocalParamCG> params)
-			throws AnalysisException
-	{
-		StringWriter writer = new StringWriter();
-
-		if (params.size() <= 0)
-		{
-			return "";
-		}
-
-		AFormalParamLocalParamCG firstParam = params.get(0);
-		writer.append(format(firstParam));
-
-		for (int i = 1; i < params.size(); i++)
-		{
-			AFormalParamLocalParamCG param = params.get(i);
-			writer.append(", ");
-			writer.append(format(param));
-		}
-		return writer.toString();
 	}
 }

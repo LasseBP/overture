@@ -1,1 +1,1 @@
-($RustFormat.formatArgs($node.getArgs()))
+($RustFormat.formatList($node.getArgs()))

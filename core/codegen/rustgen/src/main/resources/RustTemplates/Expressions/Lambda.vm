@@ -1,5 +1,5 @@
 ##
 #set( $returnType = $RustFormat.format($node.getType().getResult()))
-#set( $params = $RustFormat.format($node.getParams()))
+#set( $params = $RustFormat.formatList($node.getParams()))
 ##
 |$params| -> $returnType { $RustFormat.format($node.getExp()) } 

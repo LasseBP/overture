@@ -3,6 +3,6 @@
 ##Example3: "kitten"(3)
 ##
 #set( $root = $RustFormat.format($node.getRoot()) )
-#set( $args = $RustFormat.formatArgs($node.getArgs()) )
+#set( $args = $RustFormat.formatList($node.getArgs()) )
 ##
 ${root}($args)

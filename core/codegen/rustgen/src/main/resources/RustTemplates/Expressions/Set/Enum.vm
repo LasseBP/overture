@@ -1,1 +1,1 @@
-set!{$RustFormat.formatArgs($node.getMembers())}
+set!{$RustFormat.formatList($node.getMembers())}

@@ -1,4 +1,4 @@
-#set( $args = $RustFormat.formatArgs($node.getArgs()) )
+#set( $args = $RustFormat.formatList($node.getArgs()) )
 #set( $field = $node.getFieldName() )
 #set( $designator = $RustFormat.format($node.getDesignator()) )
 ##
