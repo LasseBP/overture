@@ -1,1 +1,3 @@
-$RustFormat.format($node.getLeft(), true) <= $RustFormat.format($node.getRight(), false)
+#set( $left = $RustFormat.format($node.getLeft()))
+#set( $right = $RustFormat.format($node.getRight()))
+$left <= $right
