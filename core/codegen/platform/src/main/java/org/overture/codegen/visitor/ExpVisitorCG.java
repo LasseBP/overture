@@ -29,6 +29,7 @@ import org.overture.ast.definitions.AAssignmentDefinition;
 import org.overture.ast.definitions.AClassClassDefinition;
 import org.overture.ast.definitions.AInheritedDefinition;
 import org.overture.ast.definitions.AInstanceVariableDefinition;
+import org.overture.ast.definitions.ALocalDefinition;
 import org.overture.ast.definitions.AStateDefinition;
 import org.overture.ast.definitions.PDefinition;
 import org.overture.ast.definitions.SClassDefinition;
@@ -1309,7 +1310,9 @@ public class ExpVisitorCG extends AbstractVisitorCG<IRInfo, SExpCG>
 			SClassDefinition owningClass = varDef.getAncestor(SClassDefinition.class);
 			SClassDefinition nodeParentClass = node.getAncestor(SClassDefinition.class);
 			
-			boolean isLocalDef = varDef.getNameScope() == NameScope.LOCAL || varDef instanceof AAssignmentDefinition;
+			boolean isLocalDef = varDef.getNameScope() == NameScope.LOCAL || 
+									varDef instanceof AAssignmentDefinition || 
+									varDef instanceof ALocalDefinition;
 			boolean isInstanceVarDef = varDef instanceof AInstanceVariableDefinition;
 			boolean isExplOp = varDef instanceof SOperationDefinition;
 			boolean isExplFunc = varDef instanceof SFunctionDefinition;
