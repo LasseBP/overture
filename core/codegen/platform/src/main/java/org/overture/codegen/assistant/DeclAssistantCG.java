@@ -528,7 +528,7 @@ public class DeclAssistantCG extends AssistantBase
 	{
 		AVarDeclCG localVarDecl = new AVarDeclCG();
 		localVarDecl.setType(type);
-		localVarDecl.setFinal(false);
+		localVarDecl.setFinal(node instanceof AValueDefinition);
 		localVarDecl.setSourceNode(new SourceNode(node));
 		localVarDecl.setPattern(pattern);
 		localVarDecl.setExp(exp);
