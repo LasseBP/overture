@@ -1,0 +1,1 @@
+($RustFormat.formatList($node.getPatterns()))

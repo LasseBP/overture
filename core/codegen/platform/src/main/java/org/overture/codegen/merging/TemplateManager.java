@@ -45,6 +45,7 @@ import org.overture.codegen.cgast.declarations.ATypeDeclCG;
 import org.overture.codegen.cgast.declarations.AVarDeclCG;
 import org.overture.codegen.cgast.expressions.*;
 import org.overture.codegen.cgast.patterns.AIdentifierPatternCG;
+import org.overture.codegen.cgast.patterns.ATuplePatternCG;
 import org.overture.codegen.cgast.statements.AApplyObjectDesignatorCG;
 import org.overture.codegen.cgast.statements.AAssignToExpStmCG;
 import org.overture.codegen.cgast.statements.AAssignmentStmCG;
@@ -793,6 +794,9 @@ public class TemplateManager
 		// Patterns
 		nodeTemplateFileNames.put(AIdentifierPatternCG.class, templateStructure.PATTERN_PATH
 				+ "Identifier");
+		
+		nodeTemplateFileNames.put(ATuplePatternCG.class, templateStructure.PATTERN_PATH
+				+ "Tuple");
 
 		// Interface
 		nodeTemplateFileNames.put(AInterfaceDeclCG.class, templateStructure.DECL_PATH
