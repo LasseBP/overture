@@ -1,2 +1,3 @@
-##Only supports basic types
-$RustFormat.formatEqualsBinaryExp($node)
+#set( $left = $RustFormat.format($node.getLeft()))
+#set( $right = $RustFormat.format($node.getRight()))
+$left == $right

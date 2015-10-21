@@ -6,7 +6,9 @@ public static op1 : () ==> set of nat
 op1 () == 	return { z * 2 | z in set {1,2,3}};
 
 public static op2 : () ==> set of nat
-op2 () == 	return { z * y | z,y in set {1,2,3}};
+op2 () == 	return { z * y | z,y in set {1,2,3} & z = y};
 
+public static op3 : () ==> map nat to char
+op3 () == 	return { z |-> y | z in set {1,2,3}, y in set {'c', 'k'}};
 
 end bind_specs

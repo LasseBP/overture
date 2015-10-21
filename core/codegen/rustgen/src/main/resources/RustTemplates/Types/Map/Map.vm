@@ -1,1 +1,1 @@
-Map<$RustFormat.format($node.getFrom()),$RustFormat.format($node.getTo()>
+Map<$RustFormat.format($node.getFrom()),$RustFormat.format($node.getTo())>
