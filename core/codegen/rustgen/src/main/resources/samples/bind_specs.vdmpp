@@ -14,4 +14,13 @@ map_comp1 () == 	return { z |-> y | z in set {1,2,3}, y in set {'c', 'k'}};
 public static seq_comp1 : () ==> seq of nat
 seq_comp1 () == 	return [ z * 2 | z in set {1,2,3} & z > 1];
 
+public static exists_1 : () ==> bool
+exists_1 () == 	return exists x,y in set {1,2,3} & x > y;
+
+public static exists1_1 : () ==> bool
+exists1_1 () == 	return exists1 x in set {1,2,3} & x > 2;
+
+public static forall_1 : () ==> bool
+forall_1 () == 	return forall x in set {1,2,3}, y in set {4,5} & y > x;
+
 end bind_specs

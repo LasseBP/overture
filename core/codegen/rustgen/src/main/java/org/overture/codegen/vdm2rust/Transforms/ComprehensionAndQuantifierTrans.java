@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.SMultipleBindCG;
 import org.overture.codegen.cgast.SPatternCG;
@@ -16,13 +17,19 @@ import org.overture.codegen.cgast.expressions.ABoolLiteralExpCG;
 import org.overture.codegen.cgast.expressions.ACompMapExpCG;
 import org.overture.codegen.cgast.expressions.ACompSeqExpCG;
 import org.overture.codegen.cgast.expressions.ACompSetExpCG;
+import org.overture.codegen.cgast.expressions.AExists1QuantifierExpCG;
+import org.overture.codegen.cgast.expressions.AExistsQuantifierExpCG;
 import org.overture.codegen.cgast.expressions.AFieldExpCG;
+import org.overture.codegen.cgast.expressions.AForAllQuantifierExpCG;
 import org.overture.codegen.cgast.expressions.AIdentifierVarExpCG;
 import org.overture.codegen.cgast.expressions.ALambdaExpCG;
+import org.overture.codegen.cgast.expressions.ALetBeStExpCG;
 import org.overture.codegen.cgast.expressions.AMapletExpCG;
 import org.overture.codegen.cgast.expressions.ATupleExpCG;
+import org.overture.codegen.cgast.expressions.SQuantifierExpBase;
 import org.overture.codegen.cgast.patterns.ASetMultipleBindCG;
 import org.overture.codegen.cgast.patterns.ATuplePatternCG;
+import org.overture.codegen.cgast.statements.ALetBeStStmCG;
 import org.overture.codegen.cgast.types.ABoolBasicTypeCG;
 import org.overture.codegen.cgast.types.AMapMapTypeCG;
 import org.overture.codegen.cgast.types.AMethodTypeCG;
@@ -30,24 +37,39 @@ import org.overture.codegen.cgast.types.ASetSetTypeCG;
 import org.overture.codegen.cgast.types.ATupleTypeCG;
 import org.overture.codegen.logging.Logger;
 
-public class ComprehensionTrans extends DepthFirstAnalysisAdaptor {
+public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
-	public void caseACompMapExpCG(ACompMapExpCG node) throws AnalysisException {
-		List<ASetMultipleBindCG> setMbs = castToSetMBList(node.getBindings());
-		
-		//setExp over which to perform the comprehension
-		SExpCG cartSetExp = getCartesianSetExp(setMbs);		
-		ASetSetTypeCG setExpT = (ASetSetTypeCG)cartSetExp.getType();
-		
-		//create lambdas
-		SPatternCG argPattern = getArgPattern(setMbs);
-		AFormalParamLocalParamCG param = createLambdaParam(argPattern, setExpT);			
-		ALambdaExpCG predLambda = createPredicateLambdaExp(setExpT, param, node.getPredicate());		
-		ALambdaExpCG firstLambda = createFirstLambdaExp(setExpT, param, convertMapletToTuple(node.getFirst()));
-
-		replaceCompWithMethodCallExp(node, cartSetExp, predLambda, firstLambda, "map_compr");
+	public void caseALetBeStExpCG(ALetBeStExpCG node) throws AnalysisException {
+		// TODO Auto-generated method stub
+		super.caseALetBeStExpCG(node);
 	}
+	
+	@Override
+	public void caseALetBeStStmCG(ALetBeStStmCG node) throws AnalysisException {
+		// TODO Auto-generated method stub
+		super.caseALetBeStStmCG(node);
+	}
+	
+	@Override
+	public void caseAExists1QuantifierExpCG(AExists1QuantifierExpCG node) throws AnalysisException {
+		replaceQuantifier(node, "exists1");
+	}
+	
+	@Override
+	public void caseAExistsQuantifierExpCG(AExistsQuantifierExpCG node) throws AnalysisException {
+		replaceQuantifier(node, "exists");
+	}
+	
+	@Override
+	public void caseAForAllQuantifierExpCG(AForAllQuantifierExpCG node) throws AnalysisException {
+		replaceQuantifier(node, "forall");
+	}
+	
+	@Override
+	public void caseACompMapExpCG(ACompMapExpCG node) throws AnalysisException {		
+		replaceMBCompExp(node, "map_compr", convertMapletToTuple(node.getFirst()), node.getPredicate(), node.getBindings());
+	}	
 
 	@Override
 	public void caseACompSeqExpCG(ACompSeqExpCG node) throws AnalysisException {
@@ -56,13 +78,8 @@ public class ComprehensionTrans extends DepthFirstAnalysisAdaptor {
 		SExpCG cartSetExp = node.getSetBind().getSet();		
 		ASetSetTypeCG setExpT = (ASetSetTypeCG)cartSetExp.getType();
 		
-		//create lambdas
 		SPatternCG argPattern = node.getSetBind().getPattern();
-		AFormalParamLocalParamCG param = createLambdaParam(argPattern, setExpT);			
-		ALambdaExpCG predLambda = createPredicateLambdaExp(setExpT, param, node.getPredicate());		
-		ALambdaExpCG firstLambda = createFirstLambdaExp(setExpT, param, node.getFirst());
-
-		replaceCompWithMethodCallExp(node, cartSetExp, predLambda, firstLambda, "seq_compr");
+		replaceCompExp(node, "seq_compr", node.getFirst(), node.getPredicate(), argPattern, cartSetExp, setExpT);
 	}
 	
 	@Override
@@ -70,19 +87,7 @@ public class ComprehensionTrans extends DepthFirstAnalysisAdaptor {
 		// goal:
 		// cartesian_set!(s1,s2,s3).set_compr(|(x,_y,_z)| x == 1, |(_x,y,z)| y*z);
 		
-		List<ASetMultipleBindCG> setMbs = castToSetMBList(node.getBindings());
-		
-		//setExp over which to perform the comprehension
-		SExpCG cartSetExp = getCartesianSetExp(setMbs);		
-		ASetSetTypeCG setExpT = (ASetSetTypeCG)cartSetExp.getType();
-		
-		//create lambdas
-		SPatternCG argPattern = getArgPattern(setMbs);
-		AFormalParamLocalParamCG param = createLambdaParam(argPattern, setExpT);			
-		ALambdaExpCG predLambda = createPredicateLambdaExp(setExpT, param, node.getPredicate());		
-		ALambdaExpCG firstLambda = createFirstLambdaExp(setExpT, param, node.getFirst());
-
-		replaceCompWithMethodCallExp(node, cartSetExp, predLambda, firstLambda, "set_compr");
+		replaceMBCompExp(node, "set_compr", node.getFirst(), node.getPredicate(), node.getBindings());
 	}
 	
 	protected SExpCG convertMapletToTuple(AMapletExpCG first) {
@@ -100,16 +105,61 @@ public class ComprehensionTrans extends DepthFirstAnalysisAdaptor {
 		
 		return tupleExp;
 	}
+	
+	protected void replaceQuantifier(SQuantifierExpBase node, String methodName) throws AnalysisException {
+		List<ASetMultipleBindCG> setMbs = castToSetMBList(node.getBindList());
+		
+		//setExp over which to perform the comprehension
+		SExpCG cartSetExp = getCartesianSetExp(setMbs);		
+		ASetSetTypeCG setExpT = (ASetSetTypeCG)cartSetExp.getType();
+		
+		//create lambda
+		SPatternCG argPattern = getArgPattern(setMbs);
+		AFormalParamLocalParamCG param = createLambdaParam(argPattern, setExpT);			
+		ALambdaExpCG predLambda = createPredicateLambdaExp(setExpT, param, node.getPredicate());
+		
+		replaceWithMethodCallExp(node, cartSetExp, predLambda, methodName);
+	}
+	
+	protected void replaceMBCompExp(SExpCG node, String methodName, SExpCG firstExp, SExpCG predExp, LinkedList<SMultipleBindCG> bindings)
+			throws AnalysisException {
+		List<ASetMultipleBindCG> setMbs = castToSetMBList(bindings);
+		
+		//setExp over which to perform the comprehension
+		SExpCG cartSetExp = getCartesianSetExp(setMbs);		
+		ASetSetTypeCG setExpT = (ASetSetTypeCG)cartSetExp.getType();
+		
+		SPatternCG argPattern = getArgPattern(setMbs);
+		
+		replaceCompExp(node, methodName, firstExp, predExp, argPattern, cartSetExp, setExpT);
+	}
 
-	protected void replaceCompWithMethodCallExp(SExpCG node, SExpCG cartSetExp, ALambdaExpCG predLambda,
-			ALambdaExpCG firstLambda, String comp_method_name) {
+	protected void replaceCompExp(SExpCG node, String methodName, SExpCG firstExp, SExpCG predExp,
+			SPatternCG argPattern, SExpCG cartSetExp, ASetSetTypeCG setExpT) {
+		//create lambdas
+		AFormalParamLocalParamCG param = createLambdaParam(argPattern, setExpT);			
+		ALambdaExpCG predLambda = createPredicateLambdaExp(setExpT, param, predExp);		
+		ALambdaExpCG firstLambda = createFirstLambdaExp(setExpT, param, firstExp);
+
+		replaceWithMethodCallExp(node, cartSetExp, predLambda, firstLambda, methodName);
+	}
+	
+	protected void replaceWithMethodCallExp(SExpCG node, SExpCG cartSetExp, ALambdaExpCG predLambda, 
+			String method_name) {
+		replaceWithMethodCallExp(node, cartSetExp, predLambda, null, method_name);
+	}
+
+	protected void replaceWithMethodCallExp(SExpCG node, SExpCG cartSetExp, ALambdaExpCG predLambda,
+			ALambdaExpCG firstLambda, String method_name) {
 		AMethodTypeCG setCompMType = new AMethodTypeCG();
 		setCompMType.setResult(node.getType().clone());
 		setCompMType.getParams().add(predLambda.getType().clone());
-		setCompMType.getParams().add(firstLambda.getType().clone());
+		if(firstLambda != null) {
+			setCompMType.getParams().add(firstLambda.getType().clone());
+		}
 		
 		AFieldExpCG fieldExp = new AFieldExpCG();
-		fieldExp.setMemberName(comp_method_name);
+		fieldExp.setMemberName(method_name);
 		fieldExp.setObject(cartSetExp);
 		fieldExp.setType(setCompMType);
 		
@@ -118,7 +168,9 @@ public class ComprehensionTrans extends DepthFirstAnalysisAdaptor {
 		compExp.setType(node.getType());
 		compExp.setSourceNode(node.getSourceNode());
 		compExp.getArgs().add(predLambda);
-		compExp.getArgs().add(firstLambda);
+		if(firstLambda != null) {
+			compExp.getArgs().add(firstLambda);
+		}
 		
 		if(node.parent() != null) {
 			node.parent().replaceChild(node, compExp);
