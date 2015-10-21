@@ -2,8 +2,11 @@ class bind_specs
 
 operations
 
-public static op : () ==> set of nat
-op () == 	return { z * 2 | z in set {1,2,3}};
+public static op1 : () ==> set of nat
+op1 () == 	return { z * 2 | z in set {1,2,3}};
+
+public static op2 : () ==> set of nat
+op2 () == 	return { z * y | z,y in set {1,2,3}};
 
 
-end Entry
+end bind_specs
