@@ -1,6 +1,11 @@
 use codegen_runtime::*;
 
 /* types */
+/* values */
+lazy_static! {
+		 static ref testVal: u64 = 123;
+	}
+
 #[derive(PartialEq, Eq, Clone, Hash, Debug)]
 pub struct expl_self_and_scopes {
     kek: i64,
@@ -10,10 +15,11 @@ impl expl_self_and_scopes {
 /* operations */
     pub fn cg_init_expl_self_and_scopes_1(&mut self) -> () {
         {
-            let mut x: u64 = 1337;
+            let x: u64 = 1337;
             {
                 let mut i: i64 = 123;
                 let mut a: expl_self_and_scopes = self;
+                i = ::expl_self_and_scopes_cg_mod::testVal.clone();
                 self.voidOp();
                 self.voidOp();
                 i = self.fiveop(i);

@@ -1,0 +1,9 @@
+class bind_specs
+
+operations
+
+public static op : () ==> set of nat
+op () == 	return { z * 2 | z in set {1,2,3}};
+
+
+end Entry

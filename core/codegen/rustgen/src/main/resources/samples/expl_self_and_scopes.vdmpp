@@ -1,5 +1,8 @@
 class expl_self_and_scopes
 
+values
+testVal = 123;
+
 instance variables
 kek: int;
 
@@ -13,6 +16,7 @@ expl_self_and_scopes() == (
 	let x = 1337 in (
 	dcl i: int := 123;
 	dcl a: expl_self_and_scopes := self;
+	i := a.testVal;
 	voidOp(); --APlainCallStm (name = "voidOp")
 	self.voidOp(); --ACallObjectExpStmCG (fieldname = "voidOp", obj = ASelfExpCG)
 	i := self.fiveop(i); --AApplyExpCG (root = fieldExp)
@@ -27,4 +31,5 @@ fiveop (i) == return 2+3;
 
 public voidOp: () ==> ()
 voidOp() == skip;
+
 end expl_self_and_scopes
