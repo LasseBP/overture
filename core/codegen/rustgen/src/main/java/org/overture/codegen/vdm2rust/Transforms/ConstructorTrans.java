@@ -37,7 +37,9 @@ public class ConstructorTrans extends DepthFirstAnalysisAdaptor {
 			 */
 			
 			// conventional name in Rust.
-			node.setName("new");			
+			node.setName("new");
+			// the new function/constructor is an associated function.
+			node.setStatic(true);
 			
 			SClassDeclCG enclosingClass = node.getAncestor(SClassDeclCG.class);
 			SStmCG oldBody = node.getBody();
