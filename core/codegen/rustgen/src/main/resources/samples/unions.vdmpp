@@ -1,0 +1,16 @@
+class unions
+
+types
+public U = <T> | <A>;
+optional = [nat];
+kek :: val: int;
+
+functions
+
+public f1 : () -> U
+f1 () == <T>;
+
+public f2 : () -> [nat]
+f2 () == 123;
+
+end unions

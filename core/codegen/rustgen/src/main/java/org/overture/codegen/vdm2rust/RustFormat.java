@@ -9,6 +9,7 @@ import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
+import org.overture.codegen.cgast.declarations.ANamedTypeDeclCG;
 import org.overture.codegen.cgast.expressions.AUndefinedExpCG;
 import org.overture.codegen.ir.IRInfo;
 import org.overture.codegen.merging.MergeVisitor;
@@ -49,11 +50,36 @@ public class RustFormat {
 	}
 	
 	public String format(INode node) throws AnalysisException
-	{
+	{	
 		StringWriter writer = new StringWriter();
-		node.apply(mergeVisitor, writer);
-
+		
+		if(node instanceof STypeCG) {
+			//special case
+			formatType((STypeCG)node, writer);
+		} else {
+			node.apply(mergeVisitor, writer);
+		}
+		
 		return writer.toString();
+	}
+
+	protected void formatType(STypeCG node, StringWriter writer) throws AnalysisException {
+		boolean isOptional = node.getOptional() != null ? node.getOptional() : false;
+		
+		if(isOptional) {
+			writer.write("Option<");
+		}
+		
+		if(node.getNamedInvType() != null) {
+			//if the type has an alias, print that instead.
+			writer.write(node.getNamedInvType().getName().getName());
+		} else {
+			node.apply(mergeVisitor, writer);
+		}
+		
+		if(isOptional) {
+			writer.write(">");
+		}
 	}
 	
 	public String formatList(List<? extends INode> nodes)
