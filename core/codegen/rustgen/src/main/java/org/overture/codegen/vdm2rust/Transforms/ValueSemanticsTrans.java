@@ -8,6 +8,7 @@ import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.ABlockExpCG;
 import org.overture.codegen.cgast.expressions.AFieldExpCG;
+import org.overture.codegen.cgast.expressions.AFieldNumberExpCG;
 import org.overture.codegen.cgast.expressions.ALetBeStExpCG;
 import org.overture.codegen.cgast.expressions.AMapletExpCG;
 import org.overture.codegen.cgast.expressions.ANewExpCG;
@@ -18,6 +19,7 @@ import org.overture.codegen.cgast.expressions.SLiteralExpBase;
 import org.overture.codegen.cgast.expressions.SMapExpBase;
 import org.overture.codegen.cgast.expressions.SSeqExpBase;
 import org.overture.codegen.cgast.expressions.SSetExpBase;
+import org.overture.codegen.cgast.expressions.SVarExpBase;
 import org.overture.codegen.cgast.statements.AAssignToExpStmCG;
 import org.overture.codegen.cgast.types.AClassTypeCG;
 import org.overture.codegen.cgast.types.AMethodTypeCG;
@@ -33,6 +35,13 @@ public class ValueSemanticsTrans extends DepthFirstAnalysisAdaptor {
 		STypeCG type = node.getType();
 		boolean isStatic = node instanceof AStaticVarExpCG;
 		
+		// any other expression *produces* a value. These *refer* to values.
+		if(!(node instanceof SVarExpBase ||
+			 node instanceof AFieldExpCG ||
+			 node instanceof AFieldNumberExpCG)) {
+			return;
+		}
+		
 		if (parent instanceof AFieldExpCG) {
 			return;
 		}
@@ -44,19 +53,6 @@ public class ValueSemanticsTrans extends DepthFirstAnalysisAdaptor {
 			{
 				return;
 			}
-		}
-		
-		if (node instanceof AUndefinedExpCG ||
-			node instanceof ANewExpCG ||
-			node instanceof SLiteralExpBase ||
-			node instanceof SMapExpBase ||
-			node instanceof SSetExpBase ||
-			node instanceof SSeqExpBase ||
-			node instanceof AMapletExpCG ||
-			node instanceof ALetBeStExpCG ||
-			node instanceof ATupleExpCG ||
-			node instanceof ABlockExpCG) {
-			return;
 		}
 		
 		if(type instanceof AMethodTypeCG ||
