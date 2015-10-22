@@ -137,7 +137,7 @@ public class StmAssistantCG extends AssistantBase
 				!(block.parent() instanceof AForIndexStm);
 	}
 	
-	public boolean isScoped(ABlockStmCG block)
+	public static boolean isScoped(ABlockStmCG block)
 	{
 		return !(block.parent() instanceof AMethodDeclCG) &&
 				!(block.parent() instanceof AElseIfStmCG) &&

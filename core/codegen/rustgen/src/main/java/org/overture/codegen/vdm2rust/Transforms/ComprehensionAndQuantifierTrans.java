@@ -1,17 +1,22 @@
 package org.overture.codegen.vdm2rust.Transforms;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.overture.codegen.assistant.StmAssistantCG;
 import org.overture.codegen.cgast.INode;
+import org.overture.codegen.cgast.PCG;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.SMultipleBindCG;
 import org.overture.codegen.cgast.SPatternCG;
+import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.declarations.AFormalParamLocalParamCG;
+import org.overture.codegen.cgast.declarations.AVarDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.ABoolLiteralExpCG;
 import org.overture.codegen.cgast.expressions.ACompMapExpCG;
@@ -29,6 +34,7 @@ import org.overture.codegen.cgast.expressions.ATupleExpCG;
 import org.overture.codegen.cgast.expressions.SQuantifierExpBase;
 import org.overture.codegen.cgast.patterns.ASetMultipleBindCG;
 import org.overture.codegen.cgast.patterns.ATuplePatternCG;
+import org.overture.codegen.cgast.statements.ABlockStmCG;
 import org.overture.codegen.cgast.statements.ALetBeStStmCG;
 import org.overture.codegen.cgast.types.ABoolBasicTypeCG;
 import org.overture.codegen.cgast.types.AMapMapTypeCG;
@@ -47,8 +53,49 @@ public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
 	public void caseALetBeStStmCG(ALetBeStStmCG node) throws AnalysisException {
-		// TODO Auto-generated method stub
-		super.caseALetBeStStmCG(node);
+		/* goal:
+		 * VDM: let x,y in set {1,2,3} be st y > x in return mk_(x,y);
+		 * Rust:
+		 * {
+		 * 	let (x,y): (u64, u64) = cartesian_set!(set!{1,2,3}, set!{1,2,3})
+		 * 								.be_such_that(|(x,y): (u64, u64)| y > x);
+		 * 	return (x,y);
+		 * } 
+		 * */
+		
+		List<SMultipleBindCG> bindings = Arrays.asList(node.getHeader().getBinding());
+		List<ASetMultipleBindCG> setMbs = castToSetMBList(bindings);
+		
+		//setExp over which to perform the comprehension
+		SExpCG cartSetExp = getCartesianSetExp(setMbs);		
+		ASetSetTypeCG setExpT = (ASetSetTypeCG)cartSetExp.getType();
+		
+		SPatternCG argPattern = getArgPattern(setMbs);
+		//create lambdas
+		AFormalParamLocalParamCG param = createLambdaParam(argPattern, setExpT);			
+		ALambdaExpCG predLambda = createPredicateLambdaExp(setExpT, param, node.getHeader().getSuchThat());
+		
+		AApplyExpCG beStExp = createMethodAppExp(node, setExpT.getSetOf().clone(), cartSetExp, predLambda, 
+				null, "be_such_that");
+		
+		AVarDeclCG bindingDecl = new AVarDeclCG(); 
+		bindingDecl.setFinal(true);
+		bindingDecl.setExp(beStExp);
+		bindingDecl.setPattern(argPattern.clone());
+		bindingDecl.setType(setExpT.getSetOf().clone());
+		
+		ABlockStmCG blockStm = new ABlockStmCG();
+		blockStm.getLocalDefs().add(bindingDecl);
+		blockStm.getStatements().add(node.getStatement());
+		blockStm.setSourceNode(node.getSourceNode());
+		
+		if(node.parent() != null) {
+			node.parent().replaceChild(node, blockStm);
+		}
+		else {
+			Logger.getLog().printErrorln("Could not find parent of " + node + " in " + "'" + this.getClass().getSimpleName() + "'" );
+		}
+		blockStm.setScoped(StmAssistantCG.isScoped(blockStm));
 	}
 	
 	@Override
@@ -151,26 +198,7 @@ public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 
 	protected void replaceWithMethodCallExp(SExpCG node, SExpCG cartSetExp, ALambdaExpCG predLambda,
 			ALambdaExpCG firstLambda, String method_name) {
-		AMethodTypeCG setCompMType = new AMethodTypeCG();
-		setCompMType.setResult(node.getType().clone());
-		setCompMType.getParams().add(predLambda.getType().clone());
-		if(firstLambda != null) {
-			setCompMType.getParams().add(firstLambda.getType().clone());
-		}
-		
-		AFieldExpCG fieldExp = new AFieldExpCG();
-		fieldExp.setMemberName(method_name);
-		fieldExp.setObject(cartSetExp);
-		fieldExp.setType(setCompMType);
-		
-		AApplyExpCG compExp = new AApplyExpCG();
-		compExp.setRoot(fieldExp);
-		compExp.setType(node.getType());
-		compExp.setSourceNode(node.getSourceNode());
-		compExp.getArgs().add(predLambda);
-		if(firstLambda != null) {
-			compExp.getArgs().add(firstLambda);
-		}
+		AApplyExpCG compExp = createMethodAppExp(node, node.getType(), cartSetExp, predLambda, firstLambda, method_name);
 		
 		if(node.parent() != null) {
 			node.parent().replaceChild(node, compExp);
@@ -178,6 +206,31 @@ public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 		else {
 			Logger.getLog().printErrorln("Could not find parent of " + node + " in " + "'" + this.getClass().getSimpleName() + "'" );
 		}
+	}
+
+	protected AApplyExpCG createMethodAppExp(PCG node, STypeCG type, SExpCG cartSetExp, ALambdaExpCG predLambda,
+			ALambdaExpCG firstLambda, String method_name) {
+		AMethodTypeCG methodType = new AMethodTypeCG();
+		methodType.setResult(type.clone());
+		methodType.getParams().add(predLambda.getType().clone());
+		if(firstLambda != null) {
+			methodType.getParams().add(firstLambda.getType().clone());
+		}
+		
+		AFieldExpCG fieldExp = new AFieldExpCG();
+		fieldExp.setMemberName(method_name);
+		fieldExp.setObject(cartSetExp);
+		fieldExp.setType(methodType);
+		
+		AApplyExpCG compExp = new AApplyExpCG();
+		compExp.setRoot(fieldExp);
+		compExp.setType(type);
+		compExp.setSourceNode(node.getSourceNode());
+		compExp.getArgs().add(predLambda);
+		if(firstLambda != null) {
+			compExp.getArgs().add(firstLambda);
+		}
+		return compExp;
 	}
 
 	protected ALambdaExpCG createFirstLambdaExp(ASetSetTypeCG setExpT, AFormalParamLocalParamCG param, SExpCG firstExp) {
@@ -283,7 +336,7 @@ public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 		return pattern;
 	}
 
-	protected List<ASetMultipleBindCG> castToSetMBList(LinkedList<SMultipleBindCG> bindings) throws AnalysisException {
+	protected List<ASetMultipleBindCG> castToSetMBList(List<SMultipleBindCG> bindings) throws AnalysisException {
 		
 		try {
 			return bindings.stream()
