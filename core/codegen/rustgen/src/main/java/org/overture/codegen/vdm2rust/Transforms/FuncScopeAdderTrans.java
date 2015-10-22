@@ -50,7 +50,7 @@ public class FuncScopeAdderTrans extends DepthFirstAnalysisAdaptor {
 			
 			if(clazz != null)
 			{
-				replaceStmIfFunc(node, clazz, objClass, node.getFieldName(), node.getType(), node.getArgs());
+				replaceStmIfFuncOrStatic(node, clazz, objClass, node.getFieldName(), node.getType(), node.getArgs());
 			}
 		}		
 	}	
@@ -165,7 +165,7 @@ public class FuncScopeAdderTrans extends DepthFirstAnalysisAdaptor {
 		// else: this is a free-standing function added by some IR transformation.
 	}
 	
-	protected void replaceStmIfFunc(PCG node, SClassDeclCG enclosingClass, AClassTypeCG classT, String funcName,
+	protected void replaceStmIfFuncOrStatic(PCG node, SClassDeclCG enclosingClass, AClassTypeCG classT, String funcName,
 			STypeCG funcReturnType, LinkedList<SExpCG> args) {
 		/*
 		 * Check enclosing class for functions of the same name.
