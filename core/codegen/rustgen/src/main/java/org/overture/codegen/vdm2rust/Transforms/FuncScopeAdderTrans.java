@@ -94,7 +94,11 @@ public class FuncScopeAdderTrans extends DepthFirstAnalysisAdaptor {
 				.stream()
 				.anyMatch(func -> func.getName().equals(fieldName));
 		
-		if(isFunction) {
+		boolean isStaticOperation = definingClass.getMethods()
+				.stream()
+				.anyMatch(method -> method.getStatic() && method.getName().equals(fieldName));
+		
+		if(isFunction || isStaticOperation) {
 			AExplicitVarExpCG explIdent = new AExplicitVarExpCG();
 			explIdent.setClassType(classT);
 			explIdent.setName(fieldName);
@@ -131,19 +135,32 @@ public class FuncScopeAdderTrans extends DepthFirstAnalysisAdaptor {
 				.anyMatch(method -> method.getName().equals(node.getName()));
 		
 		if(isOperation) {
-			ACallObjectExpStmCG selfCall = new ACallObjectExpStmCG();
-			selfCall.setObj(new ASelfExpCG());
-			selfCall.setFieldName(node.getName());
-			selfCall.setType(node.getType().clone());			
-			selfCall.setSourceNode(node.getSourceNode());
-			selfCall.getArgs().addAll(node.getArgs());
+			SStmCG call;
+			if(node.getIsStatic()) {
+				if(node.getClassType() == null) {
+					//classtype is missing - add it.
+					AClassTypeCG classT = new AClassTypeCG();
+					classT.setName(enclosingClass.getName());
+					node.setClassType(classT);
+				}
+			} else {
+				ACallObjectExpStmCG selfCall = new ACallObjectExpStmCG();
+				selfCall.setObj(new ASelfExpCG());
+				selfCall.setFieldName(node.getName());
+				selfCall.setType(node.getType().clone());			
+				selfCall.setSourceNode(node.getSourceNode());
+				selfCall.getArgs().addAll(node.getArgs());
+				
+				call = selfCall;
+				if(node.parent() != null) {
+					node.parent().replaceChild(node, call);
+				}
+				else {
+					Logger.getLog().printErrorln("Could not find parent of " + node + " in " + "'" + this.getClass().getSimpleName() + "'" );
+				}
+			}
 			
-			if(node.parent() != null) {
-				node.parent().replaceChild(node, selfCall);
-			}
-			else {
-				Logger.getLog().printErrorln("Could not find parent of " + node + " in " + "'" + this.getClass().getSimpleName() + "'" );
-			}
+			
 		}
 		// else: this is a free-standing function added by some IR transformation.
 	}
@@ -156,11 +173,16 @@ public class FuncScopeAdderTrans extends DepthFirstAnalysisAdaptor {
 		 * the same name (added manually to the IR), then this will
 		 * not give the intended result.
 		 */
+		
 		boolean isFunction = enclosingClass.getFunctions()
 				.stream()
 				.anyMatch(func -> func.getName().equals(funcName));
 		
-		if(isFunction) {
+		boolean isStaticOperation = enclosingClass.getMethods()
+				.stream()
+				.anyMatch(method -> method.getStatic() && method.getName().equals(funcName));
+		
+		if(isFunction || isStaticOperation) {
 			
 			SStmCG plainCall = transAssistant.consStaticCall(classT, 
 															funcName, 

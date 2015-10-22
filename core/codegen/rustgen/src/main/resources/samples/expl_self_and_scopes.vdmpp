@@ -11,6 +11,17 @@ public five : int -> int
 five (i) == 2+3;
 
 operations
+public static_test: () ==> int
+static_test() == (
+	dcl a: expl_self_and_scopes := self;
+	dcl i: int := 123;
+	a.svoidOp();
+	self.svoidOp();
+	svoidOp();
+	i := sfiveop(1);
+	return self.sfiveop(2);
+);
+
 public expl_self_and_scopes: () ==> expl_self_and_scopes
 expl_self_and_scopes() == (
 	let x = 1337 in (
@@ -25,7 +36,13 @@ expl_self_and_scopes() == (
 	kek := self.five(kek); --identifierVarExp + applyExp
 	a.kek := expl_self_and_scopes`five(a.kek); --FieldExp(field="kek", obj=identifierVarExp) + Apply
  ));
- 
+
+public static sfiveop : int  ==> int
+sfiveop (i) == return 2+3;
+
+public static svoidOp: () ==> ()
+svoidOp() == skip;
+
 public fiveop : int  ==> int
 fiveop (i) == return 2+3;
 
