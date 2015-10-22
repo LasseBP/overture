@@ -47,7 +47,7 @@ import org.overture.codegen.logging.Logger;
 public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
-	public void caseALetBeStExpCG(ALetBeStExpCG node) throws AnalysisException {
+	public void outALetBeStExpCG(ALetBeStExpCG node) throws AnalysisException {
 		AVarDeclCG bindingDecl = convLetBeStHeaderToVarDecl(node, node.getHeader());
 		
 		ABlockExpCG blockExp = new ABlockExpCG();
@@ -65,7 +65,7 @@ public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 	}
 	
 	@Override
-	public void caseALetBeStStmCG(ALetBeStStmCG node) throws AnalysisException {
+	public void outALetBeStStmCG(ALetBeStStmCG node) throws AnalysisException {
 		/* goal:
 		 * VDM: let x,y in set {1,2,3} be st y > x in return mk_(x,y);
 		 * Rust:
@@ -95,27 +95,27 @@ public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 	
 	
 	@Override
-	public void caseAExists1QuantifierExpCG(AExists1QuantifierExpCG node) throws AnalysisException {
+	public void outAExists1QuantifierExpCG(AExists1QuantifierExpCG node) throws AnalysisException {
 		replaceQuantifier(node, "exists1");
 	}
 	
 	@Override
-	public void caseAExistsQuantifierExpCG(AExistsQuantifierExpCG node) throws AnalysisException {
+	public void outAExistsQuantifierExpCG(AExistsQuantifierExpCG node) throws AnalysisException {
 		replaceQuantifier(node, "exists");
 	}
 	
 	@Override
-	public void caseAForAllQuantifierExpCG(AForAllQuantifierExpCG node) throws AnalysisException {
+	public void outAForAllQuantifierExpCG(AForAllQuantifierExpCG node) throws AnalysisException {
 		replaceQuantifier(node, "forall");
 	}
 	
 	@Override
-	public void caseACompMapExpCG(ACompMapExpCG node) throws AnalysisException {		
+	public void outACompMapExpCG(ACompMapExpCG node) throws AnalysisException {		
 		replaceMBCompExp(node, "map_compr", convertMapletToTuple(node.getFirst()), node.getPredicate(), node.getBindings());
 	}	
 
 	@Override
-	public void caseACompSeqExpCG(ACompSeqExpCG node) throws AnalysisException {
+	public void outACompSeqExpCG(ACompSeqExpCG node) throws AnalysisException {
 		
 		//setExp over which to perform the comprehension
 		SExpCG cartSetExp = node.getSetBind().getSet();		
@@ -126,7 +126,7 @@ public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 	}
 	
 	@Override
-	public void caseACompSetExpCG(ACompSetExpCG node) throws AnalysisException {
+	public void outACompSetExpCG(ACompSetExpCG node) throws AnalysisException {
 		// goal:
 		// cartesian_set!(s1,s2,s3).set_compr(|(x,_y,_z)| x == 1, |(_x,y,z)| y*z);
 		
