@@ -12,7 +12,7 @@
 #set( $params = "&mut self")
 #end
 #if ($node.getFormalParams().size() > 0)
-	#if( !$node.getIsConstructor() )
+	#if( !$node.getStatic() )
 	#set( $params = ${params} + ", ")
 	#end
 	#set( $params = ${params} + $RustFormat.formatList($node.getFormalParams()))
