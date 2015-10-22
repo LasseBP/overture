@@ -11,6 +11,7 @@ import org.overture.codegen.cgast.expressions.AFieldExpCG;
 import org.overture.codegen.cgast.expressions.AMapletExpCG;
 import org.overture.codegen.cgast.expressions.ANewExpCG;
 import org.overture.codegen.cgast.expressions.AStaticVarExpCG;
+import org.overture.codegen.cgast.expressions.ATupleExpCG;
 import org.overture.codegen.cgast.expressions.AUndefinedExpCG;
 import org.overture.codegen.cgast.expressions.SLiteralExpBase;
 import org.overture.codegen.cgast.expressions.SMapExpBase;
@@ -49,7 +50,8 @@ public class ValueSemanticsTrans extends DepthFirstAnalysisAdaptor {
 			node instanceof SMapExpBase ||
 			node instanceof SSetExpBase ||
 			node instanceof SSeqExpBase ||
-			node instanceof AMapletExpCG) {
+			node instanceof AMapletExpCG ||
+			node instanceof ATupleExpCG) {
 			return;
 		}
 		
