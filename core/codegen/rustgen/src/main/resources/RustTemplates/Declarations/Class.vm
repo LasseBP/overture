@@ -32,6 +32,7 @@ impl $node.getName() {
 /* operations */
 	#foreach( $method in $node.getMethods() )
 	$RustFormat.format($method)
+	
 	#end
 	##
 

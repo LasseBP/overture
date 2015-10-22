@@ -1,0 +1,17 @@
+#if ($Util.isScoped($node))
+{
+#end
+##
+## Local definitions:
+##
+	#foreach( $dec in $node.getLocalDefs() )
+	$RustFormat.format($dec)
+	#end
+##
+## Expression:
+##
+	$RustFormat.format($node.getExp())
+##
+#if ($Util.isScoped($node))
+}
+#end

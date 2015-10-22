@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.overture.codegen.assistant.StmAssistantCG;
-import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.PCG;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.SMultipleBindCG;
@@ -18,6 +17,7 @@ import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.declarations.AFormalParamLocalParamCG;
 import org.overture.codegen.cgast.declarations.AVarDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
+import org.overture.codegen.cgast.expressions.ABlockExpCG;
 import org.overture.codegen.cgast.expressions.ABoolLiteralExpCG;
 import org.overture.codegen.cgast.expressions.ACompMapExpCG;
 import org.overture.codegen.cgast.expressions.ACompSeqExpCG;
@@ -41,14 +41,27 @@ import org.overture.codegen.cgast.types.AMapMapTypeCG;
 import org.overture.codegen.cgast.types.AMethodTypeCG;
 import org.overture.codegen.cgast.types.ASetSetTypeCG;
 import org.overture.codegen.cgast.types.ATupleTypeCG;
+import org.overture.codegen.cgast.utils.AHeaderLetBeStCG;
 import org.overture.codegen.logging.Logger;
 
 public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
 	public void caseALetBeStExpCG(ALetBeStExpCG node) throws AnalysisException {
-		// TODO Auto-generated method stub
-		super.caseALetBeStExpCG(node);
+		AVarDeclCG bindingDecl = convLetBeStHeaderToVarDecl(node, node.getHeader());
+		
+		ABlockExpCG blockExp = new ABlockExpCG();
+		blockExp.getLocalDefs().add(bindingDecl);
+		blockExp.setExp(node.getValue());
+		blockExp.setSourceNode(node.getSourceNode());
+		
+		if(node.parent() != null) {
+			node.parent().replaceChild(node, blockExp);
+		}
+		else {
+			Logger.getLog().printErrorln("Could not find parent of " + node + " in " + "'" + this.getClass().getSimpleName() + "'" );
+		}
+		blockExp.setScoped(StmAssistantCG.isScoped(blockExp));
 	}
 	
 	@Override
@@ -63,26 +76,7 @@ public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 		 * } 
 		 * */
 		
-		List<SMultipleBindCG> bindings = Arrays.asList(node.getHeader().getBinding());
-		List<ASetMultipleBindCG> setMbs = castToSetMBList(bindings);
-		
-		//setExp over which to perform the comprehension
-		SExpCG cartSetExp = getCartesianSetExp(setMbs);		
-		ASetSetTypeCG setExpT = (ASetSetTypeCG)cartSetExp.getType();
-		
-		SPatternCG argPattern = getArgPattern(setMbs);
-		//create lambdas
-		AFormalParamLocalParamCG param = createLambdaParam(argPattern, setExpT);			
-		ALambdaExpCG predLambda = createPredicateLambdaExp(setExpT, param, node.getHeader().getSuchThat());
-		
-		AApplyExpCG beStExp = createMethodAppExp(node, setExpT.getSetOf().clone(), cartSetExp, predLambda, 
-				null, "be_such_that");
-		
-		AVarDeclCG bindingDecl = new AVarDeclCG(); 
-		bindingDecl.setFinal(true);
-		bindingDecl.setExp(beStExp);
-		bindingDecl.setPattern(argPattern.clone());
-		bindingDecl.setType(setExpT.getSetOf().clone());
+		AVarDeclCG bindingDecl = convLetBeStHeaderToVarDecl(node, node.getHeader());
 		
 		ABlockStmCG blockStm = new ABlockStmCG();
 		blockStm.getLocalDefs().add(bindingDecl);
@@ -97,6 +91,8 @@ public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 		}
 		blockStm.setScoped(StmAssistantCG.isScoped(blockStm));
 	}
+
+	
 	
 	@Override
 	public void caseAExists1QuantifierExpCG(AExists1QuantifierExpCG node) throws AnalysisException {
@@ -135,6 +131,31 @@ public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 		// cartesian_set!(s1,s2,s3).set_compr(|(x,_y,_z)| x == 1, |(_x,y,z)| y*z);
 		
 		replaceMBCompExp(node, "set_compr", node.getFirst(), node.getPredicate(), node.getBindings());
+	}
+	
+	protected AVarDeclCG convLetBeStHeaderToVarDecl(PCG node, AHeaderLetBeStCG header)
+			throws AnalysisException {
+		List<SMultipleBindCG> bindings = Arrays.asList(header.getBinding());
+		List<ASetMultipleBindCG> setMbs = castToSetMBList(bindings);
+		
+		//setExp over which to perform the comprehension
+		SExpCG cartSetExp = getCartesianSetExp(setMbs);		
+		ASetSetTypeCG setExpT = (ASetSetTypeCG)cartSetExp.getType();
+		
+		SPatternCG argPattern = getArgPattern(setMbs);
+		//create lambdas
+		AFormalParamLocalParamCG param = createLambdaParam(argPattern, setExpT);			
+		ALambdaExpCG predLambda = createPredicateLambdaExp(setExpT, param, header.getSuchThat());
+		
+		AApplyExpCG beStExp = createMethodAppExp(node, setExpT.getSetOf().clone(), cartSetExp, predLambda, 
+				null, "be_such_that");
+		
+		AVarDeclCG bindingDecl = new AVarDeclCG(); 
+		bindingDecl.setFinal(true);
+		bindingDecl.setExp(beStExp);
+		bindingDecl.setPattern(argPattern.clone());
+		bindingDecl.setType(setExpT.getSetOf().clone());
+		return bindingDecl;
 	}
 	
 	protected SExpCG convertMapletToTuple(AMapletExpCG first) {

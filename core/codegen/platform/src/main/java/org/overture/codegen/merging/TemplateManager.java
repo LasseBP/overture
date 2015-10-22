@@ -409,6 +409,9 @@ public class TemplateManager
 
 		nodeTemplateFileNames.put(AApplyExpCG.class, templateStructure.EXP_PATH
 				+ "Apply");
+		
+		nodeTemplateFileNames.put(ABlockExpCG.class, templateStructure.EXP_PATH
+				+ "Block");
 
 		nodeTemplateFileNames.put(AFieldExpCG.class, templateStructure.EXP_PATH
 				+ "Field");

@@ -36,11 +36,13 @@ import org.overture.ast.statements.ALetStm;
 import org.overture.ast.statements.PStm;
 import org.overture.ast.types.AUnionType;
 import org.overture.ast.types.PType;
+import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.SStmCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.declarations.ADefaultClassDeclCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.declarations.AVarDeclCG;
+import org.overture.codegen.cgast.expressions.ABlockExpCG;
 import org.overture.codegen.cgast.statements.AAtomicStmCG;
 import org.overture.codegen.cgast.statements.ABlockStmCG;
 import org.overture.codegen.cgast.statements.ACaseAltStmStmCG;
@@ -145,6 +147,11 @@ public class StmAssistantCG extends AssistantBase
 				!(block.parent() instanceof AForAllStmCG) &&
 				!(block.parent() instanceof AForIndexStmCG) &&
 				!(block.parent() instanceof AForLoopStmCG);
+	}
+	
+	public static boolean isScoped(ABlockExpCG block)
+	{
+		return block.parent() instanceof SExpCG;
 	}
 	
 	public boolean equal(AMetaStmCG left, AMetaStmCG right)

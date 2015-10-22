@@ -1,13 +1,14 @@
 package org.overture.codegen.vdm2rust.Transforms;
 
-import org.overture.ast.expressions.SSeqExpBase;
 import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
+import org.overture.codegen.cgast.expressions.ABlockExpCG;
 import org.overture.codegen.cgast.expressions.AFieldExpCG;
+import org.overture.codegen.cgast.expressions.ALetBeStExpCG;
 import org.overture.codegen.cgast.expressions.AMapletExpCG;
 import org.overture.codegen.cgast.expressions.ANewExpCG;
 import org.overture.codegen.cgast.expressions.AStaticVarExpCG;
@@ -15,6 +16,7 @@ import org.overture.codegen.cgast.expressions.ATupleExpCG;
 import org.overture.codegen.cgast.expressions.AUndefinedExpCG;
 import org.overture.codegen.cgast.expressions.SLiteralExpBase;
 import org.overture.codegen.cgast.expressions.SMapExpBase;
+import org.overture.codegen.cgast.expressions.SSeqExpBase;
 import org.overture.codegen.cgast.expressions.SSetExpBase;
 import org.overture.codegen.cgast.statements.AAssignToExpStmCG;
 import org.overture.codegen.cgast.types.AClassTypeCG;
@@ -51,7 +53,9 @@ public class ValueSemanticsTrans extends DepthFirstAnalysisAdaptor {
 			node instanceof SSetExpBase ||
 			node instanceof SSeqExpBase ||
 			node instanceof AMapletExpCG ||
-			node instanceof ATupleExpCG) {
+			node instanceof ALetBeStExpCG ||
+			node instanceof ATupleExpCG ||
+			node instanceof ABlockExpCG) {
 			return;
 		}
 		

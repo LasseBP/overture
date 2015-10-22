@@ -340,6 +340,7 @@ CG {-> package='org.overture.codegen.cgast'
 	|	{instanceof} [checkedType]:CG.#type [exp]:CG.#exp
 	|	#Is
     |	#Literal
+    |	{block}	[scoped]:java_Boolean [localDefs]:CG.#decl.var* [exp]:CG.#exp
     |	{self}
     |	{null}
     |	{letDef} [localDefs]:CG.#decl.var* [exp]:CG.#exp
