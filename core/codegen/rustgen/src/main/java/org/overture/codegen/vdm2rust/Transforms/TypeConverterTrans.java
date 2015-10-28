@@ -24,6 +24,7 @@ import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.ACardUnaryExpCG;
 import org.overture.codegen.cgast.expressions.AElemsUnaryExpCG;
 import org.overture.codegen.cgast.expressions.AExplicitVarExpCG;
+import org.overture.codegen.cgast.expressions.AExternalExpCG;
 import org.overture.codegen.cgast.expressions.AFieldExpCG;
 import org.overture.codegen.cgast.expressions.AFieldNumberExpCG;
 import org.overture.codegen.cgast.expressions.AIdentifierVarExpCG;
@@ -199,10 +200,8 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 			methodType.setResult(expectedType.clone());
 			methodType.getParams().add(expType.clone());
 			
-			AIdentifierVarExpCG someCon = new AIdentifierVarExpCG();
-			someCon.setName("Some");
-			someCon.setIsLambda(false);
-			someCon.setIsLocal(true);
+			AExternalExpCG someCon = new AExternalExpCG();
+			someCon.setTargetLangExp("Some");
 			someCon.setSourceNode(exp.getSourceNode());
 			someCon.setType(methodType);			
 			

@@ -24,9 +24,9 @@ import org.overture.codegen.cgast.expressions.ACompSeqExpCG;
 import org.overture.codegen.cgast.expressions.ACompSetExpCG;
 import org.overture.codegen.cgast.expressions.AExists1QuantifierExpCG;
 import org.overture.codegen.cgast.expressions.AExistsQuantifierExpCG;
+import org.overture.codegen.cgast.expressions.AExternalExpCG;
 import org.overture.codegen.cgast.expressions.AFieldExpCG;
 import org.overture.codegen.cgast.expressions.AForAllQuantifierExpCG;
-import org.overture.codegen.cgast.expressions.AIdentifierVarExpCG;
 import org.overture.codegen.cgast.expressions.ALambdaExpCG;
 import org.overture.codegen.cgast.expressions.ALetBeStExpCG;
 import org.overture.codegen.cgast.expressions.AMapletExpCG;
@@ -303,10 +303,8 @@ public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 		
 		if(setsExps.size() > 1) {
 			//cartesian product of the sets for each pattern			
-			AIdentifierVarExpCG cartMacroIdent = new AIdentifierVarExpCG();
-			cartMacroIdent.setName("cartesian_set!");
-			cartMacroIdent.setIsLambda(false);
-			cartMacroIdent.setIsLocal(true); //hack: macros must be called as if local
+			AExternalExpCG cartMacroExp = new AExternalExpCG();
+			cartMacroExp.setTargetLangExp("cartesian_set!");
 			
 			AMethodTypeCG cartMacroType = new AMethodTypeCG();
 			ATupleTypeCG cartSetElemT = new ATupleTypeCG();
@@ -325,10 +323,10 @@ public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 			cartSetType.setSetOf(cartSetElemT);
 			
 			cartMacroType.setResult(cartSetType.clone());
-			cartMacroIdent.setType(cartMacroType);
+			cartMacroExp.setType(cartMacroType);
 			
 			cartesianExp.setType(cartSetType.clone());
-			cartesianExp.setRoot(cartMacroIdent);
+			cartesianExp.setRoot(cartMacroExp);
 			cartSetExp = cartesianExp;		
 			
 		} else {
