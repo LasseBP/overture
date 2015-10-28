@@ -1,7 +1,0 @@
-#set( $exp = $RustFormat.format($node.getExp()) )
-##
-#if ($RustFormat.isStringType($node.getExp().getType()))
-	new StringBuilder($exp).reverse().toString()
-#else
-	SeqUtil.reverse($exp)
-#end

@@ -1,4 +1,0 @@
-#set( $first = $RustFormat.format($node.getFirst()) )
-#set( $last = $RustFormat.format($node.getLast()) )
-##
-(${first}..${last})

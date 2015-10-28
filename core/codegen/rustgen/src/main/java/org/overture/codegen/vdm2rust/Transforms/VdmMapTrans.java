@@ -1,154 +1,160 @@
 package org.overture.codegen.vdm2rust.Transforms;
 
-import java.util.LinkedList;
-
 import org.overture.codegen.cgast.SExpCG;
-import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.ADistMergeUnaryExpCG;
 import org.overture.codegen.cgast.expressions.ADomainResByBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ADomainResToBinaryExpCG;
+import org.overture.codegen.cgast.expressions.AEnumMapExpCG;
 import org.overture.codegen.cgast.expressions.AMapDomainUnaryExpCG;
 import org.overture.codegen.cgast.expressions.AMapInverseUnaryExpCG;
 import org.overture.codegen.cgast.expressions.AMapOverrideBinaryExpCG;
 import org.overture.codegen.cgast.expressions.AMapRangeUnaryExpCG;
 import org.overture.codegen.cgast.expressions.AMapSeqGetExpCG;
 import org.overture.codegen.cgast.expressions.AMapUnionBinaryExpCG;
+import org.overture.codegen.cgast.expressions.APowerNumericBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ARangeResByBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ARangeResToBinaryExpCG;
+import org.overture.codegen.cgast.statements.ACallObjectExpStmCG;
 import org.overture.codegen.cgast.statements.AMapSeqStateDesignatorCG;
 import org.overture.codegen.cgast.statements.AMapSeqUpdateStmCG;
 import org.overture.codegen.cgast.types.AMapMapTypeCG;
-import org.overture.codegen.trans.assistants.BaseTransformationAssistant;
+import org.overture.codegen.cgast.types.AVoidTypeCG;
+import org.overture.codegen.trans.assistants.TransAssistantCG;
 import org.overture.codegen.vdm2rust.ConstructionUtils;
 
 public class VdmMapTrans extends DepthFirstAnalysisAdaptor {
 	
-	private BaseTransformationAssistant baseAssistant;
+	private TransAssistantCG transAssistant;
 	
-	public VdmMapTrans(BaseTransformationAssistant baseAss) {
-		// TODO Auto-generated constructor stub
-		baseAssistant = baseAss;
+	public VdmMapTrans(TransAssistantCG transAssistant) {
+		this.transAssistant = transAssistant;
 	}
 	
 	@Override
-	public void caseAMapDomainUnaryExpCG(AMapDomainUnaryExpCG node)
+	public void inAEnumMapExpCG(AEnumMapExpCG node) throws AnalysisException {
+		AApplyExpCG n = ConstructionUtils.createVariadicExternalExp(node, node.getMembers(), "map!");		
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inAMapDomainUnaryExpCG(AMapDomainUnaryExpCG node)
 			throws AnalysisException {
-		STypeCG a = node.getType();
-		if(a instanceof AMapMapTypeCG)
-		{
-			AMapMapTypeCG am = (AMapMapTypeCG)a;
-			
-			AApplyExpCG n = ConstructionUtils.consUtilCall("vdm_map", "domain", am.getFrom());
-			LinkedList<SExpCG> args = new LinkedList<SExpCG>();
-			args.add(node.getExp());
-			n.setArgs(args);
-			baseAssistant.replaceNodeWith(node, n);
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "domain");
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inAMapRangeUnaryExpCG(AMapRangeUnaryExpCG node) throws AnalysisException
+	{
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "range");
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inAMapInverseUnaryExpCG(AMapInverseUnaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "inverse");
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	
+	@Override
+	public void inAApplyExpCG(AApplyExpCG node) throws AnalysisException {
+		if(node.getRoot().getType() instanceof AMapMapTypeCG) {
+			SExpCG n = ConstructionUtils.consExpCall(node, node.getRoot(), "get", node.getArgs());
+			transAssistant.replaceNodeWith(node, n);
 		}
-	}
-	
-	@Override
-	public void caseADistMergeUnaryExpCG(ADistMergeUnaryExpCG node)
-			throws AnalysisException {
-		// TODO Auto-generated method stub
-		AApplyExpCG n = ConstructionUtils.consUtilCall("vdm_map", "distributed_merge", node.getType());
-		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
-		args.add(node.getExp());
-		n.setArgs(args);
-		baseAssistant.replaceNodeWith(node, n);
-	}
-	
-	@Override
-	public void caseAMapInverseUnaryExpCG(AMapInverseUnaryExpCG node)
-			throws AnalysisException {
-		// TODO Auto-generated method stub
-		super.caseAMapInverseUnaryExpCG(node);
-	}
-	
-	@Override
-	public void caseAMapOverrideBinaryExpCG(AMapOverrideBinaryExpCG node)
-			throws AnalysisException {
-		// TODO Auto-generated method stub
-		super.caseAMapOverrideBinaryExpCG(node);
-	}
-	
-	@Override
-	public void caseAMapRangeUnaryExpCG(AMapRangeUnaryExpCG node)
-			throws AnalysisException {
-		// TODO Auto-generated method stub
-		STypeCG a = node.getType();
-		if(a instanceof AMapMapTypeCG)
-		{
-			AMapMapTypeCG am = (AMapMapTypeCG)a;
-			
-			AApplyExpCG n = ConstructionUtils.consUtilCall("vdm_map", "range", am.getTo());
-			LinkedList<SExpCG> args = new LinkedList<SExpCG>();
-			args.add(node);
-			n.setArgs(args);
-			baseAssistant.replaceNodeWith(node, n);
-		}
-	}
-	
-	@Override
-	public void caseAMapSeqGetExpCG(AMapSeqGetExpCG node)
-			throws AnalysisException {
-		AApplyExpCG n = ConstructionUtils.consUtilCall("vdm_map", "get", node.getType());
-		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
-		args.add(node.getCol());
-		args.add(node.getIndex());
-		n.setArgs(args);
-		baseAssistant.replaceNodeWith(node, n);
-	}
-	
-	@Override
-	public void caseAMapSeqStateDesignatorCG(AMapSeqStateDesignatorCG node)
-			throws AnalysisException {
-		// TODO Auto-generated method stub
-		super.caseAMapSeqStateDesignatorCG(node);
-	}
-	
-	@Override
-	public void caseAMapSeqUpdateStmCG(AMapSeqUpdateStmCG node)
-			throws AnalysisException {
-		// TODO Auto-generated method stub
-		super.caseAMapSeqUpdateStmCG(node);
-	}
-	
-	@Override
-	public void caseAMapUnionBinaryExpCG(AMapUnionBinaryExpCG node)
-			throws AnalysisException {
-		// TODO Auto-generated method stub
-		super.caseAMapUnionBinaryExpCG(node);
-	}
-	
-	@Override
-	public void caseADomainResByBinaryExpCG(ADomainResByBinaryExpCG node)
-			throws AnalysisException {
-		// TODO Auto-generated method stub
-		super.caseADomainResByBinaryExpCG(node);
-	}
-	
-	@Override
-	public void caseADomainResToBinaryExpCG(ADomainResToBinaryExpCG node)
-			throws AnalysisException {
-		// TODO Auto-generated method stub
-		super.caseADomainResToBinaryExpCG(node);
-	}
-	
-	@Override
-	public void caseARangeResByBinaryExpCG(ARangeResByBinaryExpCG node)
-			throws AnalysisException {
-		// TODO Auto-generated method stub
-		super.caseARangeResByBinaryExpCG(node);
-	}
-	
-	@Override
-	public void caseARangeResToBinaryExpCG(ARangeResToBinaryExpCG node)
-			throws AnalysisException {
-		// TODO Auto-generated method stub
-		super.caseARangeResToBinaryExpCG(node);
 	}
 
+	
+	@Override
+	public void inAMapSeqGetExpCG(AMapSeqGetExpCG node)
+			throws AnalysisException {
+		if(node.getCol().getType() instanceof AMapMapTypeCG) {
+			SExpCG n = ConstructionUtils.consExpCall(node, node.getCol(), "get", node.getIndex());
+			transAssistant.replaceNodeWith(node, n);
+		}
+	}
+
+	@Override
+	public void inAMapSeqStateDesignatorCG(AMapSeqStateDesignatorCG node)
+			throws AnalysisException {
+		throw new AnalysisException("MapSeqStateDesignator nodes should not exist in the IR at this stage.");
+	}
+	
+	@Override
+	public void inAMapSeqUpdateStmCG(AMapSeqUpdateStmCG node)
+			throws AnalysisException {
+		if(node.getCol().getType() instanceof AMapMapTypeCG) {
+			ACallObjectExpStmCG insertCall = new ACallObjectExpStmCG();
+			insertCall.setType(new AVoidTypeCG()); //actually returns Option<V> with old value, but we don't care
+			insertCall.setObj(node.getCol());
+			insertCall.setFieldName("insert");
+			insertCall.setSourceNode(node.getSourceNode());
+			insertCall.getArgs().add(node.getIndex());
+			insertCall.getArgs().add(node.getValue());
+			
+			transAssistant.replaceNodeWith(node, insertCall);
+		}
+	}	
+	
+	@Override
+	public void inAMapOverrideBinaryExpCG(AMapOverrideBinaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "ovrride", node.getRight());
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inAMapUnionBinaryExpCG(AMapUnionBinaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "merge", node.getRight());
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inADistMergeUnaryExpCG(ADistMergeUnaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "merge");
+		transAssistant.replaceNodeWith(node, n);
+	}
+
+	@Override
+	public void inADomainResByBinaryExpCG(ADomainResByBinaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "dom_restrict_by", node.getLeft());
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inADomainResToBinaryExpCG(ADomainResToBinaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "dom_restrict_to", node.getLeft());
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inARangeResByBinaryExpCG(ARangeResByBinaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "rng_restrict_by", node.getRight());
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inARangeResToBinaryExpCG(ARangeResToBinaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "rng_restrict_to", node.getRight());
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inAPowerNumericBinaryExpCG(APowerNumericBinaryExpCG node) throws AnalysisException {
+		if(node.getLeft().getType() instanceof AMapMapTypeCG) {
+			SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "iterate", node.getRight());
+			transAssistant.replaceNodeWith(node, n);
+		}
+	}
 }

@@ -1,4 +1,0 @@
-#set( $leftExp = $RustFormat.format($node.getLeft()) )
-#set( $rightExp = $RustFormat.format($node.getRight()) )
-##
-SeqUtil.mod($leftExp, $rightExp)

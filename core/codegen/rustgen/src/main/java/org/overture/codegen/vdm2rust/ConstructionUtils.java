@@ -1,8 +1,15 @@
 package org.overture.codegen.vdm2rust;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.AExplicitVarExpCG;
+import org.overture.codegen.cgast.expressions.AExternalExpCG;
+import org.overture.codegen.cgast.expressions.AFieldExpCG;
 import org.overture.codegen.cgast.types.AExternalTypeCG;
 import org.overture.codegen.cgast.types.AMethodTypeCG;
 
@@ -31,6 +38,56 @@ public class ConstructionUtils {
 		call.setRoot(member);
 		
 		return call;
+	}
+	
+	public static List<STypeCG> getExpressionTypes(List<? extends SExpCG> expressions) {
+		return expressions
+				.stream()
+				.map(member -> member.getType().clone())
+				.collect(Collectors.toList());
+	}
+	
+	public static SExpCG consExpCall(SExpCG oldExp, SExpCG root, String memberName, SExpCG... args) {		
+		return consExpCall(oldExp, root, memberName, Arrays.asList(args));
+	}
+	
+	public static SExpCG consExpCall(SExpCG oldExp, SExpCG root, String memberName, List<SExpCG> args) {
+		AApplyExpCG instanceCall = new AApplyExpCG();
+		
+		AMethodTypeCG methodType = new AMethodTypeCG();
+		methodType.setOptional(false);
+		methodType.setResult(oldExp.getType().clone());
+		methodType.getParams().addAll(getExpressionTypes(args));
+		
+		AFieldExpCG fieldExp = new AFieldExpCG();
+		fieldExp.setMemberName(memberName);
+		fieldExp.setObject(root);
+		fieldExp.setType(methodType);
+		
+		instanceCall.setRoot(fieldExp);
+		instanceCall.setType(oldExp.getType().clone());
+		instanceCall.getArgs().addAll(args);
+		instanceCall.setSourceNode(oldExp.getSourceNode());
+		
+		return instanceCall;
+	}
+	
+	public static AApplyExpCG createVariadicExternalExp(SExpCG oldNode, List<? extends SExpCG> args, String expression) {
+		AMethodTypeCG macroType = new AMethodTypeCG();
+		macroType.setResult(oldNode.getType().clone());
+		macroType.getParams().addAll(getExpressionTypes(args));
+		macroType.setOptional(false);
+		
+		AExternalExpCG setMacroExp = new AExternalExpCG();
+		setMacroExp.setTargetLangExp(expression);
+		setMacroExp.setType(macroType);
+		
+		AApplyExpCG n = new AApplyExpCG();	
+		n.setRoot(setMacroExp);
+		n.getArgs().addAll(args);
+		n.setType(oldNode.getType().clone());
+		n.setSourceNode(oldNode.getSourceNode());
+		return n;
 	}
 	
 	

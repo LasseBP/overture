@@ -1,3 +1,0 @@
-#set( $exp = $RustFormat.format($node.getExp()) )
-##
-SetUtil.dunion($exp)

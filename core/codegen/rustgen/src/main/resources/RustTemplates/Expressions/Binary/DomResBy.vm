@@ -1,4 +1,0 @@
-#set( $left = $RustFormat.format($node.getLeft()) )
-#set( $right = $RustFormat.format($node.getRight()) )
-##
-${left}.dom_restrict_by(&${right})

@@ -1,20 +1,26 @@
 package org.overture.codegen.vdm2rust.Transforms;
 
-import java.util.LinkedList;
-
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
-import org.overture.codegen.cgast.expressions.ADistConcatUnaryExpCG;
+import org.overture.codegen.cgast.expressions.ACardUnaryExpCG;
 import org.overture.codegen.cgast.expressions.ADistIntersectUnaryExpCG;
 import org.overture.codegen.cgast.expressions.ADistUnionUnaryExpCG;
 import org.overture.codegen.cgast.expressions.AEnumSetExpCG;
+import org.overture.codegen.cgast.expressions.AExplicitVarExpCG;
+import org.overture.codegen.cgast.expressions.AInSetBinaryExpCG;
+import org.overture.codegen.cgast.expressions.APowerSetUnaryExpCG;
+import org.overture.codegen.cgast.expressions.ARangeSetExpCG;
 import org.overture.codegen.cgast.expressions.ASetDifferenceBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ASetIntersectBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ASetProperSubsetBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ASetSubsetBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ASetUnionBinaryExpCG;
+import org.overture.codegen.cgast.types.AExternalTypeCG;
+import org.overture.codegen.cgast.types.AMethodTypeCG;
+import org.overture.codegen.cgast.types.ARealNumericBasicTypeCG;
+import org.overture.codegen.cgast.utils.AInfoExternalType;
 import org.overture.codegen.trans.assistants.TransAssistantCG;
 import org.overture.codegen.vdm2rust.ConstructionUtils;
 
@@ -27,102 +33,106 @@ public class VdmSetTrans extends DepthFirstAnalysisAdaptor {
 	}
 	
 	@Override
-	public void caseASetDifferenceBinaryExpCG(ASetDifferenceBinaryExpCG node)
-			throws AnalysisException {
-		AApplyExpCG n = ConstructionUtils.consUtilCall("vdm_set", "difference", node.getType());
-		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
-		args.add(node.getLeft());
-		args.add(node.getRight());
-		n.setArgs(args);
+	public void inAEnumSetExpCG(AEnumSetExpCG node) throws AnalysisException {		
+		AApplyExpCG n = ConstructionUtils.createVariadicExternalExp(node, node.getMembers(), "set!");		
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void caseAEnumSetExpCG(AEnumSetExpCG node) throws AnalysisException {
+	public void inAInSetBinaryExpCG(AInSetBinaryExpCG node) throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "in_set", node.getLeft());
+		transAssistant.replaceNodeWith(node, n);
+	}	
+
+	@Override
+	public void inASetDifferenceBinaryExpCG(ASetDifferenceBinaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "difference", node.getLeft());
+		transAssistant.replaceNodeWith(node, n);
+	}
+
+	@Override
+	public void inASetUnionBinaryExpCG(ASetUnionBinaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "union", node.getLeft());
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inASetIntersectBinaryExpCG(ASetIntersectBinaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "inter", node.getLeft());
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inASetSubsetBinaryExpCG(ASetSubsetBinaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "is_subset", node.getLeft());
+		transAssistant.replaceNodeWith(node, n);
+	}
+	@Override
+	public void inASetProperSubsetBinaryExpCG(ASetProperSubsetBinaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "is_psubset", node.getLeft());
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inACardUnaryExpCG(ACardUnaryExpCG node) throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "len");
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inADistIntersectUnaryExpCG(ADistIntersectUnaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "dinter");
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inADistUnionUnaryExpCG(ADistUnionUnaryExpCG node)
+			throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "dunion");
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inAPowerSetUnaryExpCG(APowerSetUnaryExpCG node) throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "powersets");
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inARangeSetExpCG(ARangeSetExpCG node) throws AnalysisException {
+		AInfoExternalType externalTypeInfo = new AInfoExternalType();
+		externalTypeInfo.setNamespace("codegen_runtime");
+		AExternalTypeCG cgRtSetType = new AExternalTypeCG();
+		cgRtSetType.setOptional(false);
+		cgRtSetType.setInfo(externalTypeInfo);
+		cgRtSetType.setName("Set");
 		
+		AExplicitVarExpCG rangeFunc = new AExplicitVarExpCG();
+		rangeFunc.setClassType(cgRtSetType);
+		rangeFunc.setIsLambda(false);
+		rangeFunc.setIsLocal(false);
+		rangeFunc.setName("range");
 		
-		AApplyExpCG n = ConstructionUtils.consUtilCall("vdm_set", "create_set", node.getType().clone());
-		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
-		args.addAll(node.getMembers());
-		n.setArgs(args);
-		transAssistant.replaceNodeWith(node, n);
-	}
-	
-	@Override
-	public void caseASetUnionBinaryExpCG(ASetUnionBinaryExpCG node)
-			throws AnalysisException {
-		AApplyExpCG n = ConstructionUtils.consUtilCall("vdm_set", "union", node.getType());
-		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
-		args.add(node.getLeft());
-		args.add(node.getRight());
-		n.setArgs(args);
-		transAssistant.replaceNodeWith(node, n);
-	}
-	
-	@Override
-	public void caseASetIntersectBinaryExpCG(ASetIntersectBinaryExpCG node)
-			throws AnalysisException {
-		AApplyExpCG n = ConstructionUtils.consUtilCall("vdm_set", "intersection", node.getType());
-		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
-		args.add(node.getLeft());
-		args.add(node.getRight());
-		n.setArgs(args);
-		transAssistant.replaceNodeWith(node, n);
-	}
-	
-	@Override
-	public void caseASetSubsetBinaryExpCG(ASetSubsetBinaryExpCG node)
-			throws AnalysisException {
-		AApplyExpCG n = ConstructionUtils.consUtilCall("vdm_set", "is_subset", node.getType());
-		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
-		args.add(node.getLeft());
-		args.add(node.getRight());
-		n.setArgs(args);
-		transAssistant.replaceNodeWith(node, n);
-	}
-	@Override
-	public void caseASetProperSubsetBinaryExpCG(ASetProperSubsetBinaryExpCG node)
-			throws AnalysisException {
-		AApplyExpCG n = ConstructionUtils.consUtilCall("vdm_set", "is_proper_subset", node.getType());
-		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
-		args.add(node.getLeft());
-		args.add(node.getRight());
-		n.setArgs(args);
-		transAssistant.replaceNodeWith(node, n);
-	}
-	
-	
-	@Override
-	public void caseADistConcatUnaryExpCG(ADistConcatUnaryExpCG node)
-			throws AnalysisException {
-		// TODO Auto-generated method stub
-		AApplyExpCG n = ConstructionUtils.consUtilCall("vdm_set", "distributed_concat", node.getType());
-		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
-		args.add(node.getExp());
-		n.setArgs(args);
-		transAssistant.replaceNodeWith(node, n);
-	}
-	
-	@Override
-	public void caseADistIntersectUnaryExpCG(ADistIntersectUnaryExpCG node)
-			throws AnalysisException {
-		AApplyExpCG n = ConstructionUtils.consUtilCall("vdm_set", "distributed_intersection", node.getType());
-		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
-		args.add(node.getExp());
-		n.setArgs(args);
-		transAssistant.replaceNodeWith(node, n);
-	}
-	
-	@Override
-	public void caseADistUnionUnaryExpCG(ADistUnionUnaryExpCG node)
-			throws AnalysisException {
-		// TODO Auto-generated method stub
-		AApplyExpCG n = ConstructionUtils.consUtilCall("vdm_set", "distributed_union", node.getType());
-		LinkedList<SExpCG> args = new LinkedList<SExpCG>();
-		args.add(node.getExp());
-		n.setArgs(args);
-		transAssistant.replaceNodeWith(node, n);
-	}
-	
-	
+		AMethodTypeCG funcType = new AMethodTypeCG();
+		funcType.setOptional(false);
+		funcType.setResult(node.getType().clone());
+		funcType.getParams().add(new ARealNumericBasicTypeCG());
+		funcType.getParams().add(new ARealNumericBasicTypeCG());
+		
+		rangeFunc.setType(funcType);
+		AApplyExpCG rangeExp = new AApplyExpCG();		
+		rangeExp.setRoot(rangeFunc);
+		rangeExp.setType(node.getType().clone());
+		rangeExp.getArgs().add(node.getFirst().clone());
+		rangeExp.getArgs().add(node.getLast().clone());
+		rangeExp.setSourceNode(node.getSourceNode());
+		
+		transAssistant.replaceNodeWith(node, rangeExp);
+	}	
 }

@@ -1,4 +1,4 @@
 #set( $type = $RustFormat.format($node.getType()))
 #set( $exp = $RustFormat.format($node.getExp()))
 ##
-(($type) $exp)
+($exp as $type)

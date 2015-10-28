@@ -167,7 +167,7 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 		{
 			if (transAssistant.getInfo().getTypeAssistant().isNumericType(expectedType))
 			{
-				throw new AnalysisException("numeric conversions are not implemented.");
+				//throw new AnalysisException("numeric conversions are not implemented.");
 			} else if (expectedType instanceof AUnionTypeCG || 
 					expType instanceof AUnionTypeCG)
 			{							

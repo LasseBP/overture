@@ -1,4 +1,0 @@
-#set( $element = $RustFormat.format($node.getLeft()) )
-#set( $set = $RustFormat.format($node.getRight()) )
-##
-SetUtil.inSet(${element},${set})

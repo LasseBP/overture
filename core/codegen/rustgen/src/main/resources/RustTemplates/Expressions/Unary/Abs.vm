@@ -1,1 +1,1 @@
-Utils.abs($RustFormat.format($node.getExp()))
+${RustFormat.format($node.getExp())}.abs()
