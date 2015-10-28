@@ -1,2 +1,2 @@
 ##The actual types can be fetched using $node.getActualTypes()
-$RustFormat.format($node.getFunc())
+$RustFormat.format($node.getFunc())::<$RustFormat.formatList($node.getActualTypes())>

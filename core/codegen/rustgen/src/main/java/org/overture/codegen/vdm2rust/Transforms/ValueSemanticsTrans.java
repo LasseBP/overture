@@ -70,6 +70,7 @@ public class ValueSemanticsTrans extends DepthFirstAnalysisAdaptor {
 		rootExp.setMemberName("clone");
 		rootExp.setType(methodType);
 		rootExp.setObject(node.clone());
+		rootExp.setSourceNode(node.getSourceNode());
 		
 		if(node.parent() != null) {
 			node.parent().replaceChild(node, applyExp);

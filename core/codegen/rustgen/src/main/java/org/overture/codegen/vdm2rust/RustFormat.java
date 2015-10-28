@@ -9,7 +9,6 @@ import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
-import org.overture.codegen.cgast.declarations.ANamedTypeDeclCG;
 import org.overture.codegen.cgast.expressions.AUndefinedExpCG;
 import org.overture.codegen.ir.IRInfo;
 import org.overture.codegen.merging.MergeVisitor;
@@ -21,7 +20,7 @@ import org.overture.codegen.utils.GeneralUtils;
 public class RustFormat {
 	
 	private MergeVisitor mergeVisitor;
-	private IRInfo info;
+	//private IRInfo info;
 	private FormatUtils util;
 
 	public RustFormat(IRInfo info)
@@ -31,7 +30,7 @@ public class RustFormat {
 		TemplateCallable[] templateCallables = new TemplateCallable[]{new TemplateCallable("RustFormat", this), 
 																	  new TemplateCallable("Util", util)};
 		this.mergeVisitor = new MergeVisitor(templateManager, templateCallables);
-		this.info = info;
+		//this.info = info;
 	}
 	
 	public void init()
