@@ -41,24 +41,24 @@ pub struct Plant {
 impl Plant {
     // operations
     pub fn ExpertToPage(&mut self, a: Alarm, p: Period) -> Expert {
-        let expert: Expert = self.schedule.clone()(p.clone())
+        let expert: Expert = self.schedule
+                                 .get(p.clone())
                                  .be_such_that(|expert: Expert| -> bool {
-                                     SetUtil.inSet(a.reqQuali.clone(), expert.quali.clone())
+                                     expert.quali.in_set(a.reqQuali.clone())
                                  });
         return expert.clone();
 
     }
 
     pub fn NumberOfExperts(&mut self, p: Period) -> u64 {
-        return self.schedule.clone()(p.clone()).len();
+        return self.schedule.get(p.clone()).len();
     }
 
     pub fn ExpertIsOnDuty(&mut self, ex: Expert) -> Set<Period> {
-        return MapUtil.dom(self.schedule.clone())
-                      .set_compr(|p: Period| -> bool {
-                                     SetUtil.inSet(ex.clone(), self.schedule.clone()(p.clone()))
-                                 },
-                                 |p: Period| -> Period { p.clone() });
+        return self.schedule.domain().set_compr(|p: Period| -> bool {
+                                                    self.schedule.get(p.clone()).in_set(ex.clone())
+                                                },
+                                                |p: Period| -> Period { p.clone() });
     }
 
     pub fn cg_init_Plant_1(&mut self, als: Set<Alarm>, sch: Map<Period, Set<Expert>>) -> () {
@@ -77,14 +77,16 @@ impl Plant {
 
     // functions
     fn PlantInv(als: Set<Alarm>, sch: Map<Period, Set<Expert>>) -> bool {
-        MapUtil.dom(sch.clone()).forall(|p: Period| -> bool { sch.clone()(p.clone()) != set!() }) &&
-        als.clone().forall(|a: Alarm| -> bool {
-            MapUtil.dom(sch.clone()).forall(|p: Period| -> bool {
-                sch.clone()(p.clone()).exists(|expert: Expert| -> bool {
-                    SetUtil.inSet(a.reqQuali.clone(), expert.quali.clone())
-                })
+        sch.domain().forall(|p: Period| -> bool { sch.get(p.clone()) != set!() }) &&
+        als.forall(|a: Alarm| -> bool {
+            sch.domain().forall(|p: Period| -> bool {
+                sch.get(p.clone())
+                   .exists(|expert: Expert| -> bool { expert.quali.in_set(a.reqQuali.clone()) })
             })
         })
+    }
+    fn seq_test() -> Seq<char> {
+        seq!('h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '!')
     }
 	}
 

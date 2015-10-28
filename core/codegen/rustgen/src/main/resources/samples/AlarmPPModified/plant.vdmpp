@@ -18,6 +18,9 @@ PlantInv(als,sch) ==
        exists expert in set sch(p) &
          a.reqQuali in set expert.quali);
 
+seq_test: () +> seq of char
+seq_test() == "hello world!";
+
 types
 
 public Period = token;
