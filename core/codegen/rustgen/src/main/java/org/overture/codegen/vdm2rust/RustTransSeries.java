@@ -15,6 +15,8 @@ import org.overture.codegen.vdm2rust.Transforms.FuncScopeAdderTrans;
 import org.overture.codegen.vdm2rust.Transforms.InitialExpTrans;
 import org.overture.codegen.vdm2rust.Transforms.PackageTrans;
 import org.overture.codegen.vdm2rust.Transforms.StaticVarTrans;
+import org.overture.codegen.vdm2rust.Transforms.TypeConverterTrans;
+import org.overture.codegen.vdm2rust.Transforms.UnionDeclTrans;
 import org.overture.codegen.vdm2rust.Transforms.ValueSemanticsTrans;
 
 public class RustTransSeries {
@@ -45,11 +47,14 @@ public class RustTransSeries {
 		StaticVarTrans staticVar = new StaticVarTrans(irInfo);
 		PackageTrans packageTrans = new PackageTrans();
 		ComprehensionAndQuantifierTrans compTrans = new ComprehensionAndQuantifierTrans();
+		UnionDeclTrans unionTrans = new UnionDeclTrans();
+		TypeConverterTrans typeTrans = new TypeConverterTrans(transAssistant);
 
 		// Set up order of transformations
 		transformations = new ArrayList<DepthFirstAnalysisAdaptor>();
 
 		transformations.add(packageTrans);
+		transformations.add(unionTrans);
 		transformations.add(accTrans);
 		transformations.add(valueTrans);
 		transformations.add(assignTr);
@@ -59,6 +64,7 @@ public class RustTransSeries {
 		transformations.add(constructorTrans);
 		transformations.add(selfAndScope);
 		transformations.add(initExp);
+		transformations.add(typeTrans);
 		
 	}
 
