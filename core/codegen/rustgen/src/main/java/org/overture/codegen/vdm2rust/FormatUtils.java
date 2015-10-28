@@ -8,6 +8,7 @@ import org.overture.codegen.cgast.SDeclCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.declarations.AFieldDeclCG;
 import org.overture.codegen.cgast.declarations.ARecordDeclCG;
+import org.overture.codegen.cgast.declarations.AUnionEnumDeclCG;
 import org.overture.codegen.cgast.expressions.ABlockExpCG;
 import org.overture.codegen.cgast.statements.ABlockStmCG;
 import org.overture.codegen.cgast.types.AVoidTypeCG;
@@ -35,7 +36,8 @@ public class FormatUtils {
 	
 	public static boolean hasAccessInTemplate(SDeclCG declaration)
 	{
-		return declaration instanceof ARecordDeclCG;
+		return declaration instanceof ARecordDeclCG ||
+			   declaration instanceof AUnionEnumDeclCG;
 	}
 	
 	public static List<AFieldDeclCG> getInstanceVarFields(List<AFieldDeclCG> fields)

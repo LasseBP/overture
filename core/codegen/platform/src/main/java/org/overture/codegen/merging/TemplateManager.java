@@ -42,6 +42,7 @@ import org.overture.codegen.cgast.declarations.ANamedTypeDeclCG;
 import org.overture.codegen.cgast.declarations.ARecordDeclCG;
 import org.overture.codegen.cgast.declarations.AThreadDeclCG;
 import org.overture.codegen.cgast.declarations.ATypeDeclCG;
+import org.overture.codegen.cgast.declarations.AUnionEnumDeclCG;
 import org.overture.codegen.cgast.declarations.AVarDeclCG;
 import org.overture.codegen.cgast.expressions.*;
 import org.overture.codegen.cgast.patterns.AIdentifierPatternCG;
@@ -200,6 +201,9 @@ public class TemplateManager
 
 		nodeTemplateFileNames.put(ACatchClauseDeclCG.class, templateStructure.DECL_PATH
 				+ "CatchClause");
+		
+		nodeTemplateFileNames.put(AUnionEnumDeclCG.class, templateStructure.DECL_PATH
+				+ "UnionEnum");
 
 		// Local declarations
 

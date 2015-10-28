@@ -1,0 +1,16 @@
+#[derive(PartialEq, Eq, Clone, Hash)]
+$node.parent().getAccess() enum $node.getName() {
+	#foreach( $variant in $node.getVariants() )
+	$variant.getName().getName()($RustFormat.format($variant.getType())),
+	#end
+}
+#set( $last_variant = $node.getVariants().getLast())
+impl_union! { $node.getName():
+	#foreach( $variant in $node.getVariants() )
+	#set($line_ending = "")
+	#if($variant != $last_variant)
+	#set($line_ending = ",") 
+	#end	
+	$RustFormat.format($variant.getType()) as $node.getName()::$variant.getName().getName()$line_ending 
+	#end 
+}

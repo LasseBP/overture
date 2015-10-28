@@ -217,6 +217,9 @@ CG {-> package='org.overture.codegen.cgast'
     |	{namedTrace}
     	[pathname]:CG.#name.token*
     	[terms]:CG.#term.traceDecl*
+    |	{UnionEnum}
+    	[name]:java_String
+    	[variants]:CG.#decl.namedType*
 	;
 	
 #Class {-> package='org.overture.codegen.cgast.declarations'
