@@ -1,0 +1,69 @@
+\begin{vdm_al}
+class Plant
+
+instance variables
+
+alarms   : set of Alarm;
+schedule : map Period to set of Expert;
+inv PlantInv(alarms,schedule);
+
+functions
+
+PlantInv: set of Alarm * map Period to set of Expert +> 
+          bool
+PlantInv(als,sch) ==
+  (forall p in set dom sch & sch(p) <> {}) and
+  (forall a in set als &
+     forall p in set dom sch &
+       exists expert in set sch(p) &
+         a.reqQuali in set expert.quali);
+
+types
+
+public Period = token;
+public String = seq of char;
+
+public Qualification = <Mech> | <Chem> | <Bio> | <Elec>;
+
+public Alarm :: descr : String
+								reqQuali : Qualification;
+								
+public Expert :: quali : set of Qualification;
+
+operations
+
+public ExpertToPage: Alarm * Period ==> Expert
+ExpertToPage(a, p) ==
+  let expert in set schedule(p) be st
+      a.reqQuali in set expert.quali
+  in
+    return expert
+pre a in set alarms and
+    p in set dom schedule
+post let expert = RESULT
+     in
+       expert in set schedule(p) and
+       a.reqQuali in set expert.quali;
+\end{vdm_al}
+	 
+\begin{vdm_al}
+public NumberOfExperts: Period ==> nat
+NumberOfExperts(p) ==
+  return card schedule(p)
+pre p in set dom schedule;
+
+public ExpertIsOnDuty: Expert ==> set of Period
+ExpertIsOnDuty(ex) ==
+  return {p | p in set dom schedule & 
+              ex in set schedule(p)};
+
+public Plant: set of Alarm * 
+              map Period to set of Expert ==> Plant
+Plant(als,sch) ==
+( alarms := als;
+  schedule := sch
+)
+pre PlantInv(als,sch);
+
+end Plant
+\end{vdm_al}

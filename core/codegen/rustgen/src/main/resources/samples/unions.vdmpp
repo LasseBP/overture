@@ -7,10 +7,16 @@ kek :: val: int;
 
 functions
 
-public f1 : () -> U
-f1 () == <T>;
+public f1 : U -> U
+f1 (u) == f1(<T>);
 
-public f2 : () -> [nat]
-f2 () == 123;
+public f2 : U -> <T>
+f2 (u) == f1(<T>);
+
+public f3 : nat -> [nat]
+f3 (i) == i;
+
+public f4 : [nat] -> nat
+f4 (i) == i;
 
 end unions
