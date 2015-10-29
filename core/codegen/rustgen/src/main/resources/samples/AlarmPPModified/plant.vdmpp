@@ -21,11 +21,11 @@ PlantInv(als,sch) ==
 types
 
 public Period = token;
-public String = seq of char;
+public StringSeq = seq of char;
 
 public Qualification = <Mech> | <Chem> | <Bio> | <Elec>;
 
-public Alarm :: descr : String
+public Alarm :: descr : StringSeq
 								reqQuali : Qualification;
 								
 public Expert :: quali : set of Qualification;
