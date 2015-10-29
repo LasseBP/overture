@@ -18,9 +18,6 @@ PlantInv(als,sch) ==
        exists expert in set sch(p) &
          a.reqQuali in set expert.quali);
 
-seq_test: () +> seq of char
-seq_test() == "hello world!";
-
 types
 
 public Period = token;
@@ -67,6 +64,25 @@ Plant(als,sch) ==
   schedule := sch
 )
 pre PlantInv(als,sch);
+
+public AddExpertToSchedule: Period * Expert ==> ()
+AddExpertToSchedule(p,ex) ==
+  schedule(p) := if p in set dom schedule
+                 then schedule(p) union {ex}
+                 else {ex};
+  
+-- this one is erronerous but combinatorial testing should find that                 
+public RemoveExpertFromSchedule: Period * Expert ==> ()
+RemoveExpertFromSchedule(p,ex) == 
+  let exs = schedule(p)
+  in
+    schedule := if card exs = 1
+                then {p} <-: schedule
+                else schedule ++ {p |-> exs \ {ex}}
+pre p in set dom schedule and 
+(forall a in set alarms &
+	exists expert in set schedule(p) \ {ex} &
+		a.reqQuali in set expert.quali);
 
 end Plant
 \end{vdm_al}
