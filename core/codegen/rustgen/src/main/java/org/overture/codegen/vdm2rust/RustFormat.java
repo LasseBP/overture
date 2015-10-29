@@ -5,10 +5,13 @@ import java.util.List;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.overture.ast.util.ClonableString;
+import org.overture.codegen.assistant.TypeAssistantCG;
 import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
+import org.overture.codegen.cgast.declarations.SClassDeclBase;
+import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.expressions.AUndefinedExpCG;
 import org.overture.codegen.ir.IRInfo;
 import org.overture.codegen.merging.MergeVisitor;
@@ -20,7 +23,7 @@ import org.overture.codegen.utils.GeneralUtils;
 public class RustFormat {
 	
 	private MergeVisitor mergeVisitor;
-	//private IRInfo info;
+	private IRInfo info;
 	private FormatUtils util;
 
 	public RustFormat(IRInfo info)
@@ -30,7 +33,7 @@ public class RustFormat {
 		TemplateCallable[] templateCallables = new TemplateCallable[]{new TemplateCallable("RustFormat", this), 
 																	  new TemplateCallable("Util", util)};
 		this.mergeVisitor = new MergeVisitor(templateManager, templateCallables);
-		//this.info = info;
+		this.info = info;
 	}
 	
 	public void init()
@@ -67,6 +70,17 @@ public class RustFormat {
 		
 		if(isOptional) {
 			writer.write("Option<");
+		}
+		
+		String definingClassName = TypeAssistantCG.getDefiningClass(node);
+		if(definingClassName != null && !definingClassName.isEmpty()) {
+			SClassDeclCG definingClass = info.getClass(definingClassName);
+			SClassDeclCG enclosingClass = node.getAncestor(SClassDeclCG.class);
+			
+			//specify which module type was defined in, if it is not the enclosing module.
+			if(definingClass != null && enclosingClass != null && definingClass != enclosingClass) {
+				writer.write("::" + definingClass.getPackage() + "::");
+			}
 		}
 		
 		if(node.getNamedInvType() != null) {

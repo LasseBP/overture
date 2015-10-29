@@ -51,6 +51,7 @@ import org.overture.codegen.cgast.declarations.ARecordDeclCG;
 import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.SBinaryExpCG;
+import org.overture.codegen.cgast.name.ATypeNameCG;
 import org.overture.codegen.cgast.statements.AApplyObjectDesignatorCG;
 import org.overture.codegen.cgast.types.ABoolBasicTypeCG;
 import org.overture.codegen.cgast.types.ABoolBasicTypeWrappersTypeCG;
@@ -809,4 +810,21 @@ public class TypeAssistantCG extends AssistantBase
 		}
 		
 	}
+	
+	public static String getDefiningClass(STypeCG type) {
+		ATypeNameCG typeName = null;
+		
+		if(type instanceof ARecordTypeCG) {
+			typeName =  ((ARecordTypeCG)type).getName();
+		} else if (type.getNamedInvType() != null) {
+			typeName = type.getNamedInvType().getName();
+		}
+		
+		if(typeName != null && typeName.getDefiningClass() != null && !typeName.getDefiningClass().isEmpty()) {
+			return typeName.getDefiningClass();
+		}
+		
+		return null;
+	}
+	
 }
