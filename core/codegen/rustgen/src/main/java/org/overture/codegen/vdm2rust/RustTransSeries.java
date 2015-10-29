@@ -17,6 +17,7 @@ import org.overture.codegen.vdm2rust.Transforms.PackageTrans;
 import org.overture.codegen.vdm2rust.Transforms.StaticVarTrans;
 import org.overture.codegen.vdm2rust.Transforms.TypeConverterTrans;
 import org.overture.codegen.vdm2rust.Transforms.UnionDeclTrans;
+import org.overture.codegen.vdm2rust.Transforms.UseStmTrans;
 import org.overture.codegen.vdm2rust.Transforms.ValueSemanticsTrans;
 import org.overture.codegen.vdm2rust.Transforms.VdmMapTrans;
 import org.overture.codegen.vdm2rust.Transforms.VdmSeqTrans;
@@ -55,6 +56,7 @@ public class RustTransSeries {
 		VdmSetTrans setTrans = new VdmSetTrans(transAssistant);
 		VdmMapTrans mapTrans = new VdmMapTrans(transAssistant);
 		VdmSeqTrans seqTrans = new VdmSeqTrans(transAssistant);
+		UseStmTrans useTrans = new UseStmTrans(irInfo);
 
 		// Set up order of transformations
 		transformations = new ArrayList<DepthFirstAnalysisAdaptor>();
@@ -74,7 +76,7 @@ public class RustTransSeries {
 		transformations.add(seqTrans);
 		transformations.add(typeTrans);		
 		transformations.add(valueTrans);
-			
+		transformations.add(useTrans);			
 	}
 
 	public List<DepthFirstAnalysisAdaptor> getTransformations() {

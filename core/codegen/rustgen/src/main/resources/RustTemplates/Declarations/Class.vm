@@ -1,4 +1,6 @@
-use codegen_runtime::*;
+#foreach( $dep in $node.getDependencies() )
+use ${dep.toString()};
+#end##
 
 /* types */
 #foreach( $typeDecl in $node.getTypeDecls() )
