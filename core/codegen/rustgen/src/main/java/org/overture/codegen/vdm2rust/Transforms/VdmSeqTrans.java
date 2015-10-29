@@ -1,6 +1,5 @@
 package org.overture.codegen.vdm2rust.Transforms;
 
-
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
@@ -15,6 +14,7 @@ import org.overture.codegen.cgast.expressions.AMapSeqGetExpCG;
 import org.overture.codegen.cgast.expressions.AReverseUnaryExpCG;
 import org.overture.codegen.cgast.expressions.ASeqConcatBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ASeqModificationBinaryExpCG;
+import org.overture.codegen.cgast.expressions.ASubSeqExpCG;
 import org.overture.codegen.cgast.expressions.ATailUnaryExpCG;
 import org.overture.codegen.cgast.statements.ACallObjectExpStmCG;
 import org.overture.codegen.cgast.statements.AMapSeqStateDesignatorCG;
@@ -47,6 +47,12 @@ public class VdmSeqTrans extends DepthFirstAnalysisAdaptor {
 	@Override
 	public void inATailUnaryExpCG(ATailUnaryExpCG node) throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "head");
+		transAssistant.replaceNodeWith(node, n);
+	}
+	
+	@Override
+	public void inASubSeqExpCG(ASubSeqExpCG node) throws AnalysisException {
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getSeq(), "sub_seq", node.getFrom(), node.getTo());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
