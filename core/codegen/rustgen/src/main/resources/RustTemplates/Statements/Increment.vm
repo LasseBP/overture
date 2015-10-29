@@ -1,1 +1,1 @@
-$RustFormat.format($node.getVar())++;
+$RustFormat.format($node.getVar()) += 1;
