@@ -20,6 +20,8 @@ import org.overture.codegen.cgast.expressions.ASetUnionBinaryExpCG;
 import org.overture.codegen.cgast.types.AExternalTypeCG;
 import org.overture.codegen.cgast.types.AMethodTypeCG;
 import org.overture.codegen.cgast.types.ARealNumericBasicTypeCG;
+import org.overture.codegen.cgast.types.ASetSetTypeCG;
+import org.overture.codegen.cgast.types.AUnknownTypeCG;
 import org.overture.codegen.cgast.utils.AInfoExternalType;
 import org.overture.codegen.trans.assistants.TransAssistantCG;
 import org.overture.codegen.vdm2rust.ConstructionUtils;
@@ -33,79 +35,87 @@ public class VdmSetTrans extends DepthFirstAnalysisAdaptor {
 	}
 	
 	@Override
-	public void inAEnumSetExpCG(AEnumSetExpCG node) throws AnalysisException {		
-		AApplyExpCG n = ConstructionUtils.createVariadicExternalExp(node, node.getMembers(), "set!");		
+	public void outAEnumSetExpCG(AEnumSetExpCG node) throws AnalysisException {
+		ASetSetTypeCG setType = (ASetSetTypeCG)node.getType();
+		AApplyExpCG n = null;
+		
+		if(!(setType.getSetOf() instanceof AUnknownTypeCG)) {
+			n = ConstructionUtils.createVariadicExternalExp(node, node.getMembers(), "set!", setType.getSetOf().clone());
+		} else {
+			n = ConstructionUtils.createVariadicExternalExp(node, node.getMembers(), "set!");
+		}
+				
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inAInSetBinaryExpCG(AInSetBinaryExpCG node) throws AnalysisException {
+	public void outAInSetBinaryExpCG(AInSetBinaryExpCG node) throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "in_set", node.getLeft());
 		transAssistant.replaceNodeWith(node, n);
 	}	
 
 	@Override
-	public void inASetDifferenceBinaryExpCG(ASetDifferenceBinaryExpCG node)
+	public void outASetDifferenceBinaryExpCG(ASetDifferenceBinaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "difference", node.getLeft());
 		transAssistant.replaceNodeWith(node, n);
 	}
 
 	@Override
-	public void inASetUnionBinaryExpCG(ASetUnionBinaryExpCG node)
+	public void outASetUnionBinaryExpCG(ASetUnionBinaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "union", node.getLeft());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inASetIntersectBinaryExpCG(ASetIntersectBinaryExpCG node)
+	public void outASetIntersectBinaryExpCG(ASetIntersectBinaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "inter", node.getLeft());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inASetSubsetBinaryExpCG(ASetSubsetBinaryExpCG node)
+	public void outASetSubsetBinaryExpCG(ASetSubsetBinaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "is_subset", node.getLeft());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	@Override
-	public void inASetProperSubsetBinaryExpCG(ASetProperSubsetBinaryExpCG node)
+	public void outASetProperSubsetBinaryExpCG(ASetProperSubsetBinaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "is_psubset", node.getLeft());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inACardUnaryExpCG(ACardUnaryExpCG node) throws AnalysisException {
+	public void outACardUnaryExpCG(ACardUnaryExpCG node) throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "len");
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inADistIntersectUnaryExpCG(ADistIntersectUnaryExpCG node)
+	public void outADistIntersectUnaryExpCG(ADistIntersectUnaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "dinter");
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inADistUnionUnaryExpCG(ADistUnionUnaryExpCG node)
+	public void outADistUnionUnaryExpCG(ADistUnionUnaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "dunion");
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inAPowerSetUnaryExpCG(APowerSetUnaryExpCG node) throws AnalysisException {
+	public void outAPowerSetUnaryExpCG(APowerSetUnaryExpCG node) throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "powersets");
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inARangeSetExpCG(ARangeSetExpCG node) throws AnalysisException {
+	public void outARangeSetExpCG(ARangeSetExpCG node) throws AnalysisException {
 		AInfoExternalType externalTypeInfo = new AInfoExternalType();
 		externalTypeInfo.setNamespace("codegen_runtime");
 		AExternalTypeCG cgRtSetType = new AExternalTypeCG();

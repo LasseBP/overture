@@ -1,6 +1,7 @@
 package org.overture.codegen.vdm2rust;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -73,9 +74,21 @@ public class ConstructionUtils {
 	}
 	
 	public static AApplyExpCG createVariadicExternalExp(SExpCG oldNode, List<? extends SExpCG> args, String expression) {
+		return createVariadicExternalExp(oldNode, args, expression, null);
+	}
+	
+	public static AApplyExpCG createVariadicExternalExp(SExpCG oldNode, List<? extends SExpCG> args, String expression, STypeCG argType) {
 		AMethodTypeCG macroType = new AMethodTypeCG();
 		macroType.setResult(oldNode.getType().clone());
-		macroType.getParams().addAll(getExpressionTypes(args));
+		if(argType == null) {
+			macroType.getParams().addAll(getExpressionTypes(args));
+		} else {
+			List<STypeCG> argTypes = Collections.nCopies(args.size(), argType)
+												.stream()
+												.map(argT -> argT.clone())
+												.collect(Collectors.toList());
+			macroType.getParams().addAll(argTypes);
+		}
 		macroType.setOptional(false);
 		
 		AExternalExpCG setMacroExp = new AExternalExpCG();

@@ -34,27 +34,27 @@ public class VdmMapTrans extends DepthFirstAnalysisAdaptor {
 	}
 	
 	@Override
-	public void inAEnumMapExpCG(AEnumMapExpCG node) throws AnalysisException {
+	public void outAEnumMapExpCG(AEnumMapExpCG node) throws AnalysisException {
 		AApplyExpCG n = ConstructionUtils.createVariadicExternalExp(node, node.getMembers(), "map!");		
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inAMapDomainUnaryExpCG(AMapDomainUnaryExpCG node)
+	public void outAMapDomainUnaryExpCG(AMapDomainUnaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "domain");
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inAMapRangeUnaryExpCG(AMapRangeUnaryExpCG node) throws AnalysisException
+	public void outAMapRangeUnaryExpCG(AMapRangeUnaryExpCG node) throws AnalysisException
 	{
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "range");
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inAMapInverseUnaryExpCG(AMapInverseUnaryExpCG node)
+	public void outAMapInverseUnaryExpCG(AMapInverseUnaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "inverse");
 		transAssistant.replaceNodeWith(node, n);
@@ -62,7 +62,7 @@ public class VdmMapTrans extends DepthFirstAnalysisAdaptor {
 	
 	
 	@Override
-	public void inAApplyExpCG(AApplyExpCG node) throws AnalysisException {
+	public void outAApplyExpCG(AApplyExpCG node) throws AnalysisException {
 		if(node.getRoot().getType() instanceof AMapMapTypeCG) {
 			SExpCG n = ConstructionUtils.consExpCall(node, node.getRoot(), "get", node.getArgs());
 			transAssistant.replaceNodeWith(node, n);
@@ -71,7 +71,7 @@ public class VdmMapTrans extends DepthFirstAnalysisAdaptor {
 
 	
 	@Override
-	public void inAMapSeqGetExpCG(AMapSeqGetExpCG node)
+	public void outAMapSeqGetExpCG(AMapSeqGetExpCG node)
 			throws AnalysisException {
 		if(node.getCol().getType() instanceof AMapMapTypeCG) {
 			SExpCG n = ConstructionUtils.consExpCall(node, node.getCol(), "get", node.getIndex());
@@ -80,13 +80,13 @@ public class VdmMapTrans extends DepthFirstAnalysisAdaptor {
 	}
 
 	@Override
-	public void inAMapSeqStateDesignatorCG(AMapSeqStateDesignatorCG node)
+	public void outAMapSeqStateDesignatorCG(AMapSeqStateDesignatorCG node)
 			throws AnalysisException {
 		throw new AnalysisException("MapSeqStateDesignator nodes should not exist in the IR at this stage.");
 	}
 	
 	@Override
-	public void inAMapSeqUpdateStmCG(AMapSeqUpdateStmCG node)
+	public void outAMapSeqUpdateStmCG(AMapSeqUpdateStmCG node)
 			throws AnalysisException {
 		if(node.getCol().getType() instanceof AMapMapTypeCG) {
 			ACallObjectExpStmCG insertCall = new ACallObjectExpStmCG();
@@ -102,56 +102,56 @@ public class VdmMapTrans extends DepthFirstAnalysisAdaptor {
 	}	
 	
 	@Override
-	public void inAMapOverrideBinaryExpCG(AMapOverrideBinaryExpCG node)
+	public void outAMapOverrideBinaryExpCG(AMapOverrideBinaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "ovrride", node.getRight());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inAMapUnionBinaryExpCG(AMapUnionBinaryExpCG node)
+	public void outAMapUnionBinaryExpCG(AMapUnionBinaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "merge", node.getRight());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inADistMergeUnaryExpCG(ADistMergeUnaryExpCG node)
+	public void outADistMergeUnaryExpCG(ADistMergeUnaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "merge");
 		transAssistant.replaceNodeWith(node, n);
 	}
 
 	@Override
-	public void inADomainResByBinaryExpCG(ADomainResByBinaryExpCG node)
+	public void outADomainResByBinaryExpCG(ADomainResByBinaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "dom_restrict_by", node.getLeft());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inADomainResToBinaryExpCG(ADomainResToBinaryExpCG node)
+	public void outADomainResToBinaryExpCG(ADomainResToBinaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "dom_restrict_to", node.getLeft());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inARangeResByBinaryExpCG(ARangeResByBinaryExpCG node)
+	public void outARangeResByBinaryExpCG(ARangeResByBinaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "rng_restrict_by", node.getRight());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inARangeResToBinaryExpCG(ARangeResToBinaryExpCG node)
+	public void outARangeResToBinaryExpCG(ARangeResToBinaryExpCG node)
 			throws AnalysisException {
 		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "rng_restrict_to", node.getRight());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
-	public void inAPowerNumericBinaryExpCG(APowerNumericBinaryExpCG node) throws AnalysisException {
+	public void outAPowerNumericBinaryExpCG(APowerNumericBinaryExpCG node) throws AnalysisException {
 		if(node.getLeft().getType() instanceof AMapMapTypeCG) {
 			SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "iterate", node.getRight());
 			transAssistant.replaceNodeWith(node, n);
