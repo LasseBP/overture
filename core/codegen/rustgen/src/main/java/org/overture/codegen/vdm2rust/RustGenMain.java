@@ -3,9 +3,10 @@ package org.overture.codegen.vdm2rust;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.overture.ast.analysis.AnalysisException;
 import org.overture.ast.definitions.SClassDefinition;
@@ -25,10 +26,9 @@ public class RustGenMain {
 
 		// Se i JavaCodeGenMain
 
-		File file = new File(args[0]);
-
-		List<File> files = new ArrayList<>();
-		files.add(file);
+		List<File> files = Arrays.stream(args)
+								.map(arg -> new File(arg))
+								.collect(Collectors.toList());
 		
 		Settings.dialect = Dialect.VDM_PP;
 		RustCodeGen rustGen = new RustCodeGen();
@@ -45,7 +45,7 @@ public class RustGenMain {
 			
 			GeneratedData data = rustGen.generateRustFromVdm(tcResult.result);
 			
-			processData(true, new File(file.getParent()), rustGen, data);
+			processData(true, new File(files.get(0).getParent()), rustGen, data);
 			
 		} catch (AnalysisException e) {
 			Logger.getLog().println("Could not code generate model: "
