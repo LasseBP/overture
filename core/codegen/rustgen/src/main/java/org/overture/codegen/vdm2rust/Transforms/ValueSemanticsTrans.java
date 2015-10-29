@@ -12,6 +12,7 @@ import org.overture.codegen.cgast.expressions.AMapSeqGetExpCG;
 import org.overture.codegen.cgast.expressions.AStaticVarExpCG;
 import org.overture.codegen.cgast.expressions.SVarExpBase;
 import org.overture.codegen.cgast.statements.AAssignToExpStmCG;
+import org.overture.codegen.cgast.statements.ACallObjectExpStmCG;
 import org.overture.codegen.cgast.types.AClassTypeCG;
 import org.overture.codegen.cgast.types.AMethodTypeCG;
 import org.overture.codegen.cgast.types.ATokenBasicTypeCG;
@@ -34,7 +35,8 @@ public class ValueSemanticsTrans extends DepthFirstAnalysisAdaptor {
 			return;
 		}
 		
-		if (parent instanceof AFieldExpCG) {
+		if (parent instanceof AFieldExpCG ||
+			parent instanceof ACallObjectExpStmCG) {
 			return;
 		}
 		
