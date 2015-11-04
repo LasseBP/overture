@@ -49,16 +49,29 @@ public class ConstructionUtils {
 	}
 	
 	public static SExpCG consExpCall(SExpCG oldExp, SExpCG root, String memberName, SExpCG... args) {		
-		return consExpCall(oldExp, root, memberName, Arrays.asList(args));
+		return consExpCall(oldExp, root, memberName, null, Arrays.asList(args));
+	}
+	
+	public static SExpCG consExpCall(SExpCG oldExp, SExpCG root, String memberName, AMethodTypeCG mType, SExpCG... args) {		
+		return consExpCall(oldExp, root, memberName, mType, Arrays.asList(args));
 	}
 	
 	public static SExpCG consExpCall(SExpCG oldExp, SExpCG root, String memberName, List<SExpCG> args) {
+		return consExpCall(oldExp, root, memberName, null, args);
+	}
+	
+	public static SExpCG consExpCall(SExpCG oldExp, SExpCG root, String memberName, AMethodTypeCG mType, List<SExpCG> args) {
 		AApplyExpCG instanceCall = new AApplyExpCG();
 		
-		AMethodTypeCG methodType = new AMethodTypeCG();
-		methodType.setOptional(false);
-		methodType.setResult(oldExp.getType().clone());
-		methodType.getParams().addAll(getExpressionTypes(args));
+		AMethodTypeCG methodType = null;
+		if(mType != null) {
+			methodType = mType;
+		} else {
+			methodType = new AMethodTypeCG();
+			methodType.setOptional(false);
+			methodType.setResult(oldExp.getType().clone());
+			methodType.getParams().addAll(getExpressionTypes(args));
+		}
 		
 		AFieldExpCG fieldExp = new AFieldExpCG();
 		fieldExp.setMemberName(memberName);

@@ -54,6 +54,11 @@ import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.SMultipleBindCG;
 import org.overture.codegen.cgast.STypeCG;
+import org.overture.codegen.cgast.analysis.QuestionAnswerAdaptor;
+import org.overture.codegen.cgast.declarations.AFuncDeclCG;
+import org.overture.codegen.cgast.declarations.AMethodDeclCG;
+import org.overture.codegen.cgast.declarations.AVarDeclCG;
+import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.ABoolIsExpCG;
 import org.overture.codegen.cgast.expressions.ABoolLiteralExpCG;
@@ -88,14 +93,18 @@ import org.overture.codegen.cgast.expressions.SIsExpCG;
 import org.overture.codegen.cgast.expressions.SQuantifierExpCG;
 import org.overture.codegen.cgast.expressions.SUnaryExpCG;
 import org.overture.codegen.cgast.expressions.SVarExpCG;
+import org.overture.codegen.cgast.statements.ACallObjectExpStmCG;
 import org.overture.codegen.cgast.statements.AForLoopStmCG;
 import org.overture.codegen.cgast.statements.AIdentifierStateDesignatorCG;
+import org.overture.codegen.cgast.statements.APlainCallStmCG;
+import org.overture.codegen.cgast.statements.AReturnStmCG;
 import org.overture.codegen.cgast.statements.AWhileStmCG;
 import org.overture.codegen.cgast.types.ABoolBasicTypeCG;
 import org.overture.codegen.cgast.types.ACharBasicTypeCG;
 import org.overture.codegen.cgast.types.AClassTypeCG;
 import org.overture.codegen.cgast.types.AIntNumericBasicTypeCG;
 import org.overture.codegen.cgast.types.AMapMapTypeCG;
+import org.overture.codegen.cgast.types.AMethodTypeCG;
 import org.overture.codegen.cgast.types.ANat1NumericBasicTypeCG;
 import org.overture.codegen.cgast.types.ANatNumericBasicTypeCG;
 import org.overture.codegen.cgast.types.AQuoteTypeCG;
@@ -720,6 +729,123 @@ public class ExpAssistantCG extends AssistantBase
 		else
 		{
 			return false;
+		}
+	}
+	
+	public static STypeCG getDeclaredType(SExpCG exp, IRInfo info) throws org.overture.codegen.cgast.analysis.AnalysisException {
+		//TODO: look further than the parent -> type flow/inference.
+		if(exp.parent() != null) {			
+			return exp.parent().apply(new DeclTypeFinder(info), exp);
+		} else {
+			return null;
+		}
+	}
+	
+	private static class DeclTypeFinder extends QuestionAnswerAdaptor<SExpCG,STypeCG> {
+		
+		IRInfo info;
+		
+		public DeclTypeFinder(IRInfo info) {
+			this.info = info;
+		}		
+
+		@Override
+		public STypeCG caseAVarDeclCG(AVarDeclCG node, SExpCG question)
+				throws org.overture.codegen.cgast.analysis.AnalysisException {
+			if(node.getExp() == question){
+				return node.getType();
+			} else {
+				return super.caseAVarDeclCG(node, question);
+			}
+		}
+		
+		@Override
+		public STypeCG caseAApplyExpCG(AApplyExpCG node, SExpCG question)
+				throws org.overture.codegen.cgast.analysis.AnalysisException {
+			
+			if(node.getRoot().getType() instanceof AMethodTypeCG) {
+				AMethodTypeCG mType = (AMethodTypeCG)node.getRoot().getType();
+				int index = node.getArgs().indexOf(question);
+				if(index != -1) {
+					return mType.getParams().get(index).clone();
+				}
+			}			
+			
+			return super.caseAApplyExpCG(node, question);
+		}
+		
+		@Override
+		public STypeCG caseACallObjectExpStmCG(ACallObjectExpStmCG node, SExpCG question)
+				throws org.overture.codegen.cgast.analysis.AnalysisException {
+			
+			STypeCG declaredType = findFormalParamType(node.getArgs(), question, (AClassTypeCG)node.getObj(), node.getFieldName());
+			if(declaredType != null) {
+				return declaredType;
+			}			
+			
+			return super.caseACallObjectExpStmCG(node, question);
+		}
+		
+		@Override
+		public STypeCG caseAPlainCallStmCG(APlainCallStmCG node, SExpCG question)
+				throws org.overture.codegen.cgast.analysis.AnalysisException {
+			
+			if(node.getClassType() != null && node.getClassType() instanceof AClassTypeCG){
+				STypeCG declaredType = findFormalParamType(node.getArgs(), question, (AClassTypeCG)node.getClassType(), node.getName());
+				if(declaredType != null) {
+					return declaredType;
+				}								
+			}
+			
+			return super.caseAPlainCallStmCG(node, question);
+		}
+		
+		protected STypeCG findFormalParamType(List<SExpCG> args, SExpCG question, AClassTypeCG classT, String opName) {
+			SClassDeclCG classDecl = info.getClass(classT.getName());
+			if(classDecl != null) {
+				AMethodDeclCG mType = classDecl.getMethods()
+														 .stream()
+														 .filter(method -> method.getName().equals(opName))
+														 .findFirst()
+														 .orElse(null);
+				
+				if(mType != null) {
+					int index = args.indexOf(question);
+					if(index != -1) {
+						return mType.getFormalParams().get(index).getType().clone();
+					}
+				}					
+			}
+			return null;
+		}
+		
+		@Override
+		public STypeCG caseAReturnStmCG(AReturnStmCG node, SExpCG question)
+				throws org.overture.codegen.cgast.analysis.AnalysisException {
+			if(node.getExp() == question && node.parent() instanceof AMethodDeclCG) {
+				AMethodDeclCG mDecl = (AMethodDeclCG)node.parent();
+				return mDecl.getMethodType().getResult().clone();
+			}
+			
+			return super.caseAReturnStmCG(node, question);
+		}
+		
+		@Override
+		public STypeCG caseAFuncDeclCG(AFuncDeclCG node, SExpCG question)
+				throws org.overture.codegen.cgast.analysis.AnalysisException {
+			return node.getMethodType().getResult().clone();
+		}		
+		
+		@Override
+		public STypeCG createNewReturnValue(INode node, SExpCG question)
+				throws org.overture.codegen.cgast.analysis.AnalysisException {
+			return null;
+		}
+
+		@Override
+		public STypeCG createNewReturnValue(Object node, SExpCG question)
+				throws org.overture.codegen.cgast.analysis.AnalysisException {
+			return null;
 		}
 	}
 }

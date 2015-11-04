@@ -3,7 +3,9 @@ package org.overture.codegen.vdm2rust.Transforms;
 import java.util.Arrays;
 
 import org.overture.ast.expressions.AStringLiteralExp;
+import org.overture.codegen.assistant.ExpAssistantCG;
 import org.overture.codegen.cgast.SExpCG;
+import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
@@ -23,6 +25,7 @@ import org.overture.codegen.cgast.expressions.ATailUnaryExpCG;
 import org.overture.codegen.cgast.statements.ACallObjectExpStmCG;
 import org.overture.codegen.cgast.statements.AMapSeqStateDesignatorCG;
 import org.overture.codegen.cgast.statements.AMapSeqUpdateStmCG;
+import org.overture.codegen.cgast.types.ACharBasicTypeCG;
 import org.overture.codegen.cgast.types.ASeqSeqTypeCG;
 import org.overture.codegen.cgast.types.AStringTypeCG;
 import org.overture.codegen.cgast.types.AVoidTypeCG;
@@ -39,9 +42,12 @@ public class VdmSeqTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
 	public void outAEnumSeqExpCG(AEnumSeqExpCG node) throws AnalysisException {
+		ASeqSeqTypeCG declaredType = (ASeqSeqTypeCG)ExpAssistantCG.getDeclaredType(node, transAssistant.getInfo());
+		STypeCG seqOf = declaredType != null ? declaredType.getSeqOf() : ((ASeqSeqTypeCG)node.getType()).getSeqOf();
+		
 		AApplyExpCG n = null;
 		
-		if(node.getSourceNode() != null && node.getSourceNode().getVdmNode() instanceof AStringLiteralExp) {
+		if(node.getSourceNode() != null && node.getSourceNode().getVdmNode() instanceof AStringLiteralExp && seqOf instanceof ACharBasicTypeCG) {
 			AStringLiteralExp stringNode = (AStringLiteralExp)node.getSourceNode().getVdmNode();
 			AStringLiteralExpCG cgStringNode = new AStringLiteralExpCG();
 			cgStringNode.setIsNull(false);
@@ -51,7 +57,7 @@ public class VdmSeqTrans extends DepthFirstAnalysisAdaptor {
 			
 			n = ConstructionUtils.createVariadicExternalExp(node, Arrays.asList(cgStringNode), "strseq!");			
 		}else {
-			n = ConstructionUtils.createVariadicExternalExp(node, node.getMembers(), "seq!");
+			n = ConstructionUtils.createVariadicExternalExp(node, node.getMembers(), "seq!", seqOf.clone());
 		}		
 				
 		transAssistant.replaceNodeWith(node, n);

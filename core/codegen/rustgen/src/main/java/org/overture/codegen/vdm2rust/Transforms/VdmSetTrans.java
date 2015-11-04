@@ -1,6 +1,8 @@
 package org.overture.codegen.vdm2rust.Transforms;
 
+import org.overture.codegen.assistant.ExpAssistantCG;
 import org.overture.codegen.cgast.SExpCG;
+import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
@@ -36,11 +38,14 @@ public class VdmSetTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
 	public void outAEnumSetExpCG(AEnumSetExpCG node) throws AnalysisException {
+		ASetSetTypeCG declaredType = (ASetSetTypeCG)ExpAssistantCG.getDeclaredType(node, transAssistant.getInfo());
 		ASetSetTypeCG setType = (ASetSetTypeCG)node.getType();
 		AApplyExpCG n = null;
 		
-		if(!(setType.getSetOf() instanceof AUnknownTypeCG)) {
-			n = ConstructionUtils.createVariadicExternalExp(node, node.getMembers(), "set!", setType.getSetOf().clone());
+		STypeCG setOf = (declaredType != null && !(declaredType.getSetOf() instanceof AUnknownTypeCG)) ? declaredType.getSetOf() : setType.getSetOf();
+		
+		if(!(setOf instanceof AUnknownTypeCG)) {
+			n = ConstructionUtils.createVariadicExternalExp(node, node.getMembers(), "set!", setOf.clone());
 		} else {
 			n = ConstructionUtils.createVariadicExternalExp(node, node.getMembers(), "set!");
 		}
@@ -90,7 +95,7 @@ public class VdmSetTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
 	public void outACardUnaryExpCG(ACardUnaryExpCG node) throws AnalysisException {
-		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "len");
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "card");
 		transAssistant.replaceNodeWith(node, n);
 	}
 	

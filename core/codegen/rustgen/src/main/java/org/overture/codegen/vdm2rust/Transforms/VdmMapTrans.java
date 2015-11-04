@@ -1,5 +1,6 @@
 package org.overture.codegen.vdm2rust.Transforms;
 
+import org.overture.codegen.assistant.ExpAssistantCG;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
@@ -35,7 +36,10 @@ public class VdmMapTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
 	public void outAEnumMapExpCG(AEnumMapExpCG node) throws AnalysisException {
-		AApplyExpCG n = ConstructionUtils.createVariadicExternalExp(node, node.getMembers(), "map!");		
+		AMapMapTypeCG declaredType = (AMapMapTypeCG)ExpAssistantCG.getDeclaredType(node, transAssistant.getInfo());
+		AMapMapTypeCG mapType = declaredType != null ? declaredType : (AMapMapTypeCG)node.getType();
+		
+		AApplyExpCG n = ConstructionUtils.createVariadicExternalExp(node, node.getMembers(), "map!", mapType.clone());		
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
@@ -63,7 +67,7 @@ public class VdmMapTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
 	public void outAApplyExpCG(AApplyExpCG node) throws AnalysisException {
-		if(node.getRoot().getType() instanceof AMapMapTypeCG) {
+		if(node.getRoot().getType() instanceof AMapMapTypeCG) {			
 			SExpCG n = ConstructionUtils.consExpCall(node, node.getRoot(), "get", node.getArgs());
 			transAssistant.replaceNodeWith(node, n);
 		}
