@@ -4,20 +4,26 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.overture.codegen.cgast.SStmCG;
+import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
-import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
+import org.overture.codegen.cgast.declarations.ARecordDeclCG;
 import org.overture.codegen.cgast.declarations.AVarDeclCG;
+import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.AExplicitVarExpCG;
 import org.overture.codegen.cgast.expressions.AIdentifierVarExpCG;
+import org.overture.codegen.cgast.name.ATypeNameCG;
 import org.overture.codegen.cgast.patterns.AIdentifierPatternCG;
 import org.overture.codegen.cgast.statements.ABlockStmCG;
 import org.overture.codegen.cgast.statements.ACallObjectExpStmCG;
 import org.overture.codegen.cgast.statements.APlainCallStmCG;
 import org.overture.codegen.cgast.statements.AReturnStmCG;
+import org.overture.codegen.cgast.statements.ASkipStmCG;
 import org.overture.codegen.cgast.types.AClassTypeCG;
+import org.overture.codegen.cgast.types.AMethodTypeCG;
+import org.overture.codegen.cgast.types.ARecordTypeCG;
 import org.overture.codegen.cgast.types.AVoidTypeCG;
 import org.overture.codegen.trans.assistants.TransAssistantCG;
 
@@ -56,6 +62,42 @@ public class ConstructorTrans extends DepthFirstAnalysisAdaptor {
 		
 		transformConstructor(selectedConstructor);
 	}
+	
+	@Override
+	public void caseARecordDeclCG(ARecordDeclCG node) throws AnalysisException {
+		SClassDeclCG definingClass = node.getAncestor(SClassDeclCG.class);
+		
+		ATypeNameCG rTypeName = new ATypeNameCG();
+		rTypeName.setName(node.getName());
+		rTypeName.setDefiningClass(definingClass.getName());
+		
+		ARecordTypeCG rType = new ARecordTypeCG();
+		rType.setOptional(false);
+		rType.setName(rTypeName);
+		
+		List<STypeCG> fieldTypes = node.getFields()
+				   .stream()
+				   .map(field -> field.getType().clone())
+				   .collect(Collectors.toList());
+		
+		AMethodTypeCG mType = new AMethodTypeCG();
+		mType.setOptional(false);
+		mType.setResult(rType);
+		mType.getParams().addAll(fieldTypes);
+		
+		AMethodDeclCG constructor = new AMethodDeclCG();
+		constructor.setIsConstructor(true);
+		constructor.setName("new");
+		constructor.setStatic(true);
+		constructor.setImplicit(false);
+		constructor.setAbstract(false);
+		constructor.setAccess("pub");
+		constructor.setAsync(false);
+		constructor.setBody(new ASkipStmCG()); //actual implementation is created in the template via a Rust macro		
+		constructor.setMethodType(mType);
+		
+		node.getMethods().add(constructor);
+	}
 
 	protected void transformConstructor(AMethodDeclCG node) {
 		/*
@@ -63,6 +105,8 @@ public class ConstructorTrans extends DepthFirstAnalysisAdaptor {
 		 * [instance.cg_init_x(<args>)]
 		 * return instance  
 		 */
+		
+		node.setName("new");
 		
 		// the new function/constructor is an associated function.
 		node.setStatic(true);
