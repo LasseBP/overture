@@ -1,5 +1,5 @@
 #foreach( $dep in $node.getDependencies() )
-use ${dep.toString()};
+use $dep;
 #end##
 
 /* types */
