@@ -36,7 +36,7 @@ public class ValueSemanticsTrans extends DepthFirstAnalysisAdaptor {
 		}
 		
 		if (parent instanceof AFieldExpCG ||
-			parent instanceof ACallObjectExpStmCG) {
+			(parent instanceof ACallObjectExpStmCG && !((ACallObjectExpStmCG)parent).getArgs().contains(node) )) {
 			return;
 		}
 		
