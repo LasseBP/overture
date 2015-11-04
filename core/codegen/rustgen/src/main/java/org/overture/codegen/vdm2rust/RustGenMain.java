@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.overture.ast.analysis.AnalysisException;
 import org.overture.ast.definitions.SClassDefinition;
 import org.overture.ast.lex.Dialect;
+import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.ir.IrNodeInfo;
 import org.overture.codegen.logging.Logger;
 import org.overture.codegen.utils.GeneralCodeGenUtils;
@@ -90,7 +91,7 @@ public class RustGenMain {
 				{
 					if (outputDir != null)
 					{
-						try (PrintWriter outFile = new PrintWriter(outputDir.toString() + File.separator + generatedClass.getName() + ".rs")) {
+						try (PrintWriter outFile = new PrintWriter(outputDir.toString() + File.separator + ((SClassDeclCG)generatedClass.getIrNode()).getPackage() + ".rs")) {
 							outFile.println(generatedClass.getContent());
 						} catch (FileNotFoundException e) {
 							e.printStackTrace();

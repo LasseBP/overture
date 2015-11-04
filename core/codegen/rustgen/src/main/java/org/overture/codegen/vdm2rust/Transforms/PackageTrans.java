@@ -7,6 +7,6 @@ import org.overture.codegen.cgast.declarations.SClassDeclCG;
 public class PackageTrans extends DepthFirstAnalysisAdaptor {
 	@Override
 	public void defaultInSClassDeclCG(SClassDeclCG node) throws AnalysisException {
-		node.setPackage(node.getName() + "_cg_mod");
+		node.setPackage(node.getName() + "_mod");
 	}
 }
