@@ -1,1 +1,1 @@
-Token::new($RustFormat.format($node.getArg()))
+Token::new(&$RustFormat.format($node.getArg()))
