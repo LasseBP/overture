@@ -138,82 +138,100 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 		boolean isOptionalExpected = isOptional(expectedType);
 		
 		if(isOptional && !isOptionalExpected) {
-			//unwrap: exp.expect("optional was nil.")
-			AMethodTypeCG methodType = new AMethodTypeCG();
-			methodType.setResult(expectedType.clone());
-			
-			AFieldExpCG expectFunc = new AFieldExpCG();
-			expectFunc.setMemberName("expect");
-			expectFunc.setObject(exp.clone());
-			expectFunc.setType(methodType);
-			
-			AApplyExpCG convExp = new AApplyExpCG();
-			convExp.setRoot(expectFunc);
-			convExp.setType(expectedType.clone());
-			convExp.setSourceNode(exp.getSourceNode());
-			AStringLiteralExpCG expectMsg = new AStringLiteralExpCG();
-			expectMsg.setIsNull(false);
-			expectMsg.setValue("Optional was nil.");
-			AStringTypeCG expectMsgType = new AStringTypeCG();
-			expectMsgType.setOptional(false);
-			expectMsg.setType(expectMsgType);
-			convExp.getArgs().add(expectMsg);
-			
-			corrected = convExp;
+			corrected = createUnwrapExp(exp, expectedType);
 		}
 		
 		//doesn't compare named invariants, *isOptional* and source node.
 		if(!exp.getType().equals(expectedType) && !castNotNeeded(exp, expectedType))
 		{
-			if (transAssistant.getInfo().getTypeAssistant().isNumericType(expectedType))
+			if (TypeAssistantCG.isNumericType(expectedType))
 			{
 				//throw new AnalysisException("numeric conversions are not implemented.");
 			} else if (expectedType instanceof AUnionTypeCG || 
 					expType instanceof AUnionTypeCG)
-			{							
+			{	
 				// ExpectedT::from(exp)
-				AMethodTypeCG methodType = new AMethodTypeCG();
-				methodType.setResult(expectedType.clone());
-				methodType.getParams().add(expType.clone());		
-				
-				AExplicitVarExpCG explIdent = new AExplicitVarExpCG();
-				explIdent.setClassType(expectedType.clone());
-				explIdent.setName("from");
-				explIdent.setIsLambda(false);
-				explIdent.setIsLocal(true);
-				explIdent.setSourceNode(exp.getSourceNode());
-				explIdent.setType(methodType);
-				
-				AApplyExpCG convExp = new AApplyExpCG();
-				convExp.setRoot(explIdent);
-				convExp.setType(expectedType.clone());
-				convExp.setSourceNode(exp.getSourceNode());
-				convExp.getArgs().add(corrected.clone());
-				
-				corrected = convExp;
+				corrected = createFromExp(exp, expectedType, corrected, expType);
 			}
 		}
 		
 		if (!isOptional && isOptionalExpected) {
-			//wrap: Some(exp)
-			AMethodTypeCG methodType = new AMethodTypeCG();
-			methodType.setResult(expectedType.clone());
-			methodType.getParams().add(expType.clone());
-			
-			AExternalExpCG someCon = new AExternalExpCG();
-			someCon.setTargetLangExp("Some");
-			someCon.setSourceNode(exp.getSourceNode());
-			someCon.setType(methodType);			
-			
-			AApplyExpCG convExp = new AApplyExpCG();
-			convExp.setRoot(someCon);
-			convExp.setType(expectedType.clone());
-			convExp.setSourceNode(exp.getSourceNode());
-			convExp.getArgs().add(exp.clone());
-			
-			corrected = convExp;			
+			corrected = createWrapExp(exp, expectedType, expType);			
 		}
 		
+		return corrected;
+	}
+
+	protected SExpCG createFromExp(SExpCG exp, STypeCG expectedType, SExpCG corrected, STypeCG expType) {
+		// ExpectedT::from(exp)
+		AMethodTypeCG methodType = new AMethodTypeCG();
+		methodType.setResult(expectedType.clone());
+		methodType.getParams().add(expType.clone());		
+		
+		AExplicitVarExpCG explIdent = new AExplicitVarExpCG();
+		explIdent.setClassType(expectedType.clone());
+		explIdent.setName("from");
+		explIdent.setIsLambda(false);
+		explIdent.setIsLocal(true);
+		explIdent.setSourceNode(exp.getSourceNode());
+		explIdent.setType(methodType);
+		
+		AApplyExpCG convExp = new AApplyExpCG();
+		convExp.setRoot(explIdent);
+		convExp.setType(expectedType.clone());
+		convExp.setSourceNode(exp.getSourceNode());
+		convExp.getArgs().add(corrected.clone());
+		
+		corrected = convExp;
+		return corrected;
+	}
+
+	protected SExpCG createWrapExp(SExpCG exp, STypeCG expectedType, STypeCG expType) {
+		SExpCG corrected;
+		//wrap: Some(exp)
+		AMethodTypeCG methodType = new AMethodTypeCG();
+		methodType.setResult(expectedType.clone());
+		methodType.getParams().add(expType.clone());
+		
+		AExternalExpCG someCon = new AExternalExpCG();
+		someCon.setTargetLangExp("Some");
+		someCon.setSourceNode(exp.getSourceNode());
+		someCon.setType(methodType);			
+		
+		AApplyExpCG convExp = new AApplyExpCG();
+		convExp.setRoot(someCon);
+		convExp.setType(expectedType.clone());
+		convExp.setSourceNode(exp.getSourceNode());
+		convExp.getArgs().add(exp.clone());
+		
+		corrected = convExp;
+		return corrected;
+	}
+
+	protected SExpCG createUnwrapExp(SExpCG exp, STypeCG expectedType) {
+		SExpCG corrected;
+		//unwrap: exp.expect("optional was nil.")
+		AMethodTypeCG methodType = new AMethodTypeCG();
+		methodType.setResult(expectedType.clone());
+		
+		AFieldExpCG expectFunc = new AFieldExpCG();
+		expectFunc.setMemberName("expect");
+		expectFunc.setObject(exp.clone());
+		expectFunc.setType(methodType);
+		
+		AApplyExpCG convExp = new AApplyExpCG();
+		convExp.setRoot(expectFunc);
+		convExp.setType(expectedType.clone());
+		convExp.setSourceNode(exp.getSourceNode());
+		AStringLiteralExpCG expectMsg = new AStringLiteralExpCG();
+		expectMsg.setIsNull(false);
+		expectMsg.setValue("Optional was nil.");
+		AStringTypeCG expectMsgType = new AStringTypeCG();
+		expectMsgType.setOptional(false);
+		expectMsg.setType(expectMsgType);
+		convExp.getArgs().add(expectMsg);
+		
+		corrected = convExp;
 		return corrected;
 	}
 	
@@ -275,7 +293,7 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 	{
 		STypeCG expectedType;
 		
-		if (transAssistant.getInfo().getTypeAssistant().isNumericType(node.getType()))
+		if (TypeAssistantCG.isNumericType(node.getType()))
 		{
 			expectedType = node.getType();
 		} else
