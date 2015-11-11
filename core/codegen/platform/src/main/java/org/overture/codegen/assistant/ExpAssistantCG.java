@@ -822,9 +822,9 @@ public class ExpAssistantCG extends AssistantBase
 		@Override
 		public STypeCG caseAReturnStmCG(AReturnStmCG node, SExpCG question)
 				throws org.overture.codegen.cgast.analysis.AnalysisException {
-			if(node.getExp() == question && node.parent() instanceof AMethodDeclCG) {
-				AMethodDeclCG mDecl = (AMethodDeclCG)node.parent();
-				return mDecl.getMethodType().getResult().clone();
+			AMethodDeclCG methodDecl = node.getAncestor(AMethodDeclCG.class);
+			if(node.getExp() == question && methodDecl != null) {				
+				return methodDecl.getMethodType().getResult().clone();
 			}
 			
 			return super.caseAReturnStmCG(node, question);
