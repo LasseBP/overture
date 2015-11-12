@@ -5,6 +5,7 @@ import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
+import org.overture.codegen.cgast.declarations.AFuncDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.AFieldExpCG;
 import org.overture.codegen.cgast.expressions.AFieldNumberExpCG;
@@ -13,6 +14,7 @@ import org.overture.codegen.cgast.expressions.AStaticVarExpCG;
 import org.overture.codegen.cgast.expressions.SVarExpBase;
 import org.overture.codegen.cgast.statements.AAssignToExpStmCG;
 import org.overture.codegen.cgast.statements.ACallObjectExpStmCG;
+import org.overture.codegen.cgast.statements.AReturnStmCG;
 import org.overture.codegen.cgast.types.AClassTypeCG;
 import org.overture.codegen.cgast.types.AMethodTypeCG;
 import org.overture.codegen.cgast.types.ATokenBasicTypeCG;
@@ -36,6 +38,8 @@ public class ValueSemanticsTrans extends DepthFirstAnalysisAdaptor {
 		}
 		
 		if (parent instanceof AFieldExpCG ||
+			parent instanceof AReturnStmCG ||
+			parent instanceof AFuncDeclCG ||
 			(parent instanceof ACallObjectExpStmCG && !((ACallObjectExpStmCG)parent).getArgs().contains(node) )) {
 			return;
 		}
