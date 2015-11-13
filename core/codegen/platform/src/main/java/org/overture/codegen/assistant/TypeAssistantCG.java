@@ -293,8 +293,7 @@ public class TypeAssistantCG extends AssistantBase
 		{
 			return null;
 		}
-
-		enclosingClass.getName().getModule();
+		
 		PDefinition typeDef = defAssistant.findType(def, nameToken, enclosingClass.getName().getModule());
 
 		return typeDef;
@@ -780,6 +779,11 @@ public class TypeAssistantCG extends AssistantBase
 				|| type instanceof ARealBasicTypeWrappersTypeCG
 				|| type instanceof ACharBasicTypeWrappersTypeCG
 				|| type instanceof ABoolBasicTypeWrappersTypeCG;
+	}
+	
+	public boolean isOptional(STypeCG type)
+	{
+		return BooleanUtils.isTrue(type.getOptional());
 	}
 	
 	public boolean allowsNull(STypeCG type)

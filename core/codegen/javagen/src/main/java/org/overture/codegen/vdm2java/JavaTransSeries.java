@@ -12,6 +12,7 @@ import org.overture.codegen.traces.TracesTrans;
 import org.overture.codegen.trans.AssignStmTrans;
 import org.overture.codegen.trans.AtomicStmTrans;
 import org.overture.codegen.trans.CallObjStmTrans;
+import org.overture.codegen.trans.ConstructorTrans;
 import org.overture.codegen.trans.DivideTrans;
 import org.overture.codegen.trans.Exp2StmTrans;
 import org.overture.codegen.trans.Exp2StmVarPrefixes;
@@ -44,6 +45,8 @@ import org.overture.codegen.trans.uniontypes.UnionTypeVarPrefixes;
 
 public class JavaTransSeries
 {
+	private static final String OBJ_INIT_CALL_NAME_PREFIX = "cg_init_";
+	
 	private JavaCodeGen codeGen;
 	private List<DepthFirstAnalysisAdaptor> series;
 	private FuncValAssistant funcValAssist;
@@ -103,6 +106,7 @@ public class JavaTransSeries
 		UnionTypeTrans unionTypeTr = new UnionTypeTrans(transAssist, unionTypePrefixes, codeGen.getJavaFormat().getValueSemantics().getCloneFreeNodes());
 		JavaToStringTrans javaToStringTr = new JavaToStringTrans(info);
 		RecMethodsTrans recTr = new RecMethodsTrans(codeGen.getJavaFormat().getRecCreator());
+		ConstructorTrans ctorTr = new ConstructorTrans(transAssist, OBJ_INIT_CALL_NAME_PREFIX);
 		ImportsTrans impTr = new ImportsTrans(info);
 
 		// Start concurrency transformations
@@ -137,6 +141,7 @@ public class JavaTransSeries
 		series.add(seqConvTr);
 		series.add(evalPermPredTr);
 		series.add(recTr);
+		series.add(ctorTr);
 		series.add(impTr);
 
 		return series;

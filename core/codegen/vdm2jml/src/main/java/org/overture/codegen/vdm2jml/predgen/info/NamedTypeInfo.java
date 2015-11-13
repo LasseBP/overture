@@ -36,7 +36,12 @@ public class NamedTypeInfo extends AbstractTypeInfo
 	{
 		return hasInv;
 	}
-
+	
+	public AbstractTypeInfo getDomainType()
+	{
+		return domainType;
+	}
+	
 	@Override
 	public int hashCode()
 	{
@@ -104,7 +109,7 @@ public class NamedTypeInfo extends AbstractTypeInfo
 //			sb.append(".");
 //		}
 		
-		if (allowsNull())
+		if (isOptional())
 		{
 			sb.append(consIsNullCheck(arg));
 			sb.append(JmlGenerator.JML_OR);
@@ -129,30 +134,6 @@ public class NamedTypeInfo extends AbstractTypeInfo
 	}
 	
 	@Override
-	public boolean allowsNull()
-	{
-		// This type allows null either if it is
-		// 1) optional or
-		// 2) any child type allows null
-		//
-		// Example. Given:
-		// N = nat; C = [char]; CN = C|N
-		// Then CN allows null. C allows null. N does not allow null.
-
-		if (optional)
-		{
-			return true;
-		}
-
-		if(domainType != null)
-		{
-			return domainType.allowsNull();
-		}
-		
-		return false;
-	}
-
-	@Override
 	public List<LeafTypeInfo> getLeafTypesRecursively()
 	{
 		return domainType.getLeafTypesRecursively();
@@ -165,7 +146,7 @@ public class NamedTypeInfo extends AbstractTypeInfo
 		
 		sb.append('(');
 		
-		if(optional)
+		if(isOptional())
 		{
 			sb.append("[");
 		}
@@ -174,7 +155,7 @@ public class NamedTypeInfo extends AbstractTypeInfo
 		sb.append(" = ");
 		sb.append(domainType);
 		
-		if(optional)
+		if(isOptional())
 		{
 			sb.append("]");
 		}

@@ -363,7 +363,7 @@ public class UnionTypeTrans extends DepthFirstAnalysisAdaptor
 		id.setName(applyResultName);
 
 		AVarDeclCG resultDecl = transAssistant.getInfo().getDeclAssistant().
-				consLocalVarDecl(node.getSourceNode().getVdmNode(), resultType, id, transAssistant.getInfo().getExpAssistant().consNullExp());
+				consLocalVarDecl(node.getSourceNode().getVdmNode(), resultType, id, transAssistant.getInfo().getExpAssistant().consUndefinedExp());
 		
 		AIdentifierVarExpCG resultVar = new AIdentifierVarExpCG();
 		resultVar.setSourceNode(node.getSourceNode());
@@ -871,24 +871,81 @@ public class UnionTypeTrans extends DepthFirstAnalysisAdaptor
 	@Override
 	public void caseAAssignToExpStmCG(AAssignToExpStmCG node) throws AnalysisException
 	{
-		SExpCG exp = node.getExp();
-		
-		if(exp != null)
+		handAssignRighHandSide(node);
+		handleAssignTarget(node);
+	}
+
+	public void handleAssignTarget(AAssignToExpStmCG node) throws AnalysisException
+	{
+		if(node.getTarget() instanceof AFieldExpCG)
 		{
-			exp.apply(this);
+			AFieldExpCG field = (AFieldExpCG) node.getTarget();
+			
+			if(field.getObject().getType() instanceof AUnionTypeCG)
+			{
+				LinkedList<STypeCG> types = ((AUnionTypeCG) field.getObject().getType()).getTypes();
+
+				AIfStmCG ifChecks = new AIfStmCG();
+				
+				for(int i = 0; i < types.size(); i++)
+				{
+					STypeCG currentType = types.get(i);
+					
+					AInstanceofExpCG cond = consInstanceCheck(field.getObject(), currentType);
+					AAssignToExpStmCG castFieldObj = castFieldObj(node, field, currentType);
+					
+					if(i == 0)
+					{
+						ifChecks.setIfExp(cond);
+						ifChecks.setThenStm(castFieldObj);
+					}
+					else
+					{
+						AElseIfStmCG elseIf = new AElseIfStmCG();
+						elseIf.setElseIf(cond);
+						elseIf.setThenStm(castFieldObj);
+
+						ifChecks.getElseIf().add(elseIf);
+					}
+				}
+				
+				ifChecks.setElseStm(consRaiseStm(MISSING_MEMBER, field.getMemberName()));
+				
+				transAssistant.replaceNodeWith(node, ifChecks);
+				ifChecks.apply(this);
+			}
+		}
+	}
+
+	public void handAssignRighHandSide(AAssignToExpStmCG node) throws AnalysisException
+	{
+		if(node.getExp() != null)
+		{
+			node.getExp().apply(this);
 		}
 		
-		STypeCG type = node.getTarget().getType();
-		
-		if(castNotNeeded(exp, type))
+		if(!castNotNeeded(node.getExp(), node.getTarget().getType()))
 		{
-			return;
+			if (!(node.getTarget().getType() instanceof AUnionTypeCG))
+			{
+				correctTypes(node.getExp(), node.getTarget().getType());
+			}
 		}
+	}
+
+	public AAssignToExpStmCG castFieldObj(AAssignToExpStmCG assign, AFieldExpCG target, STypeCG possibleType)
+	{
+		ACastUnaryExpCG cast = new ACastUnaryExpCG();
+		cast.setType(possibleType.clone());
+		cast.setExp(target.getObject().clone());
 		
-		if (!(type instanceof AUnionTypeCG))
-		{
-			correctTypes(exp, type);
-		}
+		AAssignToExpStmCG assignCopy = assign.clone();
+		AFieldExpCG fieldCopy = target.clone();
+		
+		transAssistant.replaceNodeWith(fieldCopy.getObject(), cast);
+		transAssistant.replaceNodeWith(assignCopy.getTarget(), fieldCopy);
+		
+		return assignCopy;
 	}
 
 	private boolean castNotNeeded(SExpCG exp, STypeCG type)

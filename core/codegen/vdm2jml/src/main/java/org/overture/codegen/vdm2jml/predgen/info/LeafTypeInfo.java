@@ -15,6 +15,7 @@ import org.overture.codegen.cgast.types.AQuoteTypeCG;
 import org.overture.codegen.cgast.types.ARatNumericBasicTypeCG;
 import org.overture.codegen.cgast.types.ARealNumericBasicTypeCG;
 import org.overture.codegen.cgast.types.ARecordTypeCG;
+import org.overture.codegen.cgast.types.AStringTypeCG;
 import org.overture.codegen.cgast.types.ATokenBasicTypeCG;
 import org.overture.codegen.logging.Logger;
 import org.overture.codegen.runtime.Utils;
@@ -53,7 +54,7 @@ public class LeafTypeInfo extends AbstractTypeInfo
 		utilsCallMap.put(ATokenBasicTypeCG.class, IS_TOKEN);
 		utilsCallMap.put(AQuoteTypeCG.class, IS);
 		utilsCallMap.put(ARecordTypeCG.class, IS);
-		//TODO: String types need treatment
+		utilsCallMap.put(AStringTypeCG.class, IS);
 	}
 	
 	public LeafTypeInfo(STypeCG type, boolean optional)
@@ -68,15 +69,9 @@ public class LeafTypeInfo extends AbstractTypeInfo
 	}
 
 	@Override
-	public boolean allowsNull()
-	{
-		return optional;
-	}
-	
-	@Override
 	public String toString()
 	{
-		if(optional)
+		if(isOptional())
 		{
 			return "[" + type.toString() + "]";
 		}
@@ -124,13 +119,17 @@ public class LeafTypeInfo extends AbstractTypeInfo
 			
 			call = consSubjectCheckForType(methodName, arg, fullyQualifiedRecType);
 		}
+		else if(type instanceof AStringTypeCG)
+		{
+			call = consSubjectCheckForType(methodName, arg, String.class.getSimpleName());
+		}
 		else
 		{
 			call = consSubjectCheck(methodName, arg);
 		}
 		
 		// If the type is optional 'null' is also a legal value
-		if(allowsNull())
+		if(isOptional())
 		{
 			return "(" + consIsNullCheck(arg) + JmlGenerator.JML_OR + call + ")";
 		}

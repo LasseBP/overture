@@ -1,6 +1,7 @@
 package project;
 
 import org.overture.codegen.runtime.*;
+import org.overture.codegen.vdm2jml.runtime.*;
 
 import java.util.*;
 
@@ -29,10 +30,10 @@ final public class Entry {
 
         {
             Object b = true;
-            //@ assert ((b == null) || ((b == null) || Utils.is_char(b) || Utils.is_nat1(b)) || Utils.is_bool(b));
+            //@ assert (((b == null) || Utils.is_char(b) || Utils.is_nat1(b)) || Utils.is_bool(b));
             b = null;
 
-            //@ assert ((b == null) || ((b == null) || Utils.is_char(b) || Utils.is_nat1(b)) || Utils.is_bool(b));
+            //@ assert (((b == null) || Utils.is_char(b) || Utils.is_nat1(b)) || Utils.is_bool(b));
         }
 
         IO.println("After legal use");

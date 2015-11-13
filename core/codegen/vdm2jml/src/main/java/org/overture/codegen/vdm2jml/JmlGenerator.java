@@ -34,6 +34,9 @@ import org.overture.codegen.ir.IRStatus;
 import org.overture.codegen.ir.IrNodeInfo;
 import org.overture.codegen.logging.Logger;
 import org.overture.codegen.trans.AssignStmTrans;
+import org.overture.codegen.trans.assistants.TransAssistantCG;
+import org.overture.codegen.trans.uniontypes.UnionTypeTrans;
+import org.overture.codegen.trans.uniontypes.UnionTypeVarPrefixes;
 import org.overture.codegen.utils.GeneratedData;
 import org.overture.codegen.vdm2java.IJavaQuoteEventObserver;
 import org.overture.codegen.vdm2java.JavaCodeGen;
@@ -44,6 +47,7 @@ import org.overture.codegen.vdm2jml.data.StateDesInfo;
 import org.overture.codegen.vdm2jml.predgen.TypePredDecorator;
 import org.overture.codegen.vdm2jml.predgen.info.NamedTypeInfo;
 import org.overture.codegen.vdm2jml.predgen.info.NamedTypeInvDepCalculator;
+import org.overture.codegen.vdm2jml.trans.JmlUnionTypeTrans;
 import org.overture.codegen.vdm2jml.trans.RecAccessorTrans;
 import org.overture.codegen.vdm2jml.trans.RecInvTransformation;
 import org.overture.codegen.vdm2jml.trans.TargetNormaliserTrans;
@@ -55,6 +59,7 @@ import de.hunsicker.jalopy.storage.ConventionKeys;
 
 public class JmlGenerator implements IREventObserver, IJavaQuoteEventObserver
 {
+	private static final String VDM_JML_RUNTIME_IMPORT = "org.overture.codegen.vdm2jml.runtime.*";
 	public static final String DEFAULT_JAVA_ROOT_PACKAGE = "project";
 	public static final String GEN_INV_METHOD_PARAM_NAME = "elem";
 	public static final String INV_PREFIX = "inv_";
@@ -78,13 +83,18 @@ public class JmlGenerator implements IREventObserver, IJavaQuoteEventObserver
 	
 	public static final String INV_CHECKS_ON_GHOST_VAR_NAME = "invChecksOn";
 	public static final String JML_INV_CHECKS_ON_DECL = "/*@ public ghost static boolean %s = true; @*/";
-	public static final String JML_ENABLE_INV_CHECKS = "//@ set " + INV_CHECKS_ON_GHOST_VAR_NAME + " = true;";
-	public static final String JML_DISABLE_INV_CHECKS = "//@ set " + INV_CHECKS_ON_GHOST_VAR_NAME + " = false;";
-	
+	public static final String JML_SET_INV_CHECKS = "//@ set %s = %s;";
+
+	public static final String JML_INVARIANT_FOR = "\\invariant_for";
 	public static final String REC_VALID_METHOD_NAMEVALID = "valid";
-	public static final String REC_VALID_METHOD_CALL = REC_VALID_METHOD_NAMEVALID + "()"; 
+	public static final String REC_VALID_METHOD_CALL = REC_VALID_METHOD_NAMEVALID + "()";
+	
+	public static final String JAVA_INSTANCEOF = " instanceof ";
 	
 	private JavaCodeGen javaGen;
+	
+	private JmlSettings jmlSettings;
+	
 	private List<NamedTypeInfo> typeInfoList;
 	private JmlGenUtil util;
 	private JmlAnnotationHelper annotator;
@@ -121,7 +131,24 @@ public class JmlGenerator implements IREventObserver, IJavaQuoteEventObserver
 		this.stateDesInfo = targetNormaliserTrans.getStateDesInfo();
 
 		List<DepthFirstAnalysisAdaptor> series = this.javaGen.getTransSeries().getSeries();
+
+		// Replace the union type transformation
+		for(int i = 0; i < series.size(); i++)
+		{
+			if(series.get(i) instanceof UnionTypeTrans)
+			{
+				TransAssistantCG assist = javaGen.getTransAssistant();
+				UnionTypeVarPrefixes varPrefixes = javaGen.getVarPrefixManager().getUnionTypePrefixes();
+				List<INode> cloneFreeNodes = javaGen.getJavaFormat().getValueSemantics().getCloneFreeNodes();
+				
+				JmlUnionTypeTrans newUnionTypeTr = new JmlUnionTypeTrans(assist, varPrefixes, cloneFreeNodes, stateDesInfo);
+				
+				series.set(i, newUnionTypeTr);
+				break;
+			}
+		}
 		
+		// Now add the assignment transformation
 		for (int i = 0; i < series.size(); i++)
 		{
 			// We'll add the transformations after the assignment transformation
@@ -159,6 +186,8 @@ public class JmlGenerator implements IREventObserver, IJavaQuoteEventObserver
 		// Bugs in Jalopy requires a small tweak to the code formatting conventions.
 		// Force Jalopy to not remove 'scope' braces
 		Convention.getInstance().putBoolean(ConventionKeys.BRACE_REMOVE_BLOCK, false);
+		
+		this.jmlSettings = new JmlSettings();
 	}
 
 	public GeneratedData generateJml(List<AModuleModules> ast)
@@ -245,9 +274,14 @@ public class JmlGenerator implements IREventObserver, IJavaQuoteEventObserver
 		// Also extract classes that are records
 		for(IRStatus<ADefaultClassDeclCG> status : IRStatus.extract(newAst, ADefaultClassDeclCG.class))
 		{
+			ADefaultClassDeclCG clazz = status.getIrNode();
+			
 			// VDM uses the type system to control whether 'nil' is allowed as a value so we'll
 			// just annotate all classes as @nullable_by_default
-			annotator.makeNullableByDefault(status.getIrNode());
+			annotator.makeNullableByDefault(clazz);
+
+			// Make sure that the classes can access the VDM to JML runtime
+			addVdmToJmlRuntimeImport(clazz);
 		}
 		
 		// Only extract from 'ast' to not get the record classes
@@ -324,6 +358,15 @@ public class JmlGenerator implements IREventObserver, IJavaQuoteEventObserver
 		
 		// Return back the modified AST to the Java code generator
 		return newAst;
+	}
+
+	private void addVdmToJmlRuntimeImport(ADefaultClassDeclCG clazz)
+	{
+		String vdmJmlRuntimeImport = VDM_JML_RUNTIME_IMPORT;
+		List<ClonableString> allImports = new LinkedList<>();
+		allImports.addAll(clazz.getDependencies());
+		allImports.add(new ClonableString(vdmJmlRuntimeImport));
+		clazz.setDependencies(allImports);
 	}
 
 	private RecClassInfo makeRecStateAccessorBased(List<IRStatus<INode>> ast) {
@@ -601,6 +644,29 @@ public class JmlGenerator implements IREventObserver, IJavaQuoteEventObserver
 
 		return normaliser.getStateDesInfo();
 	}
+	
+	@Override
+	public void quoteClassesProduced(List<ADefaultClassDeclCG> quoteClasses)
+	{
+		for(ADefaultClassDeclCG qc : quoteClasses)
+		{
+			// Code generated quotes are represented as singletons and by default the instance
+			// field is null. So we'll mark quote classes as nullable_by_default.
+			//Example from class represented <A>: private static AQuote instance = null;
+			annotator.makeNullableByDefault(qc);
+			addVdmToJmlRuntimeImport(qc);
+		}
+	}
+	
+	public JmlSettings getJmlSettings()
+	{
+		return jmlSettings;
+	}
+	
+	public void setJmlSettings(JmlSettings jmlSettings)
+	{
+		this.jmlSettings = jmlSettings;
+	}
 
 	public IRSettings getIrSettings()
 	{
@@ -650,17 +716,5 @@ public class JmlGenerator implements IREventObserver, IJavaQuoteEventObserver
 	public StateDesInfo getStateDesInfo()
 	{
 		return stateDesInfo;
-	}
-
-	@Override
-	public void quoteClassesProduced(List<ADefaultClassDeclCG> quoteClasses)
-	{
-		for(ADefaultClassDeclCG qc : quoteClasses)
-		{
-			// Code generated quotes are represented as singletons and by default the instance
-			// field is null. So we'll mark quote classes as nullable_by_default.
-			//Example from class represented <A>: private static AQuote instance = null;
-			annotator.makeNullableByDefault(qc);
-		}
 	}
 }

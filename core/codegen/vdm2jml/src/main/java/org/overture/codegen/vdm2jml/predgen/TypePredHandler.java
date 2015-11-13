@@ -13,6 +13,7 @@ import org.overture.codegen.cgast.declarations.AFieldDeclCG;
 import org.overture.codegen.cgast.declarations.AFormalParamLocalParamCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.declarations.AVarDeclCG;
+import org.overture.codegen.cgast.expressions.ACastUnaryExpCG;
 import org.overture.codegen.cgast.expressions.AIdentifierVarExpCG;
 import org.overture.codegen.cgast.expressions.SVarExpCG;
 import org.overture.codegen.cgast.patterns.AIdentifierPatternCG;
@@ -93,7 +94,7 @@ public class TypePredHandler
 			{
 				AIdentifierVarExpCG var = getJmlGen().getJavaGen().getInfo().getExpAssistant().consIdVar(node.getName(), node.getType().clone());
 				
-				List<String> invStrings = util.consJmlCheck(encClass.getName(), JmlGenerator.JML_PUBLIC, JmlGenerator.JML_STATIC_INV_ANNOTATION, false, typeInfo, var);
+				List<String> invStrings = util.consJmlCheck(encClass, JmlGenerator.JML_PUBLIC, JmlGenerator.JML_STATIC_INV_ANNOTATION, false, typeInfo, var);
 				for(String invStr : invStrings)
 				{
 					getAnnotator().appendMetaData(node, getAnnotator().consMetaData(invStr));
@@ -218,8 +219,6 @@ public class TypePredHandler
 					continue;
 				}
 
-				String encClassName = encClass.getName();
-
 				String varNameStr = decorator.getJmlGen().getUtil().getName(param.getPattern());
 
 				if (varNameStr == null)
@@ -233,7 +232,7 @@ public class TypePredHandler
 				 * Upon entering a record setter it is necessary to check if invariants checks are enabled before
 				 * checking the parameter
 				 */
-				List<AMetaStmCG> as = util.consAssertStm(typeInfo, encClassName, var, node, decorator.getRecInfo());
+				List<AMetaStmCG> as = util.consAssertStm(typeInfo, encClass, var, node, decorator.getRecInfo());
 				for(AMetaStmCG a : as)
 				{
 					replBody.getStatements().add(a);
@@ -294,7 +293,7 @@ public class TypePredHandler
 				/**
 				 * Updates to fields in record setters need to check if invariants checks are enabled
 				 */
-				return util.consAssertStm(typeInfo, enclosingClass.getName(), var, node,  decorator.getRecInfo());
+				return util.consAssertStm(typeInfo, enclosingClass, var, node,  decorator.getRecInfo());
 			} 
 		}
 		
@@ -336,7 +335,7 @@ public class TypePredHandler
 			 * We do not really need to check if invariant checks are enabled because local variable declarations are
 			 * not expected to be found inside record accessors
 			 */
-			return util.consAssertStm(typeInfo, enclosingClass.getName(), var, node, decorator.getRecInfo());
+			return util.consAssertStm(typeInfo, enclosingClass, var, node, decorator.getRecInfo());
 		}
 		
 		return null;
@@ -348,6 +347,11 @@ public class TypePredHandler
 		 * Handling of setter calls to masked records. This will happen for cases like T = R ... ; R :: x : int;
 		 */
 		SExpCG recObj = node.getObj();
+		
+		if(recObj instanceof ACastUnaryExpCG)
+		{
+			recObj = ((ACastUnaryExpCG) recObj).getExp();
+		}
 
 		if (recObj instanceof SVarExpCG)
 		{
@@ -385,7 +389,7 @@ public class TypePredHandler
 				 * Since setter calls can occur inside a record in the context of an atomic statement blocks we need to
 				 * check if invariant checks are enabled
 				 */
-				return util.consAssertStm(typeInfo, encClass.getName(), recObjVar, node, decorator.getRecInfo());
+				return util.consAssertStm(typeInfo, encClass, recObjVar, node, decorator.getRecInfo());
 			}
 		}
 		else
@@ -434,7 +438,7 @@ public class TypePredHandler
 			 * Since assignments can occur inside record setters in the context of an atomic statement block we need to
 			 * check if invariant checks are enabled
 			 */
-			List<AMetaStmCG> asserts = util.consAssertStm(typeInfo, encClass.getName(), var, node, decorator.getRecInfo());
+			List<AMetaStmCG> asserts = util.consAssertStm(typeInfo, encClass, var, node, decorator.getRecInfo());
 			
 			for(AMetaStmCG a : asserts)
 			{
@@ -521,7 +525,7 @@ public class TypePredHandler
 		 * Normalisation of state designators will never occur inside record classes so really there is no need to check
 		 * if invariant checks are enabled
 		 */
-		return util.consAssertStm(typeInfo, encClass.getName(), var, var, decorator.getRecInfo());
+		return util.consAssertStm(typeInfo, encClass, var, var, decorator.getRecInfo());
 	}
 	
 	public boolean rightHandSideMayBeNull(SExpCG exp)
@@ -586,6 +590,11 @@ public class TypePredHandler
 		getJmlGen().getJavaGen().getTransAssistant().replaceNodeWith(node, replStm);
 		replStm.getStatements().add(node);
 		replStm.getStatements().add(assertStm);
+	}
+	
+	public TypePredUtil getTypePredUtil()
+	{
+		return util;
 	}
 	
 	private boolean proceed(AbstractTypeInfo typeInfo)

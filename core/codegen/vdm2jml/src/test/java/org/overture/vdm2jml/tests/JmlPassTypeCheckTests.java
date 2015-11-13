@@ -71,16 +71,17 @@ public class JmlPassTypeCheckTests extends OpenJmlValidationBase
 		// -check
 		// <javafiles>
 		
-		return new String[] { JavaToolsUtils.JAVA, JavaToolsUtils.JAR_ARG,
-				openJml.getAbsolutePath(), IOpenJmlConsts.CP_ARG,
-				cgRuntime.getAbsolutePath(), IOpenJmlConsts.TC };
+		return new String[] { JavaToolsUtils.JAVA, JavaToolsUtils.JAR_ARG, openJml.getAbsolutePath(),
+				IOpenJmlConsts.CP_ARG,
+				"\"" + cgRuntime.getAbsolutePath() + File.pathSeparator + vdm2jmlRuntime.getAbsolutePath() + "\"",
+				IOpenJmlConsts.TC };
 	}
 
 	@Override
 	public void beforeRunningOpenJmlProcess()
 	{
 		clearCodeFolder();
-		TestUtil.codeGenerateInputFile(inputFile, genJavaFolder, VDM_LIB_PATH);
+		generateJavaJml();
 	}
 
 	@Override

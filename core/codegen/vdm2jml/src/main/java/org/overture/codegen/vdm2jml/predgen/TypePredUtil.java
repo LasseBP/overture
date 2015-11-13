@@ -8,6 +8,7 @@ import org.overture.ast.util.ClonableString;
 import org.overture.codegen.assistant.TypeAssistantCG;
 import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.STypeCG;
+import org.overture.codegen.cgast.declarations.ADefaultClassDeclCG;
 import org.overture.codegen.cgast.declarations.ANamedTypeDeclCG;
 import org.overture.codegen.cgast.expressions.SVarExpCG;
 import org.overture.codegen.cgast.statements.AMetaStmCG;
@@ -45,7 +46,7 @@ public class TypePredUtil
 		this.handler = handler;
 	}
 	
-	public List<String> consJmlCheck(String enclosingClass, String jmlVisibility,
+	public List<String> consJmlCheck(ADefaultClassDeclCG encClass, String jmlVisibility,
 			String annotationType, boolean invChecksGuard, AbstractTypeInfo typeInfo,
 			SVarExpCG var)
 	{
@@ -53,7 +54,7 @@ public class TypePredUtil
 		
 		if(handler.getDecorator().buildRecValidChecks())
 		{
-			appendRecValidChecks(invChecksGuard, typeInfo, var, predStrs);
+			appendRecValidChecks(invChecksGuard, typeInfo, var, predStrs, encClass);
 		}
 		
 		StringBuilder inv = new StringBuilder();
@@ -70,18 +71,16 @@ public class TypePredUtil
 		
 		if(invChecksGuard)
 		{
-			inv.append(consInvChecksGuard());
+			inv.append(consInvChecksGuard(encClass));
 			inv.append('(');
 		}
 
-		String or = "";
 		String javaPackage = handler.getJmlGen().getJavaSettings().getJavaRootPackage();
 		
 		//TODO: Add names of parameters of the enclosing method to 'names-to-avoid' in name generator
 		NameGen nameGen = new NameGen();
-		String consCheckExp = typeInfo.consCheckExp(enclosingClass, javaPackage, var.getName(), nameGen);
+		String consCheckExp = typeInfo.consCheckExp(encClass.getName(), javaPackage, var.getName(), nameGen);
 		
-		inv.append(or);
 		if (consCheckExp != null)
 		{
 			inv.append(consCheckExp);
@@ -92,8 +91,6 @@ public class TypePredUtil
 			// TODO: Consider better handling
 			inv.append("true");
 		}
-		or = JmlGenerator.JML_OR;
-
 		if(invChecksGuard)
 		{
 			inv.append(')');
@@ -106,10 +103,10 @@ public class TypePredUtil
 		return predStrs;
 	}
 
-	private String consInvChecksGuard()
+	private String consInvChecksGuard(ADefaultClassDeclCG encClass)
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append(handler.getJmlGen().getAnnotator().consInvChecksOnName(handler.getJmlGen().getInvChecksFlagOwner()));
+		sb.append(handler.getJmlGen().getAnnotator().consInvChecksOnNameEncClass(encClass));
 		sb.append(JmlGenerator.JML_IMPLIES);
 		
 		return sb.toString();
@@ -117,7 +114,7 @@ public class TypePredUtil
 
 	private void appendRecValidChecks(boolean invChecksGuard,
 			AbstractTypeInfo typeInfo, SVarExpCG var,
-			List<String> predStrs)
+			List<String> predStrs, ADefaultClassDeclCG encClass)
 	{
 		List<ARecordTypeCG> recordTypes = getRecTypes(typeInfo);
 
@@ -134,30 +131,63 @@ public class TypePredUtil
 
 				if (invChecksGuard)
 				{
-					inv.append(consInvChecksGuard());
+					inv.append(consInvChecksGuard(encClass));
 				}
 
 				if (var.getType() instanceof ARecordTypeCG)
 				{
-					inv.append(var.getName());
-					inv.append('.');
-					inv.append(JmlGenerator.REC_VALID_METHOD_CALL);
-					// e.g. r1.valid()
+					if(handler.getJmlGen().getJmlSettings().genInvariantFor())
+					{
+						inv.append(JmlGenerator.JML_INVARIANT_FOR);
+						inv.append('(');
+						inv.append(var.getName());
+						inv.append(')');
+						// e.g. invariant_for(r1)
+					}
+					else
+					{
+						inv.append(var.getName());
+						inv.append('.');
+						inv.append(JmlGenerator.REC_VALID_METHOD_CALL);
+						// e.g. r1.valid()
+					}
 				} else
 				{
 					inv.append(var.getName());
-					inv.append(" instanceof ");
+					inv.append(JmlGenerator.JAVA_INSTANCEOF);
 					inv.append(fullyQualifiedRecType);
 					inv.append(JmlGenerator.JML_IMPLIES);
-					inv.append("((" + fullyQualifiedRecType + ") " + var.getName() + ").");
-					inv.append(JmlGenerator.REC_VALID_METHOD_CALL);
-					// e.g. r1 instanceof project.Entrytypes.R3 ==> ((project.Entrytypes.R3) r1).valid()
+					
+					// So far we have:
+					// e.g. r1 instanceof project.Entrytypes.R3
+					
+					if(handler.getJmlGen().getJmlSettings().genInvariantFor())
+					{
+						inv.append(JmlGenerator.JML_INVARIANT_FOR);
+						inv.append('(');
+						inv.append(consRecVarCast(var, fullyQualifiedRecType));;
+						inv.append(')');
+						
+						// e.g. r1 instanceof project.Entrytypes.R3 ==> \invariant_for((project.Entrytypes.R3) r1);
+					}
+					else
+					{
+						inv.append(consRecVarCast(var, fullyQualifiedRecType));
+						inv.append('.');
+						inv.append(JmlGenerator.REC_VALID_METHOD_CALL);
+						// e.g. r1 instanceof project.Entrytypes.R3 ==> ((project.Entrytypes.R3) r1).valid()
+					}
 				}
 
 				inv.append(';');
 				predStrs.add(inv.toString());
 			}
 		}
+	}
+
+	private String consRecVarCast(SVarExpCG var, String fullyQualifiedRecType)
+	{
+		return "((" + fullyQualifiedRecType + ") " + var.getName() + ")";
 	}
 
 	public String fullyQualifiedRecType(ARecordTypeCG rt)
@@ -187,12 +217,12 @@ public class TypePredUtil
 	}
 
 	public List<AMetaStmCG> consAssertStm(AbstractTypeInfo invTypes,
-			String encClassName, SVarExpCG var, INode node, RecClassInfo recInfo)
+			ADefaultClassDeclCG encClass, SVarExpCG var, INode node, RecClassInfo recInfo)
 	{
 		boolean inAccessor = node != null && recInfo != null && recInfo.inAccessor(node);
 
 		List<AMetaStmCG> asserts = new LinkedList<>();
-		List<String> assertStrs = consJmlCheck(encClassName, null, JmlGenerator.JML_ASSERT_ANNOTATION, inAccessor, invTypes, var);
+		List<String> assertStrs = consJmlCheck(encClass, null, JmlGenerator.JML_ASSERT_ANNOTATION, inAccessor, invTypes, var);
 		
 		for(String a : assertStrs)
 		{
@@ -216,6 +246,8 @@ public class TypePredUtil
 	
 	public AbstractTypeInfo findTypeInfo(STypeCG type)
 	{
+		TypeAssistantCG assist = handler.getJmlGen().getJavaGen().getInfo().getTypeAssistant();
+		
 		if (type.getNamedInvType() != null)
 		{
 			ANamedTypeDeclCG namedInv = type.getNamedInvType();
@@ -224,6 +256,11 @@ public class TypePredUtil
 			String typeName = namedInv.getName().getName();
 
 			NamedTypeInfo info = NamedTypeInvDepCalculator.findTypeInfo(handler.getJmlGen().getTypeInfoList(), defModule, typeName);
+			
+			if(assist.isOptional(type))
+			{
+				info = new NamedTypeInfo(info.getTypeName(), info.getDefModule(), info.hasInv(), true, info.getDomainType());
+			}
 
 			if (info == null)
 			{
@@ -237,8 +274,6 @@ public class TypePredUtil
 			// We do not need to collect sub named invariant types
 		} else
 		{
-			TypeAssistantCG assist = handler.getJmlGen().getJavaGen().getInfo().getTypeAssistant();
-			
 			if (type instanceof AUnionTypeCG)
 			{
 				List<AbstractTypeInfo> types = new LinkedList<>();
@@ -248,7 +283,7 @@ public class TypePredUtil
 					types.add(findTypeInfo(t));
 				}
 				
-				return new UnionInfo(assist.allowsNull(type), types);
+				return new UnionInfo(assist.isOptional(type), types);
 			}
 			else if(type instanceof ATupleTypeCG)
 			{
@@ -259,21 +294,21 @@ public class TypePredUtil
 					types.add(findTypeInfo(t));
 				}
 				
-				return new TupleInfo(assist.allowsNull(type), types);
+				return new TupleInfo(assist.isOptional(type), types);
 			}
 			else if(type instanceof ASeqSeqTypeCG)
 			{
 				ASeqSeqTypeCG seqType = ((ASeqSeqTypeCG) type);
 				STypeCG elementType = seqType.getSeqOf();
 				
-				return new SeqInfo(assist.allowsNull(seqType), findTypeInfo(elementType), BooleanUtils.isTrue(seqType.getSeq1()));
+				return new SeqInfo(assist.isOptional(seqType), findTypeInfo(elementType), BooleanUtils.isTrue(seqType.getSeq1()));
 			}
 			else if(type instanceof ASetSetTypeCG)
 			{
 				ASetSetTypeCG setType = (ASetSetTypeCG) type;
 				STypeCG elementType = setType.getSetOf();
 				
-				return new SetInfo(assist.allowsNull(setType), findTypeInfo(elementType));
+				return new SetInfo(assist.isOptional(setType), findTypeInfo(elementType));
 			}
 			else if(type instanceof AMapMapTypeCG)
 			{
@@ -284,7 +319,7 @@ public class TypePredUtil
 				
 				boolean injective = BooleanUtils.isTrue(mapType.getInjective());
 				
-				return new MapInfo(assist.allowsNull(mapType), domInfo, rngInfo, injective);
+				return new MapInfo(assist.isOptional(mapType), domInfo, rngInfo, injective);
 				
 			}
 			else if(type instanceof AUnknownTypeCG || type instanceof AClassTypeCG || type instanceof AExternalTypeCG)
@@ -294,7 +329,7 @@ public class TypePredUtil
 			}
 			else
 			{
-				return new LeafTypeInfo(type, assist.allowsNull(type));
+				return new LeafTypeInfo(type, assist.isOptional(type));
 			}
 		}
 	}

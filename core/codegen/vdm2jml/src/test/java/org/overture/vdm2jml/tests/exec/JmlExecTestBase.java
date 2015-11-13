@@ -24,7 +24,6 @@ import org.overture.vdm2jml.tests.AnnotationTestsBase;
 import org.overture.vdm2jml.tests.OpenJmlValidationBase;
 import org.overture.vdm2jml.tests.util.IOpenJmlConsts;
 import org.overture.vdm2jml.tests.util.ProcessResult;
-import org.overture.vdm2jml.tests.util.TestUtil;
 
 public abstract class JmlExecTestBase extends OpenJmlValidationBase
 {
@@ -207,11 +206,11 @@ public abstract class JmlExecTestBase extends OpenJmlValidationBase
 		// -no-purityCheck
 		// <javafiles>
 	
-		String[] openJmlConfig = new String[] { JavaToolsUtils.JAVA,
-				JavaToolsUtils.JAR_ARG, openJml.getAbsolutePath(),
-				IOpenJmlConsts.CP_ARG, cgRuntime.getAbsolutePath(),
+		String[] openJmlConfig = new String[] { JavaToolsUtils.JAVA, JavaToolsUtils.JAR_ARG, openJml.getAbsolutePath(),
+				IOpenJmlConsts.CP_ARG,
+				"\"" + cgRuntime.getAbsolutePath() + File.pathSeparator + vdm2jmlRuntime.getAbsolutePath() + "\"",
 				IOpenJmlConsts.RAC_ARG,
-				/*IOpenJmlConsts.RAC_TO_ASSERT_ARG,*/
+				/* IOpenJmlConsts.RAC_TO_ASSERT_ARG, */
 				IOpenJmlConsts.NO_PURITY_CHECKS_ARG };
 	
 		String[] javaFiles = JavaCodeGenUtil.findJavaFilePathsRec(genJavaFolder);
@@ -233,7 +232,8 @@ public abstract class JmlExecTestBase extends OpenJmlValidationBase
 		String runtimes = jmlRuntime.getAbsolutePath() + File.pathSeparatorChar
 				+ openJml.getAbsolutePath() + File.pathSeparatorChar
 				+ genJavaFolder.getAbsolutePath() + File.pathSeparatorChar
-				+ cgRuntime.getAbsolutePath();
+				+ cgRuntime.getAbsolutePath() + File.pathSeparatorChar
+				+ vdm2jmlRuntime.getAbsolutePath();
 		
 		String[] args = new String[] { JavaToolsUtils.JAVA,
 				JavaToolsUtils.CP_ARG, runtimes,
@@ -272,7 +272,7 @@ public abstract class JmlExecTestBase extends OpenJmlValidationBase
 		{
 			clearCodeFolder();
 			createExecEntryPoint();
-			TestUtil.codeGenerateInputFile(inputFile, genJavaFolder, VDM_LIB_PATH);
+			generateJavaJml();
 		}
 	}
 
