@@ -42,7 +42,7 @@ import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.declarations.ADefaultClassDeclCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.declarations.AVarDeclCG;
-import org.overture.codegen.cgast.expressions.ABlockExpCG;
+import org.overture.codegen.cgast.expressions.ALetDefExpCG;
 import org.overture.codegen.cgast.statements.AAtomicStmCG;
 import org.overture.codegen.cgast.statements.ABlockStmCG;
 import org.overture.codegen.cgast.statements.ACaseAltStmStmCG;
@@ -149,9 +149,10 @@ public class StmAssistantCG extends AssistantBase
 				!(block.parent() instanceof AForLoopStmCG);
 	}
 	
-	public static boolean isScoped(ABlockExpCG block)
+	public static boolean isScoped(ALetDefExpCG block)
 	{
-		return block.parent() instanceof SExpCG;
+		return block.parent() instanceof SExpCG || 
+			   block.parent() instanceof SStmCG;
 	}
 	
 	public boolean equal(AMetaStmCG left, AMetaStmCG right)

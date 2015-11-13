@@ -413,9 +413,6 @@ public class TemplateManager
 
 		nodeTemplateFileNames.put(AApplyExpCG.class, templateStructure.EXP_PATH
 				+ "Apply");
-		
-		nodeTemplateFileNames.put(ABlockExpCG.class, templateStructure.EXP_PATH
-				+ "Block");
 
 		nodeTemplateFileNames.put(AFieldExpCG.class, templateStructure.EXP_PATH
 				+ "Field");
@@ -464,6 +461,9 @@ public class TemplateManager
 
 		nodeTemplateFileNames.put(ALetBeStExpCG.class, templateStructure.EXP_PATH
 				+ "LetBeSt");
+		
+		nodeTemplateFileNames.put(ALetDefExpCG.class, templateStructure.EXP_PATH
+				+ "LetDef");
 
 		nodeTemplateFileNames.put(AMkBasicExpCG.class, templateStructure.EXP_PATH
 				+ "MkBasic");

@@ -3,13 +3,14 @@ package org.overture.codegen.vdm2rust;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.overture.codegen.assistant.StmAssistantCG;
 import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.SDeclCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.declarations.AFieldDeclCG;
 import org.overture.codegen.cgast.declarations.ARecordDeclCG;
 import org.overture.codegen.cgast.declarations.AUnionEnumDeclCG;
-import org.overture.codegen.cgast.expressions.ABlockExpCG;
+import org.overture.codegen.cgast.expressions.ALetDefExpCG;
 import org.overture.codegen.cgast.statements.ABlockStmCG;
 import org.overture.codegen.cgast.types.AVoidTypeCG;
 
@@ -19,9 +20,9 @@ public class FormatUtils {
 		return block != null && block.getScoped() != null && block.getScoped();
 	}
 	
-	public static boolean isScoped(ABlockExpCG block)
+	public static boolean isScoped(ALetDefExpCG block)
 	{
-		return block != null && block.getScoped() != null && block.getScoped();
+		return StmAssistantCG.isScoped(block);
 	}
 	
 	public static boolean isNull(INode node)

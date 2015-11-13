@@ -17,7 +17,6 @@ import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.declarations.AFormalParamLocalParamCG;
 import org.overture.codegen.cgast.declarations.AVarDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
-import org.overture.codegen.cgast.expressions.ABlockExpCG;
 import org.overture.codegen.cgast.expressions.ABoolLiteralExpCG;
 import org.overture.codegen.cgast.expressions.ACompMapExpCG;
 import org.overture.codegen.cgast.expressions.ACompSeqExpCG;
@@ -29,6 +28,7 @@ import org.overture.codegen.cgast.expressions.AFieldExpCG;
 import org.overture.codegen.cgast.expressions.AForAllQuantifierExpCG;
 import org.overture.codegen.cgast.expressions.ALambdaExpCG;
 import org.overture.codegen.cgast.expressions.ALetBeStExpCG;
+import org.overture.codegen.cgast.expressions.ALetDefExpCG;
 import org.overture.codegen.cgast.expressions.AMapletExpCG;
 import org.overture.codegen.cgast.expressions.ATupleExpCG;
 import org.overture.codegen.cgast.expressions.SQuantifierExpBase;
@@ -50,18 +50,18 @@ public class ComprehensionAndQuantifierTrans extends DepthFirstAnalysisAdaptor {
 	public void outALetBeStExpCG(ALetBeStExpCG node) throws AnalysisException {
 		AVarDeclCG bindingDecl = convLetBeStHeaderToVarDecl(node, node.getHeader());
 		
-		ABlockExpCG blockExp = new ABlockExpCG();
-		blockExp.getLocalDefs().add(bindingDecl);
-		blockExp.setExp(node.getValue());
-		blockExp.setSourceNode(node.getSourceNode());
+		ALetDefExpCG letDefExp = new ALetDefExpCG();
+		letDefExp.getLocalDefs().add(bindingDecl);
+		letDefExp.setExp(node.getValue());
+		letDefExp.setSourceNode(node.getSourceNode());
+		letDefExp.setType(node.getType());
 		
 		if(node.parent() != null) {
-			node.parent().replaceChild(node, blockExp);
+			node.parent().replaceChild(node, letDefExp);
 		}
 		else {
 			Logger.getLog().printErrorln("Could not find parent of " + node + " in " + "'" + this.getClass().getSimpleName() + "'" );
 		}
-		blockExp.setScoped(StmAssistantCG.isScoped(blockExp));
 	}
 	
 	@Override
