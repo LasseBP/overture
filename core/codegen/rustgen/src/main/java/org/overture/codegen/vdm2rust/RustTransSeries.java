@@ -94,6 +94,10 @@ public class RustTransSeries {
 		// Set up order of transformations
 		List<DepthFirstAnalysisAdaptor> transformations = new ArrayList<DepthFirstAnalysisAdaptor>();
 
+		transformations.add(accTrans);
+		transformations.add(packageTrans);
+		transformations.add(constructorTrans);
+		
 		if(irInfo.getSettings().generatePreConds()){
 			transformations.add(preFuncTrans);
 		}
@@ -102,14 +106,11 @@ public class RustTransSeries {
 			transformations.add(preCheckTrans);
 		}
 		
-		transformations.add(packageTrans);
-		transformations.add(unionTrans);
-		transformations.add(accTrans);		
+		transformations.add(unionTrans);				
 		transformations.add(assignTr);
 		transformations.add(callObjTr);
 		transformations.add(staticVar);
 		transformations.add(compTrans);				
-		transformations.add(constructorTrans);
 		transformations.add(newTrans);
 		transformations.add(selfAndScope);
 		transformations.add(initExp);
