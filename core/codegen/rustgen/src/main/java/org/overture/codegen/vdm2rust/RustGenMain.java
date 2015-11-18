@@ -33,6 +33,9 @@ public class RustGenMain {
 		
 		Settings.dialect = Dialect.VDM_PP;
 		RustCodeGen rustGen = new RustCodeGen();
+		
+		rustGen.getSettings().setGeneratePreConds(true);
+		rustGen.getSettings().setGeneratePreCondChecks(true);
 
 		try {
 			TypeCheckResult<List<SClassDefinition>> tcResult = TypeCheckerUtil.typeCheckPp(files);

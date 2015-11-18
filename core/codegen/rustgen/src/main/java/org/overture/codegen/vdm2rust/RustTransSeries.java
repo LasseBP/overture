@@ -16,6 +16,8 @@ import org.overture.codegen.vdm2rust.Transforms.FuncScopeAdderTrans;
 import org.overture.codegen.vdm2rust.Transforms.InitialExpTrans;
 import org.overture.codegen.vdm2rust.Transforms.NewExpTrans;
 import org.overture.codegen.vdm2rust.Transforms.PackageTrans;
+import org.overture.codegen.vdm2rust.Transforms.PreCheckTrans;
+import org.overture.codegen.vdm2rust.Transforms.PreFuncTrans;
 import org.overture.codegen.vdm2rust.Transforms.StaticVarTrans;
 import org.overture.codegen.vdm2rust.Transforms.TypeConverterTrans;
 import org.overture.codegen.vdm2rust.Transforms.UnionDeclTrans;
@@ -28,7 +30,28 @@ import org.overture.codegen.vdm2rust.Transforms.VdmSetTrans;
 public class RustTransSeries {
 
 	private RustCodeGen codeGen;
-	private List<DepthFirstAnalysisAdaptor> transformations;
+
+	private CallObjStmTrans callObjTr;
+	private AccessModfierTrans accTrans;
+	private ConstructorTrans constructorTrans;
+	private AssignStmTrans assignTr;
+	private FuncScopeAdderTrans selfAndScope;
+	private ValueSemanticsTrans valueTrans;
+	private InitialExpTrans initExp;
+	private StaticVarTrans staticVar;
+	private PackageTrans packageTrans;
+	private ComprehensionAndQuantifierTrans compTrans;
+	private UnionDeclTrans unionTrans;
+	private TypeConverterTrans typeTrans;
+	private VdmSetTrans setTrans;
+	private VdmMapTrans mapTrans;
+	private VdmSeqTrans seqTrans;
+	private UseStmTrans useTrans;
+	private BorrowTrans borrowTrans;
+	private NewExpTrans newTrans;
+	private PreFuncTrans preFuncTrans;
+
+	private PreCheckTrans preCheckTrans;
 
 	public RustTransSeries(RustCodeGen codeGen)
 	{
@@ -43,28 +66,42 @@ public class RustTransSeries {
 		TransAssistantCG transAssistant = codeGen.getTransAssistant();
 		
 		// Construct the transformations
-		CallObjStmTrans callObjTr = new CallObjStmTrans(irInfo);
-		AccessModfierTrans accTrans = new AccessModfierTrans();
-		ConstructorTrans constructorTrans = new ConstructorTrans(transAssistant);
-		AssignStmTrans assignTr = new AssignStmTrans(transAssistant);
-		FuncScopeAdderTrans selfAndScope = new FuncScopeAdderTrans(transAssistant);
-		ValueSemanticsTrans valueTrans = new ValueSemanticsTrans();
-		InitialExpTrans initExp = new InitialExpTrans();
-		StaticVarTrans staticVar = new StaticVarTrans(irInfo);
-		PackageTrans packageTrans = new PackageTrans();
-		ComprehensionAndQuantifierTrans compTrans = new ComprehensionAndQuantifierTrans();
-		UnionDeclTrans unionTrans = new UnionDeclTrans();
-		TypeConverterTrans typeTrans = new TypeConverterTrans(transAssistant);
-		VdmSetTrans setTrans = new VdmSetTrans(transAssistant);
-		VdmMapTrans mapTrans = new VdmMapTrans(transAssistant);
-		VdmSeqTrans seqTrans = new VdmSeqTrans(transAssistant);
-		UseStmTrans useTrans = new UseStmTrans(irInfo);
-		BorrowTrans borrowTrans = new BorrowTrans(transAssistant);
-		NewExpTrans newTrans = new NewExpTrans(transAssistant);
+		callObjTr = new CallObjStmTrans(irInfo);
+		accTrans = new AccessModfierTrans();
+		constructorTrans = new ConstructorTrans(transAssistant);
+		assignTr = new AssignStmTrans(transAssistant);
+		selfAndScope = new FuncScopeAdderTrans(transAssistant);
+		valueTrans = new ValueSemanticsTrans();
+		initExp = new InitialExpTrans();
+		staticVar = new StaticVarTrans(irInfo);
+		packageTrans = new PackageTrans();
+		compTrans = new ComprehensionAndQuantifierTrans();
+		unionTrans = new UnionDeclTrans();
+		typeTrans = new TypeConverterTrans(transAssistant);
+		setTrans = new VdmSetTrans(transAssistant);
+		mapTrans = new VdmMapTrans(transAssistant);
+		seqTrans = new VdmSeqTrans(transAssistant);
+		useTrans = new UseStmTrans(irInfo);
+		borrowTrans = new BorrowTrans(transAssistant);
+		newTrans = new NewExpTrans(transAssistant);
+		preFuncTrans = new PreFuncTrans();
+		preCheckTrans = new PreCheckTrans();
+	}
 
+	public List<DepthFirstAnalysisAdaptor> getTransformations() {
+		IRInfo irInfo = codeGen.getInfo();
+		
 		// Set up order of transformations
-		transformations = new ArrayList<DepthFirstAnalysisAdaptor>();
+		List<DepthFirstAnalysisAdaptor> transformations = new ArrayList<DepthFirstAnalysisAdaptor>();
 
+		if(irInfo.getSettings().generatePreConds()){
+			transformations.add(preFuncTrans);
+		}
+		
+		if(irInfo.getSettings().generatePreCondChecks()){
+			transformations.add(preCheckTrans);
+		}
+		
 		transformations.add(packageTrans);
 		transformations.add(unionTrans);
 		transformations.add(accTrans);		
@@ -82,10 +119,8 @@ public class RustTransSeries {
 		transformations.add(typeTrans);	
 		transformations.add(borrowTrans);
 		transformations.add(valueTrans);
-		transformations.add(useTrans);			
-	}
-
-	public List<DepthFirstAnalysisAdaptor> getTransformations() {
+		transformations.add(useTrans);
+		
 		return transformations;
 	}	
 }
