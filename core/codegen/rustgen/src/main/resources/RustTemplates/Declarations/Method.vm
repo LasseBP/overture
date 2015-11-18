@@ -6,8 +6,10 @@
 	#set( $templateTypes = $RustFormat.formatTemplateTypes($node.getTemplateTypes()))
 #end
 ##
-#if( $node.getStatic() )
+#if( $node.getStatic())
 #set( $params = "")
+#elseif ($node.getIsPure())
+#set( $params = "&self")
 #else
 #set( $params = "&mut self")
 #end
