@@ -19,6 +19,12 @@ p2: Plant`Period = mk_token("Monday night");
 p3: Plant`Period = mk_token("Tuesday day");
 p4: Plant`Period = mk_token("Tuesday night");
 
+functions
+
+public preCond_test: int -> int
+preCond_test(i) == undefined
+pre i <> 0;
+
 operations
 
 public Run: () ==> set of Plant`Period * Plant`Expert
