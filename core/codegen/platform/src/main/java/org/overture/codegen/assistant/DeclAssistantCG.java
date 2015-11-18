@@ -45,6 +45,7 @@ import org.overture.ast.patterns.APatternListTypePair;
 import org.overture.ast.patterns.PPattern;
 import org.overture.ast.statements.AIdentifierStateDesignator;
 import org.overture.ast.statements.ASubclassResponsibilityStm;
+import org.overture.ast.types.AOperationType;
 import org.overture.ast.util.ClonableString;
 import org.overture.codegen.cgast.SDeclCG;
 import org.overture.codegen.cgast.SExpCG;
@@ -192,7 +193,7 @@ public class DeclAssistantCG extends AssistantBase
 		return classCg;
 	}
 	
-	public AMethodDeclCG funcToMethod(AFuncDeclCG node)
+	public static AMethodDeclCG funcToMethod(AFuncDeclCG node)
 	{
 		SDeclCG preCond = node.getPreCond();
 		SDeclCG postCond = node.getPostCond();
@@ -223,6 +224,7 @@ public class DeclAssistantCG extends AssistantBase
 		method.setFormalParams(cloneNodes(formalParams, AFormalParamLocalParamCG.class));
 		method.setName(name);
 		method.setStatic(true);
+		method.setIsPure(true);
 		method.setIsConstructor(false);
 		method.setImplicit(node.getImplicit());
 		method.setMetaData(metaData);
@@ -696,6 +698,7 @@ public class DeclAssistantCG extends AssistantBase
 		boolean isAsync = question.getTcFactory().createPAccessSpecifierAssistant().isAsync(node.getAccess());
 		String operationName = node.getName().getName();
 		STypeCG type = node.getType().apply(question.getTypeVisitor(), question);
+		boolean isPure = ((AOperationType)node.getType()).getPure();
 
 		if (!(type instanceof AMethodTypeCG))
 		{
@@ -715,6 +718,7 @@ public class DeclAssistantCG extends AssistantBase
 
 		AMethodDeclCG method = new AMethodDeclCG();
 
+		method.setIsPure(isPure);
 		method.setImplicit(false);
 		method.setAccess(access);
 		method.setStatic(isStatic);

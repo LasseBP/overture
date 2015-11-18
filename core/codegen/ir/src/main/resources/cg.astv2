@@ -137,6 +137,7 @@ CG {-> package='org.overture.codegen.cgast'
 		[isConstructor]:java_Boolean
 		[templateTypes]:CG.#type.template*
 		[implicit]:java_Boolean
+		[isPure]:java_Boolean
 		[body]:CG.#stm
 	|	{func}
 		(preCond):CG.#decl

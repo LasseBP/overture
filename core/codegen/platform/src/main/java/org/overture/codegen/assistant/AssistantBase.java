@@ -36,7 +36,7 @@ public abstract class AssistantBase
 		this.assistantManager = assistantManager;
 	}
 	
-	public <T extends INode> List<T> cloneNodes(List<T> list, Class<T> nodeType)
+	public static <T extends INode> List<T> cloneNodes(List<T> list, Class<T> nodeType)
 	{
 		List<T> cloneList = new LinkedList<T>();
 		
