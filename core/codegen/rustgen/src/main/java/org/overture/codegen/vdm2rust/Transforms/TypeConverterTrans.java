@@ -134,6 +134,11 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 		
 		SExpCG corrected = exp;
 		STypeCG expType = exp.getType();
+		
+		if(expType == null) {
+			return corrected;
+		}
+		
 		boolean isOptional = isOptional(expType);
 		boolean isOptionalExpected = isOptional(expectedType);
 		
