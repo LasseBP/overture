@@ -62,34 +62,34 @@ public class VdmSetTrans extends DepthFirstAnalysisAdaptor {
 	@Override
 	public void outASetDifferenceBinaryExpCG(ASetDifferenceBinaryExpCG node)
 			throws AnalysisException {
-		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "difference", node.getLeft());
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "difference", node.getRight());
 		transAssistant.replaceNodeWith(node, n);
 	}
 
 	@Override
 	public void outASetUnionBinaryExpCG(ASetUnionBinaryExpCG node)
 			throws AnalysisException {
-		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "union", node.getLeft());
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "union", node.getRight());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
 	public void outASetIntersectBinaryExpCG(ASetIntersectBinaryExpCG node)
 			throws AnalysisException {
-		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "inter", node.getLeft());
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "inter", node.getRight());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
 	@Override
 	public void outASetSubsetBinaryExpCG(ASetSubsetBinaryExpCG node)
 			throws AnalysisException {
-		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "is_subset", node.getLeft());
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "is_subset", node.getRight());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	@Override
 	public void outASetProperSubsetBinaryExpCG(ASetProperSubsetBinaryExpCG node)
 			throws AnalysisException {
-		SExpCG n = ConstructionUtils.consExpCall(node, node.getRight(), "is_psubset", node.getLeft());
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "is_psubset", node.getRight());
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
