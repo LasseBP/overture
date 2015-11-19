@@ -42,6 +42,11 @@ pub struct Plant {
 
 impl Plant {
     // operations
+    pub fn cg_initPlant_1(&mut self, als: Set<Alarm>, sch: Map<Period, Set<Expert>>) -> () {
+        self.alarms = als.clone();
+        self.schedule = sch.clone();
+    }
+
     pub fn ExpertToPage(&mut self, a: Alarm, p: Period) -> Expert {
         assert!(self.pre_ExpertToPage(a.clone(), p.clone()));
         {
@@ -71,10 +76,14 @@ impl Plant {
 
     pub fn new(als: Set<Alarm>, sch: Map<Period, Set<Expert>>) -> Plant {
         assert!(self.pre_Plant(als.clone(), sch.clone()));
-        let instance: Plant = Plant::default();
+        let mut instance: Plant = Plant::default();
+        {
+            let arg0: Set<Alarm> = als.clone();
+            let arg1: Map<Period, Set<Expert>> = sch.clone();
+            instance.cg_initPlant_1(arg0.clone(), arg1.clone());
+        }
+
         return instance;
-
-
     }
 
     pub fn AddExpertToSchedule(&mut self, p: Period, ex: Expert) -> () {

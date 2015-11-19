@@ -53,6 +53,8 @@ public class RustTransSeries {
 
 	private PreCheckTrans preCheckTrans;
 
+	private org.overture.codegen.trans.ConstructorTrans constructorInitTrans;
+
 	public RustTransSeries(RustCodeGen codeGen)
 	{
 		this.codeGen = codeGen;
@@ -69,6 +71,7 @@ public class RustTransSeries {
 		callObjTr = new CallObjStmTrans(irInfo);
 		accTrans = new AccessModfierTrans();
 		constructorTrans = new ConstructorTrans(transAssistant);
+		constructorInitTrans = new org.overture.codegen.trans.ConstructorTrans(transAssistant, "cg_init");
 		assignTr = new AssignStmTrans(transAssistant);
 		selfAndScope = new FuncScopeAdderTrans(transAssistant);
 		valueTrans = new ValueSemanticsTrans();
@@ -86,6 +89,7 @@ public class RustTransSeries {
 		newTrans = new NewExpTrans(transAssistant);
 		preFuncTrans = new PreFuncTrans();
 		preCheckTrans = new PreCheckTrans();
+		
 	}
 
 	public List<DepthFirstAnalysisAdaptor> getTransformations() {
@@ -96,6 +100,7 @@ public class RustTransSeries {
 
 		transformations.add(accTrans);
 		transformations.add(packageTrans);
+		transformations.add(constructorInitTrans);
 		transformations.add(constructorTrans);
 		
 		if(irInfo.getSettings().generatePreConds()){
