@@ -59,8 +59,11 @@ public class ConstructorTrans extends DepthFirstAnalysisAdaptor
 			objInitializer.setName(initName);
 			objInitializer.getMethodType().setResult(new AVoidTypeCG());
 			objInitializer.setIsConstructor(false);
-			objInitializer.setPreCond(null);
-			objInitializer.setPostCond(null);
+			objInitializer.setPreCond(node.getPreCond());
+			objInitializer.setPostCond(node.getPostCond());
+			
+			node.setPreCond(null);
+			node.setPostCond(null);
 
 			ADefaultClassDeclCG classCg = node.getAncestor(ADefaultClassDeclCG.class);
 

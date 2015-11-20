@@ -43,8 +43,11 @@ pub struct Plant {
 impl Plant {
     // operations
     pub fn cg_initPlant_1(&mut self, als: Set<Alarm>, sch: Map<Period, Set<Expert>>) -> () {
+        assert!(self.pre_Plant(als.clone(), sch.clone()));
         self.alarms = als.clone();
         self.schedule = sch.clone();
+
+
     }
 
     pub fn ExpertToPage(&mut self, a: Alarm, p: Period) -> Expert {
@@ -75,7 +78,6 @@ impl Plant {
     }
 
     pub fn new(als: Set<Alarm>, sch: Map<Period, Set<Expert>>) -> Plant {
-        assert!(self.pre_Plant(als.clone(), sch.clone()));
         let mut instance: Plant = Plant::default();
         {
             let arg0: Set<Alarm> = als.clone();
@@ -84,6 +86,7 @@ impl Plant {
         }
 
         return instance;
+
     }
 
     pub fn AddExpertToSchedule(&mut self, p: Period, ex: Expert) -> () {
@@ -109,16 +112,16 @@ impl Plant {
 
     }
 
+    fn pre_Plant(&self, als: Set<Alarm>, sch: Map<Period, Set<Expert>>) -> bool {
+        return Plant::PlantInv(als.clone(), sch.clone());
+    }
+
     fn pre_ExpertToPage(&self, a: Alarm, p: Period) -> bool {
         return self.alarms.in_set(a.clone()) && self.schedule.domain().in_set(p.clone());
     }
 
     fn pre_NumberOfExperts(&self, p: Period) -> bool {
         return self.schedule.domain().in_set(p.clone());
-    }
-
-    fn pre_Plant(&self, als: Set<Alarm>, sch: Map<Period, Set<Expert>>) -> bool {
-        return Plant::PlantInv(als.clone(), sch.clone());
     }
 
     fn pre_RemoveExpertFromSchedule(&self, p: Period, ex: Expert) -> bool {
