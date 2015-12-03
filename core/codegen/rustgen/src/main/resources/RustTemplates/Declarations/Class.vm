@@ -42,7 +42,13 @@ impl $node.getName() {
 	#foreach( $func in $node.getFunctions() )
 	$RustFormat.format($func)
 	#end
+	
+	#if(! $Util.isNull($node.getInvariant()))
+	$RustFormat.format($node.getInvariant())
+	#end
 }
+
+
 
 impl Default for $node.getName() {
 	fn default() -> $node.getName() {

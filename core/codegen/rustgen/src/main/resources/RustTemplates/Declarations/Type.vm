@@ -1,5 +1,5 @@
-#if(!$Util.hasAccessInTemplate($node.getDecl()))$node.getAccess()#end $RustFormat.format(${node.getDecl()})
+#if(!$Util.hasAccessInTemplate($node.getDecl()))$node.getAccess() #end$RustFormat.format(${node.getDecl()})
 ##
 #if (!$Util.isNull($node.getInv()))
-	$RustFormat.format($node.getInv())
+$RustFormat.format($node.getInv())
 #end

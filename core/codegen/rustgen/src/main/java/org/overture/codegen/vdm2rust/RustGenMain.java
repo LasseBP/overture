@@ -36,6 +36,7 @@ public class RustGenMain {
 		
 		rustGen.getSettings().setGeneratePreConds(true);
 		rustGen.getSettings().setGeneratePreCondChecks(true);
+		rustGen.getSettings().setGenerateInvariants(true); 
 
 		try {
 			TypeCheckResult<List<SClassDefinition>> tcResult = TypeCheckerUtil.typeCheckPp(files);

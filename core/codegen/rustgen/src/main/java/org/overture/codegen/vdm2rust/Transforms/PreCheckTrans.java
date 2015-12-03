@@ -47,8 +47,7 @@ public class PreCheckTrans extends DepthFirstAnalysisAdaptor {
 			preCondIdent.setType(precondFunc.getMethodType().clone());			
 			
 			insertPreCondCheck(method, preCondIdent);
-		}
-		
+		}		
 	}
 	
 	@Override

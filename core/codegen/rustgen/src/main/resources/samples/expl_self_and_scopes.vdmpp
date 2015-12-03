@@ -4,7 +4,7 @@ values
 testVal = 123;
 
 instance variables
-kek: int;
+kek: int := 1;
 
 functions
 public five : int -> int

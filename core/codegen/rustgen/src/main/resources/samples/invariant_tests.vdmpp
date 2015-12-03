@@ -1,0 +1,56 @@
+class invariant_tests
+types
+
+public StringSeq = seq of char
+inv s == len s < 20;
+
+public RGBColor = nat * nat * nat
+inv mk_(r,g,b) == r <= 255 and g <= 255 and b <= 255; 
+
+public Account1 :: balance : int
+									owner 	: StringSeq
+inv mk_Account1(bal, owner) == bal > -1000;
+
+public Account2 :: balance : int
+									owner 	: StringSeq
+inv acc == acc.balance > -2000;
+
+values
+-- TODO Define values here
+instance variables
+
+owner: StringSeq := "owner";
+acc1: Account1;
+acc2: Account2;
+inv acc1.balance > acc2.balance and acc1.owner = acc2.owner;
+
+operations
+public invariant_tests : () ==> invariant_tests
+invariant_tests () == (	
+	acc1 := mk_Account1(-1500, owner);
+	acc2 := mk_Account2(-1000, owner);
+	
+	acc1.balance := 200;
+);
+
+kek(i: int) r: int 
+== return i
+ext rd owner;
+
+hest(i: int) r: int 
+ext rd owner
+post r = i;
+
+functions
+--
+
+traces
+-- TODO Define Combinatorial Test Traces here
+end invariant_tests
+
+class ClassT
+
+instance variables
+inv true;
+
+end ClassT
