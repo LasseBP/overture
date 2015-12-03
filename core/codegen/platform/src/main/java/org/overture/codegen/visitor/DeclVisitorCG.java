@@ -517,7 +517,10 @@ public class DeclVisitorCG extends AbstractVisitorCG<IRInfo, SDeclCG>
 		// Exceptions thrown:
 		// LinkedList<AErrorCase> errors = node.getErrors();
 		
-		method.setBody(new ANotImplementedStmCG());
+		if(method.getBody() == null) {
+			// AImplicitOperationDefinition is used for extended explicit operations as well, in that case it *will* have a body.
+			method.setBody(new ANotImplementedStmCG());
+		}
 		method.setFormalParams(question.getDeclAssistant().
 				consFormalParams(node.getParameterPatterns(), question));
 		return method;
