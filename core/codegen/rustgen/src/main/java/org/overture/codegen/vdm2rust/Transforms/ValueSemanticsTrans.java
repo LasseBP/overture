@@ -37,7 +37,11 @@ public class ValueSemanticsTrans extends DepthFirstAnalysisAdaptor {
 			return;
 		}
 		
+			// only clone the value referred. 
+			// i.e. avoid: obj.field -> obj.clone().field.clone()
+			// we want: obj.field -> obj.field.clone()
 		if (parent instanceof AFieldExpCG ||
+			parent instanceof AFieldNumberExpCG ||
 			parent instanceof AReturnStmCG ||
 			parent instanceof AFuncDeclCG ||
 			(parent instanceof ACallObjectExpStmCG && !((ACallObjectExpStmCG)parent).getArgs().contains(node) )) {
