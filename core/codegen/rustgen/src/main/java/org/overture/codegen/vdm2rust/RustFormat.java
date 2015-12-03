@@ -27,7 +27,7 @@ public class RustFormat {
 
 	public RustFormat(IRInfo info)
 	{
-		util = new FormatUtils();
+		util = new FormatUtils(info);
 		TemplateManager templateManager = new TemplateManager(new TemplateStructure("RustTemplates"));
 		TemplateCallable[] templateCallables = new TemplateCallable[]{new TemplateCallable("RustFormat", this), 
 																	  new TemplateCallable("Util", util)};

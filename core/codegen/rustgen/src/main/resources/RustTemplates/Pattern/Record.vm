@@ -1,0 +1,2 @@
+#set( $namePatternPairs = $Util.getNamePatternPairs($node))
+$RustFormat.format($node.getType()) {#foreach( $namepattern in $namePatternPairs.entrySet() ) $namepattern.getKey(): $RustFormat.format($namepattern.getValue()), #end}

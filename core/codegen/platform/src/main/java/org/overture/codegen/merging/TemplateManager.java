@@ -46,6 +46,8 @@ import org.overture.codegen.cgast.declarations.AUnionEnumDeclCG;
 import org.overture.codegen.cgast.declarations.AVarDeclCG;
 import org.overture.codegen.cgast.expressions.*;
 import org.overture.codegen.cgast.patterns.AIdentifierPatternCG;
+import org.overture.codegen.cgast.patterns.AIgnorePatternCG;
+import org.overture.codegen.cgast.patterns.ARecordPatternCG;
 import org.overture.codegen.cgast.patterns.ATuplePatternCG;
 import org.overture.codegen.cgast.statements.AApplyObjectDesignatorCG;
 import org.overture.codegen.cgast.statements.AAssignToExpStmCG;
@@ -804,6 +806,12 @@ public class TemplateManager
 		
 		nodeTemplateFileNames.put(ATuplePatternCG.class, templateStructure.PATTERN_PATH
 				+ "Tuple");
+		
+		nodeTemplateFileNames.put(ARecordPatternCG.class, templateStructure.PATTERN_PATH
+				+ "Record");
+		
+		nodeTemplateFileNames.put(AIgnorePatternCG.class, templateStructure.PATTERN_PATH
+				+ "Ignore");
 
 		// Interface
 		nodeTemplateFileNames.put(AInterfaceDeclCG.class, templateStructure.DECL_PATH
