@@ -1,10 +1,13 @@
 package org.overture.codegen.vdm2rust.Transforms;
 
+import org.overture.codegen.assistant.DeclAssistantCG;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.declarations.AFieldDeclCG;
+import org.overture.codegen.cgast.declarations.AFuncDeclCG;
+import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.expressions.AExplicitVarExpCG;
 import org.overture.codegen.cgast.expressions.AFieldExpCG;
@@ -67,28 +70,63 @@ public class StaticVarTrans extends DepthFirstAnalysisAdaptor {
 												.findFirst()
 												.orElse(null);
 		
-		if(fieldDecl != null){
+		 AFuncDeclCG funcDecl = declaringClass.getFunctions()
+				.stream()
+				.filter(func -> func.getName().equals(memberName))
+				.findFirst()
+				.orElse(null);
+		 
+		 // could be static operation
+		 AMethodDeclCG methDecl = declaringClass.getMethods()
+					.stream()
+					.filter(meth -> meth.getName().equals(memberName))
+					.findFirst()
+					.orElse(null);
+		  
+		boolean replaceNode = false;
+		boolean isValue = true;
+		
+		if(fieldDecl != null) {
 			boolean isInstanceVar = !fieldDecl.getStatic(); 
 			boolean isStaticVar = !isInstanceVar && !fieldDecl.getFinal();
-			boolean isValue = !isInstanceVar && fieldDecl.getFinal();			
-			
-			if(isValue || isStaticVar) {
-				AStaticVarExpCG staticVarExp = new AStaticVarExpCG();
-				staticVarExp.setIsFinal(isValue);
-				staticVarExp.setIsLocal(false);
-				staticVarExp.setIsLambda(false);
-				staticVarExp.setName(memberName);
-				staticVarExp.setPackage(declaringClass.getPackage());
-				staticVarExp.setType(node.getType());
-				staticVarExp.setSourceNode(node.getSourceNode());
-				
-				if(node.parent() != null) {
-					node.parent().replaceChild(node, staticVarExp);
-				}
-				else {
-					Logger.getLog().printErrorln("Could not find parent of " + node + " in " + "'" + this.getClass().getSimpleName() + "'" );
-				}				
-			}			
+			isValue = !isInstanceVar && fieldDecl.getFinal();
+			replaceNode = isValue || isStaticVar;			
 		}
+		
+		if(funcDecl != null) {
+			replaceNode = true;
+			isValue = true;
+		}
+		
+		if(methDecl != null) {
+			replaceNode = methDecl.getStatic();
+			isValue = true;
+		}
+			
+		if(replaceNode) {
+			AStaticVarExpCG staticVarExp = new AStaticVarExpCG();
+			staticVarExp.setIsFinal(isValue);
+			staticVarExp.setIsLocal(false);
+			staticVarExp.setIsLambda(false);
+			staticVarExp.setName(memberName);
+
+			if(DeclAssistantCG.isLibraryName(declaringClass.getName())) {
+				staticVarExp.setPackage(declaringClass.getName());
+				staticVarExp.setIsRootPackage(false);
+			} else {
+				staticVarExp.setPackage(declaringClass.getPackage());
+				staticVarExp.setIsRootPackage(true);
+			}
+			
+			staticVarExp.setType(node.getType());
+			staticVarExp.setSourceNode(node.getSourceNode());
+			
+			if(node.parent() != null) {
+				node.parent().replaceChild(node, staticVarExp);
+			}
+			else {
+				Logger.getLog().printErrorln("Could not find parent of " + node + " in " + "'" + this.getClass().getSimpleName() + "'" );
+			}				
+		}			
 	}
 }

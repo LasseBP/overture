@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.overture.ast.util.ClonableString;
+import org.overture.codegen.assistant.DeclAssistantCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.declarations.ADefaultClassDeclCG;
@@ -31,7 +32,8 @@ public class UseStmTrans extends DepthFirstAnalysisAdaptor {
 		
 		List<ClonableString> classUseDecls = info.getClasses()
 			.stream()
-			.filter(clazz -> clazz != node)
+			.filter(clazz -> clazz != node && 
+					!DeclAssistantCG.isLibraryName(clazz.getName()))
 			.map(clazz -> new ClonableString(clazz.getPackage() + "::" + clazz.getName()))
 			.collect(Collectors.toList());
 		

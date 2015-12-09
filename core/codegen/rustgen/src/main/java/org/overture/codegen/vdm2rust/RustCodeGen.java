@@ -11,9 +11,13 @@ import org.apache.velocity.app.Velocity;
 import org.overture.ast.analysis.AnalysisException;
 import org.overture.ast.definitions.PDefinition;
 import org.overture.ast.definitions.SClassDefinition;
+import org.overture.ast.definitions.SFunctionDefinition;
+import org.overture.ast.definitions.SOperationDefinition;
+import org.overture.ast.expressions.ANotYetSpecifiedExp;
 import org.overture.ast.modules.AModuleModules;
 import org.overture.ast.node.INode;
 import org.overture.ast.statements.AIdentifierStateDesignator;
+import org.overture.ast.statements.ANotYetSpecifiedStm;
 import org.overture.ast.util.modules.CombinedDefaultModule;
 import org.overture.codegen.analysis.vdm.IdStateDesignatorDefCollector;
 import org.overture.codegen.assistant.DeclAssistantCG;
@@ -58,6 +62,14 @@ public class RustCodeGen extends CodeGenBase {
 		
 		computeDefTable(userModules);
 		
+		for (INode node : ast)
+		{
+			if (generator.getIRInfo().getAssistantManager().getDeclAssistant().isLibrary(node))
+			{
+				simplifyLibrary(node);
+			}
+		}
+		
 		List<IRStatus<org.overture.codegen.cgast.INode>> iRstatuses = genIrStatus(ast);		
 		List<GeneratedModule> generated = new LinkedList<GeneratedModule>();
 		
@@ -73,7 +85,7 @@ public class RustCodeGen extends CodeGenBase {
 			{
 				try
 				{
-					if (!getInfo().getDeclAssistant().isLibraryName(status.getIrNodeName()))
+					//if (!getInfo().getDeclAssistant().isLibraryName(status.getIrNodeName()))
 					{
 						generator.applyPartialTransformation(status, trans);
 					}
@@ -281,5 +293,44 @@ public class RustCodeGen extends CodeGenBase {
 		
 		Map<AIdentifierStateDesignator, PDefinition> idDefs = IdStateDesignatorDefCollector.getIdDefs(classesToConsider, getInfo().getTcFactory());
 		getInfo().setIdStateDesignatorDefs(idDefs);
+	}
+	
+	private void simplifyLibrary(INode node)
+	{
+		List<PDefinition> defs = null;
+		
+		if(node instanceof SClassDefinition)
+		{
+			defs = ((SClassDefinition) node).getDefinitions();
+		}
+		else if(node instanceof AModuleModules)
+		{
+			defs = ((AModuleModules) node).getDefs();
+		}
+		else
+		{
+			// Nothing to do
+			return;
+		}
+		
+		for (PDefinition def : defs)
+		{
+			if (def instanceof SOperationDefinition)
+			{
+				SOperationDefinition op = (SOperationDefinition) def;
+
+				op.setBody(new ANotYetSpecifiedStm());
+				op.setPrecondition(null);
+				op.setPostcondition(null);
+			} else if (def instanceof SFunctionDefinition)
+			{
+				SFunctionDefinition func = (SFunctionDefinition) def;
+
+				func.setBody(new ANotYetSpecifiedExp());
+				func.setPrecondition(null);
+				func.setPostcondition(null);
+			}
+
+		}
 	}
 }

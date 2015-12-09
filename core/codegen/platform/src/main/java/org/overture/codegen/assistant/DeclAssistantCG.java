@@ -266,7 +266,7 @@ public class DeclAssistantCG extends AssistantBase
 		return false;
 	}
 
-	public boolean isLibraryName(String className)
+	public static boolean isLibraryName(String className)
 	{
 		for (int i = 0; i < IRConstants.CLASS_NAMES_USED_IN_VDM.length; i++)
 		{

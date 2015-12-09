@@ -115,7 +115,4 @@ public class ConstructionUtils {
 		n.setSourceNode(oldNode.getSourceNode());
 		return n;
 	}
-	
-	
-
 }

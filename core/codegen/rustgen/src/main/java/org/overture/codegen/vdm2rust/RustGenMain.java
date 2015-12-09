@@ -50,7 +50,7 @@ public class RustGenMain {
 			
 			GeneratedData data = rustGen.generateRustFromVdm(tcResult.result);
 			
-			processData(true, new File(files.get(0).getParent()), rustGen, data);
+			processData(true, new File(files.get(0).getParent() + "/generated"), rustGen, data);
 			
 		} catch (AnalysisException e) {
 			Logger.getLog().println("Could not code generate model: "
@@ -95,6 +95,7 @@ public class RustGenMain {
 				{
 					if (outputDir != null)
 					{
+						outputDir.mkdirs();
 						try (PrintWriter outFile = new PrintWriter(outputDir.toString() + File.separator + ((SClassDeclCG)generatedClass.getIrNode()).getPackage() + ".rs")) {
 							outFile.println(generatedClass.getContent());
 						} catch (FileNotFoundException e) {

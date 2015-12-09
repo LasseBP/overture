@@ -1,6 +1,11 @@
 #set( $name = $node.getName() )
-#if( $node.getIsFinal() )
-::$node.getPackage()::${name}##
+#if($node.getIsRootPackage())
+	#set( $prefix = "::")
 #else
-::$node.getPackage()::${name}.lock()##
+	#set( $prefix = "")
+#end
+#if( $node.getIsFinal() )
+${prefix}$node.getPackage()::${name}##
+#else
+${prefix}$node.getPackage()::${name}.lock()##
 #end
