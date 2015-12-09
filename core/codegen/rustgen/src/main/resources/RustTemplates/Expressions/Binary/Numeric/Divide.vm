@@ -1,1 +1,1 @@
-Utils.divide($RustFormat.format($node.getLeft()), $RustFormat.format($node.getRight()))
+$RustFormat.format($node.getLeft()) / $RustFormat.format($node.getRight())
