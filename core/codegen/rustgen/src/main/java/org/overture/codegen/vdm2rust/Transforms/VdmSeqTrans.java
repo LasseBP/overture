@@ -42,8 +42,10 @@ public class VdmSeqTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
 	public void outAEnumSeqExpCG(AEnumSeqExpCG node) throws AnalysisException {
-		ASeqSeqTypeCG declaredType = (ASeqSeqTypeCG)ExpAssistantCG.getDeclaredType(node, transAssistant.getInfo());
-		STypeCG seqOf = declaredType != null ? declaredType.getSeqOf() : ((ASeqSeqTypeCG)node.getType()).getSeqOf();
+		STypeCG declaredType = ExpAssistantCG.getDeclaredType(node, transAssistant.getInfo());
+		
+		
+		STypeCG seqOf = declaredType != null && declaredType instanceof ASeqSeqTypeCG ? ((ASeqSeqTypeCG)declaredType).getSeqOf() : ((ASeqSeqTypeCG)node.getType()).getSeqOf();
 		
 		AApplyExpCG n = null;
 		
