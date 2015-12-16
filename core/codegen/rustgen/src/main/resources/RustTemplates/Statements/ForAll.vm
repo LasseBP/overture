@@ -2,6 +2,6 @@
 #set( $var = $RustFormat.format($node.getPattern()) )
 #set( $body = $RustFormat.format($node.getBody()) )
 ##
-for ${var} in ${exp}) {
+for ${var} in ${exp} {
 	${body}
 }

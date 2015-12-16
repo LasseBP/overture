@@ -1,8 +1,1 @@
-## If the target is a map sequence state designator, e.g. counters.put("c1", 4),
-## then only the target should be generated.
-##
-#if ($RustFormat.isMapSeq($node.getTarget()))
-	$RustFormat.format($node.getTarget());##
-#else
-	$RustFormat.format($node.getTarget()) = $RustFormat.format($node.getExp());##
-#end
+$RustFormat.format($node.getTarget()) = $RustFormat.format($node.getExp());##

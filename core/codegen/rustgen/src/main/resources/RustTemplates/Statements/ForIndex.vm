@@ -5,15 +5,27 @@
 #set( $bySpecified = !$Util.isNull($node.getBy()) )
 ##
 #if ( $bySpecified == true )
+	#set( $widestType = $Util.getWidestNumericType($node.getFrom().getType(), $node.getTo().getType(), $node.getBy().getType()))
+	#set( $isUnsignedType = $Util.isUnsigned($widestType) )
+	#set( $widestType = $RustFormat.format($widestType) )
+	#set( $byExp = $RustFormat.format($node.getBy()) )
 {
-	let mut $index = $fromExp;
-	while $index < $toExp {
+	let step_by: $widestType = ($byExp as $widestType);
+	let to: $widestType = ($toExp as $widestType);
+	let mut $index: $widestType = ($fromExp as $widestType);
+	#if( $isUnsignedType )
+		while $index <= to {
+	#else
+		while if step_by < 0 { $index >= to } else { $index <= to } {
+	#end
 		$body
-		$index += $RustFormat.format($node.getBy());
+		$index = $index + step_by;
 	}
 }
 #else
-for ${index} in (${fromExp}..${toExp}) {
+#set( $widestType = $Util.getWidestNumericType($node.getFrom().getType(), $node.getTo().getType())) )
+#set( $widestType = $RustFormat.format($widestType) )
+for ${index} in ((${fromExp} as ${widestType})..(${toExp} as ${widestType})) {
 	${body}
 }
 #end
