@@ -30,15 +30,17 @@ public class PreFuncTrans extends DepthFirstAnalysisAdaptor {
 		{
 			//convert to method, to be able to access self through self keyword.			
 			AMethodDeclCG preCondMethod = DeclAssistantCG.funcToMethod((AFuncDeclCG) preCond);
-			preCondMethod.setStatic(false);
+			preCondMethod.setStatic(node.getStatic());
 			enclosingClass.getMethods().add(preCondMethod);
 
-			//No need to pass self as the last argument
-			LinkedList<STypeCG> paramTypes = preCondMethod.getMethodType().getParams();
-			paramTypes.remove(paramTypes.size() - 1);
-			
-			LinkedList<AFormalParamLocalParamCG> formalParams = preCondMethod.getFormalParams();
-			formalParams.remove(formalParams.size() - 1);
+			if(!node.getStatic()) {
+				//No need to pass self as the last argument
+				LinkedList<STypeCG> paramTypes = preCondMethod.getMethodType().getParams();
+				paramTypes.remove(paramTypes.size() - 1);
+				
+				LinkedList<AFormalParamLocalParamCG> formalParams = preCondMethod.getFormalParams();
+				formalParams.remove(formalParams.size() - 1);
+			}
 		}
 	}
 	

@@ -32,7 +32,7 @@ public class FuncScopeAdderTrans extends DepthFirstAnalysisAdaptor {
 	}
 	
 	@Override
-	public void caseACallObjectExpStmCG(ACallObjectExpStmCG node) throws AnalysisException {
+	public void outACallObjectExpStmCG(ACallObjectExpStmCG node) throws AnalysisException {
 		/*
 		 * Given: let a: A = ... in
 		 * transform a.func() to A`func() if func really is a function. 
@@ -56,7 +56,7 @@ public class FuncScopeAdderTrans extends DepthFirstAnalysisAdaptor {
 	}	
 	
 	@Override
-	public void caseAApplyExpCG(AApplyExpCG node) throws AnalysisException {
+	public void outAApplyExpCG(AApplyExpCG node) throws AnalysisException {
 		if(node.getRoot() instanceof AFieldExpCG)
 		{
 			// self.func() -> SelfT`func()

@@ -1,0 +1,8 @@
+match $RustFormat.format($node.getExp()) {
+	#foreach($case in $node.getCases())
+	$RustFormat.format($case)
+	#end
+	#if(!$Util.isNull($node.getOthers()))
+	_ => $RustFormat.format($node.getOthers()),
+	#end
+} 

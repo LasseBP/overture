@@ -155,9 +155,23 @@ public class RustCodeGen extends CodeGenBase {
 		GeneratedData data = new GeneratedData();
 		data.setClasses(generated);
 		data.setSkippedClasses(skipping);
+		data.setQuoteValues(generateQuoteModules());
 		return data;
 	}
 	
+	private List<GeneratedModule> generateQuoteModules() {
+		StringWriter writer = new StringWriter();
+		for(String quote: getInfo().getQuoteValues()) {
+			writer.write(String.format("impl_quote! { %s } \n", quote));
+		}
+		
+		GeneratedModule module = new GeneratedModule("quotes", null, writer.toString());
+		
+		List<GeneratedModule> modules = new ArrayList<>();
+		modules.add(module);
+		return modules;
+	}
+
 	private List<IRStatus<org.overture.codegen.cgast.INode>> genIrStatus(
 			Iterable<SClassDefinition> ast) throws AnalysisException
 	{

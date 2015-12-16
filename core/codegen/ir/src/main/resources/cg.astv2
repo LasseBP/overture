@@ -101,6 +101,7 @@ CG {-> package='org.overture.codegen.cgast'
 	| {string} [value]:java_String
 	| {tuple} [patterns]:CG.#pattern*
 	| {record} [typename]:java_String [patterns]:CG.#pattern* [type]:CG.#type
+	| {variant} [enumType]:CG.#type [name]:java_String [inner]:CG.#pattern
 	;
 
 #bind {-> package='org.overture.codegen.cgast.patterns'

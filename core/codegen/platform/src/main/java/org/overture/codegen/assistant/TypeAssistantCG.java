@@ -21,6 +21,7 @@
  */
 package org.overture.codegen.assistant;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -48,9 +49,13 @@ import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.declarations.AFieldDeclCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.declarations.ARecordDeclCG;
+import org.overture.codegen.cgast.declarations.AVarDeclCG;
 import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
+import org.overture.codegen.cgast.expressions.AIntLiteralExpCG;
+import org.overture.codegen.cgast.expressions.ARealLiteralExpCG;
 import org.overture.codegen.cgast.expressions.SBinaryExpCG;
+import org.overture.codegen.cgast.expressions.SLiteralExpCG;
 import org.overture.codegen.cgast.name.ATypeNameCG;
 import org.overture.codegen.cgast.statements.AApplyObjectDesignatorCG;
 import org.overture.codegen.cgast.types.ABoolBasicTypeCG;
@@ -212,7 +217,7 @@ public class TypeAssistantCG extends AssistantBase
 	public STypeCG getFieldType(List<SClassDeclCG> classes,
 			ARecordTypeCG recordType, String memberName)
 	{
-		AFieldDeclCG field = assistantManager.getDeclAssistant().getFieldDecl(classes, recordType, memberName);
+		AFieldDeclCG field = DeclAssistantCG.getFieldDecl(classes, recordType, memberName);
 
 		if (field != null)
 		{
@@ -330,7 +335,7 @@ public class TypeAssistantCG extends AssistantBase
 		return type instanceof SBasicTypeCG;
 	}
 
-	public STypeCG getWrapperType(SBasicTypeCG basicType)
+	public static STypeCG getWrapperType(SBasicTypeCG basicType)
 	{
 
 		if (basicType instanceof AIntNumericBasicTypeCG)
@@ -359,6 +364,16 @@ public class TypeAssistantCG extends AssistantBase
 			return null;
 		}
 
+	}
+	
+	public static STypeCG getLiteralType(SLiteralExpCG exp) {
+		if(exp instanceof ARealLiteralExpCG) {
+			return new ARealNumericBasicTypeCG();
+		} else if (exp instanceof AIntLiteralExpCG) {
+			return new AIntNumericBasicTypeCG();
+		} else {
+			return exp.getType();
+		}
 	}
 
 	public AMethodTypeCG consMethodType(PType node, List<PType> paramTypes,
@@ -748,6 +763,69 @@ public class TypeAssistantCG extends AssistantBase
 		return false;
 	}
 	
+	public static STypeCG getWidestNumericType(STypeCG ...types) {
+		return Arrays.asList(types)
+					.stream()
+					.reduce(new ANat1NumericBasicTypeCG(), (a, b) -> getWidestNumericType(a,b) );
+	}
+	
+	public static STypeCG getWidestNumericType(STypeCG leftType, STypeCG rightType) {
+		int leftRange = getNumericTypeRangeIndex(leftType);
+		int rightRange = getNumericTypeRangeIndex(rightType);
+		
+		if (leftRange == -1 || rightRange == -1) {
+			return null;
+		}
+		
+		int max = Math.max(leftRange, rightRange);
+		if(leftRange == max) {
+			return leftType;
+		} else {
+			return rightType;
+		}
+	}
+	
+	public static STypeCG getNarrowestNumericType(STypeCG ...types) {
+		return Arrays.asList(types)
+					.stream()
+					.reduce(new ARealNumericBasicTypeCG(), (a, b) -> getNarrowestNumericType(a,b) );
+	}
+	
+	public static STypeCG getNarrowestNumericType(STypeCG leftType, STypeCG rightType) {
+		int leftRange = getNumericTypeRangeIndex(leftType);
+		int rightRange = getNumericTypeRangeIndex(rightType);
+		
+		int min = Math.min(leftRange, rightRange);
+		if (min == -1) {
+			return null;
+		} else if(leftRange == min) {
+			return leftType;
+		} else {
+			return rightType;
+		}
+	}
+	
+	private static int getNumericTypeRangeIndex(STypeCG type) {
+		//widest type returns highest num
+		if (type instanceof ARealNumericBasicTypeCG){
+			return 5;
+		} 
+		else if (type instanceof ARatNumericBasicTypeCG){
+			return 4;
+		}
+		else if (type instanceof AIntNumericBasicTypeCG){
+			return 3;
+		}
+		else if (type instanceof ANatNumericBasicTypeCG){
+			return 2;
+		}
+		else if (type instanceof ANat1NumericBasicTypeCG){
+			return 1;
+		}
+		
+		return -1;		
+	}
+	
 	public static boolean isNumericType(STypeCG type)
 	{
 		return isInt(type) || isRealOrRat(type);
@@ -759,6 +837,14 @@ public class TypeAssistantCG extends AssistantBase
 				|| type instanceof ARatBasicTypeWrappersTypeCG
 				|| type instanceof ARealNumericBasicTypeCG
 				|| type instanceof ARealBasicTypeWrappersTypeCG;
+	}
+	
+	public static boolean isNatOrNat1(STypeCG type)
+	{
+		return type instanceof ANatNumericBasicTypeCG
+				|| type instanceof ANatBasicTypeWrappersTypeCG
+				|| type instanceof ANat1NumericBasicTypeCG
+				|| type instanceof ANat1BasicTypeWrappersTypeCG;
 	}
 
 	public static boolean isInt(STypeCG type)
@@ -813,6 +899,19 @@ public class TypeAssistantCG extends AssistantBase
 					&& (type instanceof AUnknownTypeCG || BooleanUtils.isTrue(type.getOptional()) || isWrapperType(type));
 		}
 		
+	}
+	
+	public static boolean inTypeDecl(STypeCG node) throws org.overture.codegen.cgast.analysis.AnalysisException {
+		AFieldDeclCG fieldDecl = node.getAncestor(AFieldDeclCG.class);
+		if(fieldDecl != null) {
+			return isDescendant(fieldDecl, node);
+		}
+		AVarDeclCG varDecl = node.getAncestor(AVarDeclCG.class);
+		if(varDecl != null) {
+			return isDescendant(varDecl, node);
+		}
+		
+		return false;
 	}
 	
 	public static String getDefiningClass(STypeCG type) {

@@ -79,7 +79,7 @@ public class ConstructionUtils {
 		fieldExp.setType(methodType);
 		
 		instanceCall.setRoot(fieldExp);
-		instanceCall.setType(oldExp.getType().clone());
+		instanceCall.setType(methodType.getResult().clone());
 		instanceCall.getArgs().addAll(args);
 		instanceCall.setSourceNode(oldExp.getSourceNode());
 		

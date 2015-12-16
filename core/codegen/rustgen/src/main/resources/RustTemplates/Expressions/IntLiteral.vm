@@ -1,1 +1,7 @@
-$node.getValue()
+#set( $value = $node.getValue() )
+#if( $Util.shouldSpecifyLiteralType($node) )
+	#set( $postfix = $RustFormat.format($node.getType()) )
+#else
+	#set( $postfix = "" )
+#end
+${value}${postfix}

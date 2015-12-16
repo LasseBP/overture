@@ -6,8 +6,6 @@ import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.declarations.AFieldDeclCG;
-import org.overture.codegen.cgast.declarations.AFuncDeclCG;
-import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.expressions.AExplicitVarExpCG;
 import org.overture.codegen.cgast.expressions.AFieldExpCG;
@@ -70,38 +68,40 @@ public class StaticVarTrans extends DepthFirstAnalysisAdaptor {
 												.findFirst()
 												.orElse(null);
 		
-		 AFuncDeclCG funcDecl = declaringClass.getFunctions()
-				.stream()
-				.filter(func -> func.getName().equals(memberName))
-				.findFirst()
-				.orElse(null);
-		 
-		 // could be static operation
-		 AMethodDeclCG methDecl = declaringClass.getMethods()
-					.stream()
-					.filter(meth -> meth.getName().equals(memberName))
-					.findFirst()
-					.orElse(null);
+		if(DeclAssistantCG.isLibraryName(declaringClass.getName())) {
+			return;
+		}
+		
+//		 AFuncDeclCG funcDecl = declaringClass.getFunctions()
+//				.stream()
+//				.filter(func -> func.getName().equals(memberName))
+//				.findFirst()
+//				.orElse(null);
+//		 
+//		 // could be static operation
+//		 AMethodDeclCG methDecl = declaringClass.getMethods()
+//					.stream()
+//					.filter(meth -> meth.getName().equals(memberName))
+//					.findFirst()
+//					.orElse(null);
 		  
 		boolean replaceNode = false;
 		boolean isValue = true;
 		
 		if(fieldDecl != null) {
-			boolean isInstanceVar = !fieldDecl.getStatic(); 
-			boolean isStaticVar = !isInstanceVar && !fieldDecl.getFinal();
-			isValue = !isInstanceVar && fieldDecl.getFinal();
-			replaceNode = isValue || isStaticVar;			
+			isValue = fieldDecl.getStatic() && fieldDecl.getFinal();
+			replaceNode = isValue || fieldDecl.getStatic();			
 		}
 		
-		if(funcDecl != null) {
-			replaceNode = true;
-			isValue = true;
-		}
-		
-		if(methDecl != null) {
-			replaceNode = methDecl.getStatic();
-			isValue = true;
-		}
+//		if(funcDecl != null) {
+//			replaceNode = true;
+//			isValue = true;
+//		}
+//		
+//		if(methDecl != null) {
+//			replaceNode = methDecl.getStatic();
+//			isValue = true;
+//		}
 			
 		if(replaceNode) {
 			AStaticVarExpCG staticVarExp = new AStaticVarExpCG();
@@ -109,14 +109,9 @@ public class StaticVarTrans extends DepthFirstAnalysisAdaptor {
 			staticVarExp.setIsLocal(false);
 			staticVarExp.setIsLambda(false);
 			staticVarExp.setName(memberName);
-
-			if(DeclAssistantCG.isLibraryName(declaringClass.getName())) {
-				staticVarExp.setPackage(declaringClass.getName());
-				staticVarExp.setIsRootPackage(false);
-			} else {
-				staticVarExp.setPackage(declaringClass.getPackage());
-				staticVarExp.setIsRootPackage(true);
-			}
+			
+			staticVarExp.setPackage(declaringClass.getPackage());
+			staticVarExp.setIsRootPackage(true);
 			
 			staticVarExp.setType(node.getType());
 			staticVarExp.setSourceNode(node.getSourceNode());

@@ -49,6 +49,7 @@ import org.overture.codegen.cgast.patterns.AIdentifierPatternCG;
 import org.overture.codegen.cgast.patterns.AIgnorePatternCG;
 import org.overture.codegen.cgast.patterns.ARecordPatternCG;
 import org.overture.codegen.cgast.patterns.ATuplePatternCG;
+import org.overture.codegen.cgast.patterns.AVariantPatternCG;
 import org.overture.codegen.cgast.statements.AApplyObjectDesignatorCG;
 import org.overture.codegen.cgast.statements.AAssignToExpStmCG;
 import org.overture.codegen.cgast.statements.AAssignmentStmCG;
@@ -502,6 +503,18 @@ public class TemplateManager
 
 		nodeTemplateFileNames.put(AMapSeqGetExpCG.class, templateStructure.EXP_PATH
 				+ "MapSeqGet");
+		
+		nodeTemplateFileNames.put(ARecordModExpCG.class, templateStructure.EXP_PATH
+				+ "RecordMod");
+		
+		nodeTemplateFileNames.put(ARecordModifierCG.class, templateStructure.EXP_PATH
+				+ "RecordModifier");
+		
+		nodeTemplateFileNames.put(ACasesExpCG.class, templateStructure.EXP_PATH
+				+ "Cases");
+		
+		nodeTemplateFileNames.put(ACaseAltExpExpCG.class, templateStructure.EXP_PATH
+				+ "CaseAlt");
 
 		// Is expressions
 
@@ -812,6 +825,9 @@ public class TemplateManager
 		
 		nodeTemplateFileNames.put(AIgnorePatternCG.class, templateStructure.PATTERN_PATH
 				+ "Ignore");
+		
+		nodeTemplateFileNames.put(AVariantPatternCG.class, templateStructure.PATTERN_PATH
+				+ "Variant");
 
 		// Interface
 		nodeTemplateFileNames.put(AInterfaceDeclCG.class, templateStructure.DECL_PATH

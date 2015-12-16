@@ -12,6 +12,7 @@ import org.overture.codegen.vdm2rust.Transforms.AccessModfierTrans;
 import org.overture.codegen.vdm2rust.Transforms.BorrowTrans;
 import org.overture.codegen.vdm2rust.Transforms.ComprehensionAndQuantifierTrans;
 import org.overture.codegen.vdm2rust.Transforms.ConstructorTrans;
+import org.overture.codegen.vdm2rust.Transforms.NumericTrans;
 import org.overture.codegen.vdm2rust.Transforms.FuncScopeAdderTrans;
 import org.overture.codegen.vdm2rust.Transforms.InitialExpTrans;
 import org.overture.codegen.vdm2rust.Transforms.NewExpTrans;
@@ -21,6 +22,7 @@ import org.overture.codegen.vdm2rust.Transforms.PreFuncTrans;
 import org.overture.codegen.vdm2rust.Transforms.StaticVarTrans;
 import org.overture.codegen.vdm2rust.Transforms.TypeConverterTrans;
 import org.overture.codegen.vdm2rust.Transforms.UnionDeclTrans;
+import org.overture.codegen.vdm2rust.Transforms.UnionPatternTrans;
 import org.overture.codegen.vdm2rust.Transforms.UseStmTrans;
 import org.overture.codegen.vdm2rust.Transforms.ValueSemanticsTrans;
 import org.overture.codegen.vdm2rust.Transforms.VdmMapTrans;
@@ -55,6 +57,10 @@ public class RustTransSeries {
 
 	private org.overture.codegen.trans.ConstructorTrans constructorInitTrans;
 
+	private UnionPatternTrans unionPatternTrans;
+
+	private NumericTrans floatTrans;
+
 	public RustTransSeries(RustCodeGen codeGen)
 	{
 		this.codeGen = codeGen;
@@ -80,6 +86,7 @@ public class RustTransSeries {
 		packageTrans = new PackageTrans();
 		compTrans = new ComprehensionAndQuantifierTrans();
 		unionTrans = new UnionDeclTrans();
+		unionPatternTrans = new UnionPatternTrans();
 		typeTrans = new TypeConverterTrans(transAssistant);
 		setTrans = new VdmSetTrans(transAssistant);
 		mapTrans = new VdmMapTrans(transAssistant);
@@ -89,7 +96,7 @@ public class RustTransSeries {
 		newTrans = new NewExpTrans(transAssistant);
 		preFuncTrans = new PreFuncTrans();
 		preCheckTrans = new PreCheckTrans();
-		
+		floatTrans = new NumericTrans(transAssistant);
 	}
 
 	public List<DepthFirstAnalysisAdaptor> getTransformations() {
@@ -98,6 +105,7 @@ public class RustTransSeries {
 		// Set up order of transformations
 		List<DepthFirstAnalysisAdaptor> transformations = new ArrayList<DepthFirstAnalysisAdaptor>();
 
+		transformations.add(floatTrans);
 		transformations.add(accTrans);
 		transformations.add(packageTrans);
 		transformations.add(constructorInitTrans);
@@ -111,7 +119,8 @@ public class RustTransSeries {
 			transformations.add(preCheckTrans);
 		}
 		
-		transformations.add(unionTrans);				
+		transformations.add(unionTrans);
+		transformations.add(unionPatternTrans);
 		transformations.add(assignTr);
 		transformations.add(callObjTr);
 		transformations.add(staticVar);
@@ -122,9 +131,10 @@ public class RustTransSeries {
 		transformations.add(setTrans);	
 		transformations.add(mapTrans);
 		transformations.add(seqTrans);
-		transformations.add(typeTrans);	
-		transformations.add(borrowTrans);
+		//transformations.add(typeTrans);		
 		transformations.add(valueTrans);
+		transformations.add(borrowTrans);
+		transformations.add(typeTrans);
 		transformations.add(useTrans);
 		
 		return transformations;

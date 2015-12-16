@@ -36,6 +36,7 @@ import org.overture.ast.statements.ALetStm;
 import org.overture.ast.statements.PStm;
 import org.overture.ast.types.AUnionType;
 import org.overture.ast.types.PType;
+import org.overture.codegen.cgast.SDeclCG;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.SStmCG;
 import org.overture.codegen.cgast.STypeCG;
@@ -152,7 +153,8 @@ public class StmAssistantCG extends AssistantBase
 	public static boolean isScoped(ALetDefExpCG block)
 	{
 		return block.parent() instanceof SExpCG || 
-			   block.parent() instanceof SStmCG;
+			   block.parent() instanceof SStmCG ||
+			   block.parent() instanceof SDeclCG;
 	}
 	
 	public boolean equal(AMetaStmCG left, AMetaStmCG right)

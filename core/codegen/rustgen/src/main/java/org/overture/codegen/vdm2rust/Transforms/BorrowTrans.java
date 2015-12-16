@@ -1,15 +1,25 @@
 package org.overture.codegen.vdm2rust.Transforms;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.overture.codegen.assistant.AssistantBase;
 import org.overture.codegen.assistant.StmAssistantCG;
+import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.declarations.AVarDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
+import org.overture.codegen.cgast.expressions.AExplicitVarExpCG;
+import org.overture.codegen.cgast.expressions.AExternalExpCG;
 import org.overture.codegen.cgast.expressions.AIdentifierVarExpCG;
+import org.overture.codegen.cgast.expressions.ALambdaExpCG;
+import org.overture.codegen.cgast.expressions.ALetDefExpCG;
+import org.overture.codegen.cgast.expressions.ASelfExpCG;
+import org.overture.codegen.cgast.expressions.AStaticVarExpCG;
+import org.overture.codegen.cgast.expressions.SLiteralExpCG;
 import org.overture.codegen.cgast.patterns.AIdentifierPatternCG;
 import org.overture.codegen.cgast.statements.ABlockStmCG;
 import org.overture.codegen.cgast.statements.ACallObjectExpStmCG;
@@ -26,10 +36,38 @@ public class BorrowTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
 	public void outAApplyExpCG(AApplyExpCG node) throws AnalysisException {
-		// TODO <exprX>(<expr with exprX>) -> <exprX> already borrowed as mutable.
-		super.outAApplyExpCG(node);
+		
+		if(isBorrowSafe(node.getRoot(), node.getArgs())) {
+			return;
+		}
+		
+		i = 0;
+		List<AVarDeclCG> temps = node.getArgs().stream()
+							 .filter(arg -> !(arg instanceof ALambdaExpCG))
+							 .map(arg -> argToVarDecl(arg))
+							 .collect(Collectors.toList());		
+		
+		if(!temps.isEmpty()) {
+			i = 0;
+			List<SExpCG> newArgs = node.getArgs().stream() 
+										 .map(arg -> argToVarExp(arg))
+										 .collect(Collectors.toList());
+			
+			node.getArgs().clear();
+			node.getArgs().addAll(newArgs);
+			
+			ALetDefExpCG block = new ALetDefExpCG();
+			block.getLocalDefs().addAll(temps);
+			block.setSourceNode(node.getSourceNode());
+			block.setExp(node.clone());
+			block.setType(node.getType().clone());
+			
+			transAssistant.replaceNodeWith(node, block);		
+		}
 	}
 	
+	
+
 	@Override
 	public void outACallObjectExpStmCG(ACallObjectExpStmCG node) throws AnalysisException {
 		//problem: <exprX>.op(<expr with exprX>) -> <exprX> already borrowed as mutable.
@@ -41,8 +79,13 @@ public class BorrowTrans extends DepthFirstAnalysisAdaptor {
 		//check args for occurences of expressions in each arg.
 		//create temp vars for args, which contains expressions from the objExp.
 		
+		if(isBorrowSafe(node.getObj(), node.getArgs())) {
+			return;
+		}
+				
 		i = 0;
 		List<AVarDeclCG> temps = node.getArgs().stream()
+							 .filter(arg -> !(arg instanceof ALambdaExpCG))
 							 .map(arg -> argToVarDecl(arg))
 							 .collect(Collectors.toList());		
 		
@@ -65,7 +108,22 @@ public class BorrowTrans extends DepthFirstAnalysisAdaptor {
 		}
 	}
 	
-	//TODO: tilføj trans for AApplyExpCG, hvis der er tale om en operation.
+	private static boolean isBorrowSafe(SExpCG root, LinkedList<SExpCG> args) {
+		return root instanceof AExternalExpCG ||
+			   root instanceof AExplicitVarExpCG ||
+			   root instanceof AStaticVarExpCG || 
+			   args.stream().allMatch(arg -> arg instanceof SLiteralExpCG) ||
+			   (root instanceof ASelfExpCG && args.stream().noneMatch(arg -> hasDescendantOfType(arg, ASelfExpCG.class)));
+	}
+	
+	public static boolean hasDescendantOfType(INode ancestor, Class<? extends INode> type) {
+		try {
+			return AssistantBase.hasDescendantOfType(ancestor, type);
+		} catch (AnalysisException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 			
 	AVarDeclCG argToVarDecl(SExpCG arg) {
 		AIdentifierPatternCG idPattern = new AIdentifierPatternCG();
@@ -83,6 +141,10 @@ public class BorrowTrans extends DepthFirstAnalysisAdaptor {
 	}
 	
 	SExpCG argToVarExp(SExpCG arg) {
+		if(arg instanceof ALambdaExpCG) {
+			return arg;
+		}
+		
 		AIdentifierVarExpCG varExp = new AIdentifierVarExpCG();
 		varExp.setIsLambda(false);
 		varExp.setIsLocal(true);

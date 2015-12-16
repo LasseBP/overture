@@ -13,6 +13,8 @@ import org.overture.codegen.cgast.name.ATypeNameCG;
 import org.overture.codegen.cgast.types.AUnionTypeCG;
 
 public class UnionDeclTrans extends DepthFirstAnalysisAdaptor {
+	public static final String CHOICEPREFIX = "Ch";
+	
 	@Override
 	public void caseANamedTypeDeclCG(ANamedTypeDeclCG node) throws AnalysisException {
 		if(node.getType() instanceof AUnionTypeCG && 
@@ -42,7 +44,7 @@ public class UnionDeclTrans extends DepthFirstAnalysisAdaptor {
 		namedType.setType(type.clone());
 		
 		ATypeNameCG typeName = new ATypeNameCG();
-		typeName.setName("Ch" + Integer.toString(i++));
+		typeName.setName(CHOICEPREFIX + Integer.toString(i++));
 
 		namedType.setName(typeName);
 		return namedType;

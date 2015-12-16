@@ -55,6 +55,7 @@ import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.SMultipleBindCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.QuestionAnswerAdaptor;
+import org.overture.codegen.cgast.declarations.AFieldDeclCG;
 import org.overture.codegen.cgast.declarations.AFuncDeclCG;
 import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.declarations.AVarDeclCG;
@@ -93,6 +94,7 @@ import org.overture.codegen.cgast.expressions.SIsExpCG;
 import org.overture.codegen.cgast.expressions.SQuantifierExpCG;
 import org.overture.codegen.cgast.expressions.SUnaryExpCG;
 import org.overture.codegen.cgast.expressions.SVarExpCG;
+import org.overture.codegen.cgast.statements.AAssignToExpStmCG;
 import org.overture.codegen.cgast.statements.ACallObjectExpStmCG;
 import org.overture.codegen.cgast.statements.AForLoopStmCG;
 import org.overture.codegen.cgast.statements.AIdentifierStateDesignatorCG;
@@ -748,6 +750,17 @@ public class ExpAssistantCG extends AssistantBase
 		public DeclTypeFinder(IRInfo info) {
 			this.info = info;
 		}		
+		
+		@Override
+		public STypeCG caseAFieldDeclCG(AFieldDeclCG node, SExpCG question)
+				throws org.overture.codegen.cgast.analysis.AnalysisException {
+			if(node.getInitial() == question){
+				return node.getType();
+			} else {
+				return super.caseAFieldDeclCG(node, question);
+			}
+			
+		}
 
 		@Override
 		public STypeCG caseAVarDeclCG(AVarDeclCG node, SExpCG question)
@@ -834,7 +847,13 @@ public class ExpAssistantCG extends AssistantBase
 		public STypeCG caseAFuncDeclCG(AFuncDeclCG node, SExpCG question)
 				throws org.overture.codegen.cgast.analysis.AnalysisException {
 			return node.getMethodType().getResult().clone();
-		}		
+		}
+		
+		@Override
+		public STypeCG caseAAssignToExpStmCG(AAssignToExpStmCG node, SExpCG question)
+				throws org.overture.codegen.cgast.analysis.AnalysisException {
+			return node.getTarget().getType();
+		}
 		
 		@Override
 		public STypeCG createNewReturnValue(INode node, SExpCG question)

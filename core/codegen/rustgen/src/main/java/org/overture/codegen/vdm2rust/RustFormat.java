@@ -53,8 +53,11 @@ public class RustFormat {
 	public String format(INode node) throws AnalysisException
 	{	
 		StringWriter writer = new StringWriter();
-		
-		if(node instanceof STypeCG) {
+		if(node == null)
+		{
+			throw new AnalysisException("Null node.");
+		}
+		else if(node instanceof STypeCG) {
 			//special case
 			formatType((STypeCG)node, writer);
 		} else {
@@ -66,8 +69,10 @@ public class RustFormat {
 
 	protected void formatType(STypeCG node, StringWriter writer) throws AnalysisException {
 		boolean isOptional = node.getOptional() != null ? node.getOptional() : false;
+		boolean printOptional = isOptional && FormatUtils.inTypeDecl(node);
 		
-		if(isOptional) {
+		
+		if(printOptional) {
 			writer.write("Option<");
 		}
 		
@@ -89,11 +94,11 @@ public class RustFormat {
 			node.apply(mergeVisitor, writer);
 		}
 		
-		if(isOptional) {
+		if(printOptional) {
 			writer.write(">");
 		}
-	}
-	
+	}	
+
 	public String formatList(List<? extends INode> nodes)
 			throws AnalysisException
 	{

@@ -38,6 +38,7 @@ public class VdmMapTrans extends DepthFirstAnalysisAdaptor {
 	public void outAEnumMapExpCG(AEnumMapExpCG node) throws AnalysisException {
 		AMapMapTypeCG declaredType = (AMapMapTypeCG)ExpAssistantCG.getDeclaredType(node, transAssistant.getInfo());
 		AMapMapTypeCG mapType = declaredType != null ? declaredType : (AMapMapTypeCG)node.getType();
+		node.setType(mapType.clone());
 		
 		AApplyExpCG n = ConstructionUtils.createVariadicExternalExp(node, node.getMembers(), "map!", mapType.clone());		
 		transAssistant.replaceNodeWith(node, n);
@@ -78,7 +79,7 @@ public class VdmMapTrans extends DepthFirstAnalysisAdaptor {
 	public void outAMapSeqGetExpCG(AMapSeqGetExpCG node)
 			throws AnalysisException {
 		if(node.getCol().getType() instanceof AMapMapTypeCG) {
-			SExpCG n = ConstructionUtils.consExpCall(node, node.getCol(), "get", node.getIndex());
+			SExpCG n = ConstructionUtils.consExpCall(node, node.getCol(), "get_ref", node.getIndex());
 			transAssistant.replaceNodeWith(node, n);
 		}
 	}

@@ -3,6 +3,7 @@ package org.overture.codegen.vdm2rust;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -49,8 +50,8 @@ public class RustGenMain {
 			}
 			
 			GeneratedData data = rustGen.generateRustFromVdm(tcResult.result);
-			
-			processData(true, new File(files.get(0).getParent() + "/generated"), rustGen, data);
+			String outputPath = files.get(0).getParent() + File.separator + "generated" + File.separator + "rust";
+			processData(false, outputPath, rustGen, data);
 			
 		} catch (AnalysisException e) {
 			Logger.getLog().println("Could not code generate model: "
@@ -60,9 +61,10 @@ public class RustGenMain {
 	}
 
 	public static void processData(boolean printCode,
-			final File outputDir, RustCodeGen vdmCodGen, GeneratedData data) {
+			final String outputPath, RustCodeGen vdmCodGen, GeneratedData data) {
 		List<GeneratedModule> generatedClasses = data.getClasses();
-
+		List<String> generatedModules = new ArrayList<>();
+		
 		Logger.getLog().println("");
 		
 		if(!generatedClasses.isEmpty())
@@ -93,11 +95,14 @@ public class RustGenMain {
 	
 				} else
 				{
-					if (outputDir != null)
-					{
-						outputDir.mkdirs();
-						try (PrintWriter outFile = new PrintWriter(outputDir.toString() + File.separator + ((SClassDeclCG)generatedClass.getIrNode()).getPackage() + ".rs")) {
+					if (outputPath != null)
+					{						
+						File sourceDir = new File(outputPath + File.separator + "src");
+						sourceDir.mkdirs();
+						String moduleName = ((SClassDeclCG)generatedClass.getIrNode()).getPackage();
+						try (PrintWriter outFile = new PrintWriter(sourceDir.toString() + File.separator + moduleName + ".rs")) {
 							outFile.println(generatedClass.getContent());
+							generatedModules.add(moduleName);
 						} catch (FileNotFoundException e) {
 							e.printStackTrace();
 						}
@@ -128,7 +133,40 @@ public class RustGenMain {
 		{
 			Logger.getLog().println("No classes were generated!");
 		}
+		
+		List<GeneratedModule> quotes = data.getQuoteValues();
 
+		Logger.getLog().println("\nGenerated following quote modules:");
+
+		if (quotes != null && !quotes.isEmpty())
+		{
+			if(outputPath != null)
+			{
+				for (GeneratedModule q : quotes)
+				{
+					File sourceDir = new File(outputPath + File.separator + "src");
+					sourceDir.mkdirs();
+					try (PrintWriter outFile = new PrintWriter(sourceDir.toString() + File.separator + q.getName() + ".rs")) {
+						outFile.println(q.getContent());
+						generatedModules.add(q.getName());
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			
+			for (GeneratedModule q : quotes)
+			{
+				Logger.getLog().print(q.getName() + " ");
+			}
+
+			Logger.getLog().println("");
+		}
+		
+		if(outputPath != null) {
+			generateMain(generatedModules, outputPath);
+			generateToml(outputPath);
+		}
 		
 		if(data.getWarnings() != null && !data.getWarnings().isEmpty())
 		{
@@ -138,6 +176,51 @@ public class RustGenMain {
 				Logger.getLog().println("[WARNING] " + w);
 			}
 		}
+	}
+
+	private static void generateToml(String outputPath) {
+		try (PrintWriter outFile = new PrintWriter(outputPath + File.separator + "Cargo.toml")) {
+			
+			outFile.write("[package]\n");
+			outFile.write("name = \"project_name\"\n");
+			outFile.write("version = \"0.1.0\"\n");
+			outFile.write("authors = [\"Overture User <info@overturetool.org>\"]");
+			
+			outFile.write("\n\n[dependencies]\n");
+			outFile.write("codegen_runtime = { git = \"https://github.com/LasseBP/codegen_runtime.git\" }\n");
+			outFile.write("lazy_static = \"0.1.*\"");		
+						
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}		
+		
+	}
+
+	private static void generateMain(List<String> generatedModules, String outputPath) {
+		try (PrintWriter outFile = new PrintWriter(outputPath.toString() + File.separator + "src" + File.separator + "main.rs")) {
+			
+			outFile.write("#![allow(non_snake_case, non_upper_case_globals,\n" +
+						  " unused_variables, dead_code, unused_mut,unused_parens,\n" +
+						  "non_camel_case_types,unused_imports)] \n\n");
+			
+			outFile.write("#[macro_use]\n" +
+					  	  "extern crate lazy_static;\n\n");
+			
+			outFile.write("#[macro_use]\n" +
+				  	  	  "extern crate codegen_runtime;\n\n");
+			
+			for(String moduleName : generatedModules) {
+				outFile.write("mod " + moduleName + ";\n");
+			}
+			
+			outFile.write("\nuse codegen_runtime::*;\n\n");
+			
+			//TODO: entry point goes here.
+			outFile.write("fn main() { println!(\"Hello Rusty VDM!\"); }");
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}		
 	}
 	
 	

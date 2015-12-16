@@ -6,10 +6,10 @@ import java.util.List;
 import org.overture.ast.types.PType;
 import org.overture.ast.types.SMapType;
 import org.overture.ast.types.SSeqType;
+import org.overture.codegen.assistant.DeclAssistantCG;
 import org.overture.codegen.assistant.TypeAssistantCG;
 import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.SExpCG;
-import org.overture.codegen.cgast.SStmCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
@@ -22,7 +22,10 @@ import org.overture.codegen.cgast.declarations.AVarDeclCG;
 import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.ACardUnaryExpCG;
+import org.overture.codegen.cgast.expressions.ACastUnaryExpCG;
+import org.overture.codegen.cgast.expressions.ADivideNumericBinaryExpCG;
 import org.overture.codegen.cgast.expressions.AElemsUnaryExpCG;
+import org.overture.codegen.cgast.expressions.AEqualsBinaryExpCG;
 import org.overture.codegen.cgast.expressions.AExplicitVarExpCG;
 import org.overture.codegen.cgast.expressions.AExternalExpCG;
 import org.overture.codegen.cgast.expressions.AFieldExpCG;
@@ -35,15 +38,20 @@ import org.overture.codegen.cgast.expressions.AMapDomainUnaryExpCG;
 import org.overture.codegen.cgast.expressions.AMissingMemberRuntimeErrorExpCG;
 import org.overture.codegen.cgast.expressions.AModNumericBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ANewExpCG;
+import org.overture.codegen.cgast.expressions.ANotEqualsBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ANotUnaryExpCG;
 import org.overture.codegen.cgast.expressions.ANullExpCG;
+import org.overture.codegen.cgast.expressions.ARealLiteralExpCG;
+import org.overture.codegen.cgast.expressions.ARecordModExpCG;
+import org.overture.codegen.cgast.expressions.ARecordModifierCG;
 import org.overture.codegen.cgast.expressions.ARemNumericBinaryExpCG;
 import org.overture.codegen.cgast.expressions.ASeqConcatBinaryExpCG;
 import org.overture.codegen.cgast.expressions.AStringLiteralExpCG;
+import org.overture.codegen.cgast.expressions.ATernaryIfExpCG;
 import org.overture.codegen.cgast.expressions.AUndefinedExpCG;
+import org.overture.codegen.cgast.expressions.SBinaryExpBase;
 import org.overture.codegen.cgast.expressions.SNumericBinaryExpCG;
 import org.overture.codegen.cgast.expressions.SUnaryExpCG;
-import org.overture.codegen.cgast.expressions.SVarExpBase;
 import org.overture.codegen.cgast.expressions.SVarExpCG;
 import org.overture.codegen.cgast.patterns.AIdentifierPatternCG;
 import org.overture.codegen.cgast.statements.AAssignToExpStmCG;
@@ -147,27 +155,34 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 		}
 		
 		//doesn't compare named invariants, *isOptional* and source node.
-		if(!exp.getType().equals(expectedType) && !castNotNeeded(exp, expectedType))
-		{
-			if (TypeAssistantCG.isNumericType(expectedType))
-			{
-				//throw new AnalysisException("numeric conversions are not implemented.");
-			} else if (expectedType instanceof AUnionTypeCG || 
-					expType instanceof AUnionTypeCG)
+		if(!expType.equals(expectedType) && !castNotNeeded(exp, expectedType))
+		{	if (expectedType instanceof AUnionTypeCG || 
+				expType instanceof AUnionTypeCG ||
+				TypeAssistantCG.isRealOrRat(expectedType) || 
+				TypeAssistantCG.isRealOrRat(expType))
 			{	
 				// ExpectedT::from(exp)
-				corrected = createFromExp(exp, expectedType, corrected, expType);
+				corrected = createFromExp(corrected, expectedType, expType);
 			}
+			else if (TypeAssistantCG.isNumericType(expectedType))
+			{
+				ACastUnaryExpCG cast = new ACastUnaryExpCG();
+				cast.setExp(corrected.clone());
+				cast.setType(expectedType.clone());
+				cast.setSourceNode(exp.getSourceNode());
+				corrected = cast;
+				
+			} 
 		}
 		
 		if (!isOptional && isOptionalExpected) {
-			corrected = createWrapExp(exp, expectedType, expType);			
+			corrected = createWrapExp(corrected, expectedType, expType);			
 		}
 		
 		return corrected;
 	}
 
-	protected SExpCG createFromExp(SExpCG exp, STypeCG expectedType, SExpCG corrected, STypeCG expType) {
+	public static SExpCG createFromExp(SExpCG exp, STypeCG expectedType, STypeCG expType) {
 		// ExpectedT::from(exp)
 		AMethodTypeCG methodType = new AMethodTypeCG();
 		methodType.setResult(expectedType.clone());
@@ -185,10 +200,9 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 		convExp.setRoot(explIdent);
 		convExp.setType(expectedType.clone());
 		convExp.setSourceNode(exp.getSourceNode());
-		convExp.getArgs().add(corrected.clone());
+		convExp.getArgs().add(exp.clone());
 		
-		corrected = convExp;
-		return corrected;
+		return convExp;
 	}
 
 	protected SExpCG createWrapExp(SExpCG exp, STypeCG expectedType, STypeCG expType) {
@@ -243,7 +257,8 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 	private boolean correctArgTypes(List<SExpCG> args, List<STypeCG> paramTypes)
 			throws AnalysisException
 	{
-		if (transAssistant.getInfo().getAssistantManager().getTypeAssistant().checkArgTypes(transAssistant.getInfo(), args, paramTypes))
+		//if (transAssistant.getInfo().getAssistantManager().getTypeAssistant().checkArgTypes(transAssistant.getInfo(), args, paramTypes))
+		if(paramTypes.size() == args.size())
 		{
 			for (int k = 0; k < paramTypes.size(); k++)
 			{
@@ -291,6 +306,8 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 		
 		return check;
 	}
+	
+	
 
 	@Override
 	public void defaultInSNumericBinaryExpCG(SNumericBinaryExpCG node)
@@ -298,12 +315,10 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 	{
 		STypeCG expectedType;
 		
-		if (TypeAssistantCG.isNumericType(node.getType()))
-		{
-			expectedType = node.getType();
-		} else
-		{
-			expectedType = getExpectedOperandType(node);
+		expectedType = getExpectedOperandType(node);
+		
+		if(TypeAssistantCG.isNumericType(node.getType()) && !expectedType.equals(node.getType())) {
+			node.setType(expectedType.clone());
 		}
 
 		checkAndCorrectTypes(node.getLeft(), expectedType);
@@ -312,25 +327,50 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 	
 	public STypeCG getExpectedOperandType(SNumericBinaryExpCG node)
 	{
+		STypeCG widest = TypeAssistantCG.getWidestNumericType(node.getLeft().getType(), node.getRight().getType()).clone();
+		widest.setOptional(false);
 		if(node instanceof AIntDivNumericBinaryExpCG || node instanceof AModNumericBinaryExpCG || node instanceof ARemNumericBinaryExpCG)
-		{
-			return new AIntNumericBasicTypeCG();
-		}
-		else
-		{
+		{			
+			return TypeAssistantCG.getNarrowestNumericType(widest, new AIntNumericBasicTypeCG());
+		} else if (node instanceof ADivideNumericBinaryExpCG) {
 			return new ARealNumericBasicTypeCG();
+		} else {
+			return widest;
 		}
 	}
 	
+	@Override
+	public void caseAEqualsBinaryExpCG(AEqualsBinaryExpCG node) throws AnalysisException {		
+		handleEqualityComp(node); 
+	}
+	
+	@Override
+	public void caseANotEqualsBinaryExpCG(ANotEqualsBinaryExpCG node) throws AnalysisException {
+		handleEqualityComp(node);
+	}
+
+	protected void handleEqualityComp(SBinaryExpBase node) throws AnalysisException {
+		node.getLeft().apply(this);
+		node.getRight().apply(this);
+		
+		STypeCG leftType = node.getLeft().getType();
+		STypeCG rightType = node.getRight().getType();
+		
+		if(TypeAssistantCG.isNumericType(leftType) && TypeAssistantCG.isNumericType(rightType) ) {
+			STypeCG widestType = TypeAssistantCG.getWidestNumericType(leftType, rightType);
+			checkAndCorrectTypes(node.getLeft(), widestType);
+			checkAndCorrectTypes(node.getRight(), widestType);
+		}
+	}
+
+	
+
 	@Override
 	public void caseAFieldDeclCG(AFieldDeclCG node) throws AnalysisException
 	{
 		if (node.getInitial() != null)
 		{
-			if (node.getInitial().getType() instanceof AUnionTypeCG)
-			{
-				checkAndCorrectTypes(node.getInitial(), node.getType());
-			}
+			checkAndCorrectTypes(node.getInitial(), node.getType());
 			
 			node.getInitial().apply(this);
 		}
@@ -411,7 +451,7 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 			return;
 		}
 		
-		handleFieldExp(node, "field number " + node.getField(), tuple, tupleType, node.getType().clone());
+		//handleFieldExp(node, "field number " + node.getField(), tuple, tupleType, node.getType().clone());
 	}
 	
 	@Override
@@ -426,145 +466,145 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 			return;
 		}
 		
-		STypeCG resultType = getResultType(node, node.parent(), objectType, transAssistant.getInfo().getTypeAssistant());
+		//STypeCG resultType = getResultType(node, node.parent(), objectType, transAssistant.getInfo().getTypeAssistant());
 		
-		handleFieldExp(node, node.getMemberName(), object, objectType, resultType);
+		//handleFieldExp(node, node.getMemberName(), object, objectType, resultType);
 	}
 
-	private void handleFieldExp(SExpCG node, String memberName, SExpCG subject, STypeCG fieldObjType, STypeCG resultType) throws AnalysisException
-	{
-		INode parent = node.parent();
-
-		TypeAssistantCG typeAssistant = transAssistant.getInfo().getAssistantManager().getTypeAssistant();
-
-		SStmCG enclosingStatement = transAssistant.getEnclosingStm(node, "field expression");
-
-		String applyResultName = transAssistant.getInfo().getTempVarNameGen().nextVarName("apply_");
-
-		AIdentifierPatternCG id = new AIdentifierPatternCG();
-		id.setName(applyResultName);
-
-		AVarDeclCG resultDecl = transAssistant.getInfo().getDeclAssistant().
-				consLocalVarDecl(node.getSourceNode().getVdmNode(), resultType, id, transAssistant.getInfo().getExpAssistant().consNullExp());
-		
-		AIdentifierVarExpCG resultVar = new AIdentifierVarExpCG();
-		resultVar.setSourceNode(node.getSourceNode());
-		resultVar.setIsLambda(false);
-		resultVar.setIsLocal(true);
-		resultVar.setName(applyResultName);
-		resultVar.setType(resultDecl.getType().clone());
-
-		ABlockStmCG replacementBlock = new ABlockStmCG();
-		SExpCG obj = null;
-		
-		if (!(subject instanceof SVarExpBase))
-		{
-			String objName = transAssistant.getInfo().getTempVarNameGen().nextVarName("obj_");
-
-			AIdentifierPatternCG objId = new AIdentifierPatternCG();
-			objId.setName(objName);
-
-			AVarDeclCG objectDecl = transAssistant.getInfo().getDeclAssistant().
-					consLocalVarDecl(subject.getType().clone(), objId, subject.clone());
-			
-			replacementBlock.getLocalDefs().add(objectDecl);
-
-			AIdentifierVarExpCG objectVar = new AIdentifierVarExpCG();
-			objectVar.setIsLambda(false);
-			objectVar.setIsLocal(true);
-			objectVar.setName(objName);
-			objectVar.setType(objectDecl.getType().clone());
-			obj = objectVar;
-		} else
-		{
-			obj = subject.clone();
-		}
-
-		List<STypeCG> possibleTypes = ((AUnionTypeCG) fieldObjType).getTypes();
-		possibleTypes = typeAssistant.clearDuplicates(possibleTypes);
-
-		AIfStmCG ifChecks = new AIfStmCG();
-
-		int handledTypes = 0;
-		for (int i = 0; i < possibleTypes.size(); i++)
-		{
-			SExpCG fieldExp = (SExpCG) node.clone();
-			STypeCG currentType = possibleTypes.get(i);
-			
-			if(currentType instanceof AUnknownTypeCG)
-			{
-				// If we are accessing an element of (say) the sequence [new A(), new B(), nil] of type A | B | [?]
-				// then the current IR type will be the unknown type at some point. This case is simply skipped.
-				continue;
-			}
-			
-			if (!(currentType instanceof AClassTypeCG)
-					&& !(currentType instanceof ATupleTypeCG)
-					&& !(currentType instanceof ARecordTypeCG))
-			{
-				// If the field cannot possibly exist then continue
-				continue;
-			}
-			
-			boolean memberExists = false;
-
-			memberExists = memberExists(memberName, parent, typeAssistant, fieldExp, currentType);
-
-			if (!memberExists)
-			{
-				// If the member does not exist then the case should not be treated
-				continue;
-			}
-			
-			SExpCG castedFieldExp = createTypeCorrectExp(obj, currentType);
-
-			setSubject(fieldExp, castedFieldExp);
-
-			AAssignToExpStmCG assignment = new AAssignToExpStmCG();
-			assignment.setTarget(resultVar.clone());
-			assignment.setExp(getAssignmentExp(node, fieldExp));
-
-			if (handledTypes == 0)
-			{
-				ifChecks.setIfExp(consInstanceCheck(obj, currentType));
-				ifChecks.setThenStm(assignment);
-			} else
-			{
-				AElseIfStmCG elseIf = new AElseIfStmCG();
-				elseIf.setElseIf(consInstanceCheck(obj, currentType));
-				elseIf.setThenStm(assignment);
-
-				ifChecks.getElseIf().add(elseIf);
-			}
-			
-			handledTypes++;
-		}
-		
-		if(handledTypes == 0)
-		{
-			return;
-		}
-		
-		ARaiseErrorStmCG raise = consRaiseStm(MISSING_MEMBER, memberName);
-		ifChecks.setElseStm(raise);
-
-		if(parent instanceof AApplyExpCG && ((AApplyExpCG) parent).getRoot() == node)
-		{
-			transAssistant.replaceNodeWith(parent, resultVar);
-		}
-		else
-		{
-			transAssistant.replaceNodeWith(node, resultVar);
-		}
-		
-		replacementBlock.getLocalDefs().add(resultDecl);
-		replacementBlock.getStatements().add(ifChecks);
-
-		transAssistant.replaceNodeWith(enclosingStatement, replacementBlock);
-		replacementBlock.getStatements().add(enclosingStatement);
-		
-		ifChecks.apply(this);
-	}
+//	private void handleFieldExp(SExpCG node, String memberName, SExpCG subject, STypeCG fieldObjType, STypeCG resultType) throws AnalysisException
+//	{
+//		INode parent = node.parent();
+//
+//		TypeAssistantCG typeAssistant = transAssistant.getInfo().getAssistantManager().getTypeAssistant();
+//
+//		SStmCG enclosingStatement = transAssistant.getEnclosingStm(node, "field expression");
+//
+//		String applyResultName = transAssistant.getInfo().getTempVarNameGen().nextVarName("apply_");
+//
+//		AIdentifierPatternCG id = new AIdentifierPatternCG();
+//		id.setName(applyResultName);
+//
+//		AVarDeclCG resultDecl = transAssistant.getInfo().getDeclAssistant().
+//				consLocalVarDecl(node.getSourceNode().getVdmNode(), resultType, id, transAssistant.getInfo().getExpAssistant().consNullExp());
+//		
+//		AIdentifierVarExpCG resultVar = new AIdentifierVarExpCG();
+//		resultVar.setSourceNode(node.getSourceNode());
+//		resultVar.setIsLambda(false);
+//		resultVar.setIsLocal(true);
+//		resultVar.setName(applyResultName);
+//		resultVar.setType(resultDecl.getType().clone());
+//
+//		ABlockStmCG replacementBlock = new ABlockStmCG();
+//		SExpCG obj = null;
+//		
+//		if (!(subject instanceof SVarExpBase))
+//		{
+//			String objName = transAssistant.getInfo().getTempVarNameGen().nextVarName("obj_");
+//
+//			AIdentifierPatternCG objId = new AIdentifierPatternCG();
+//			objId.setName(objName);
+//
+//			AVarDeclCG objectDecl = transAssistant.getInfo().getDeclAssistant().
+//					consLocalVarDecl(subject.getType().clone(), objId, subject.clone());
+//			
+//			replacementBlock.getLocalDefs().add(objectDecl);
+//
+//			AIdentifierVarExpCG objectVar = new AIdentifierVarExpCG();
+//			objectVar.setIsLambda(false);
+//			objectVar.setIsLocal(true);
+//			objectVar.setName(objName);
+//			objectVar.setType(objectDecl.getType().clone());
+//			obj = objectVar;
+//		} else
+//		{
+//			obj = subject.clone();
+//		}
+//
+//		List<STypeCG> possibleTypes = ((AUnionTypeCG) fieldObjType).getTypes();
+//		possibleTypes = typeAssistant.clearDuplicates(possibleTypes);
+//
+//		AIfStmCG ifChecks = new AIfStmCG();
+//
+//		int handledTypes = 0;
+//		for (int i = 0; i < possibleTypes.size(); i++)
+//		{
+//			SExpCG fieldExp = (SExpCG) node.clone();
+//			STypeCG currentType = possibleTypes.get(i);
+//			
+//			if(currentType instanceof AUnknownTypeCG)
+//			{
+//				// If we are accessing an element of (say) the sequence [new A(), new B(), nil] of type A | B | [?]
+//				// then the current IR type will be the unknown type at some point. This case is simply skipped.
+//				continue;
+//			}
+//			
+//			if (!(currentType instanceof AClassTypeCG)
+//					&& !(currentType instanceof ATupleTypeCG)
+//					&& !(currentType instanceof ARecordTypeCG))
+//			{
+//				// If the field cannot possibly exist then continue
+//				continue;
+//			}
+//			
+//			boolean memberExists = false;
+//
+//			memberExists = memberExists(memberName, parent, typeAssistant, fieldExp, currentType);
+//
+//			if (!memberExists)
+//			{
+//				// If the member does not exist then the case should not be treated
+//				continue;
+//			}
+//			
+//			SExpCG castedFieldExp = createTypeCorrectExp(obj, currentType);
+//
+//			setSubject(fieldExp, castedFieldExp);
+//
+//			AAssignToExpStmCG assignment = new AAssignToExpStmCG();
+//			assignment.setTarget(resultVar.clone());
+//			assignment.setExp(getAssignmentExp(node, fieldExp));
+//
+//			if (handledTypes == 0)
+//			{
+//				ifChecks.setIfExp(consInstanceCheck(obj, currentType));
+//				ifChecks.setThenStm(assignment);
+//			} else
+//			{
+//				AElseIfStmCG elseIf = new AElseIfStmCG();
+//				elseIf.setElseIf(consInstanceCheck(obj, currentType));
+//				elseIf.setThenStm(assignment);
+//
+//				ifChecks.getElseIf().add(elseIf);
+//			}
+//			
+//			handledTypes++;
+//		}
+//		
+//		if(handledTypes == 0)
+//		{
+//			return;
+//		}
+//		
+//		ARaiseErrorStmCG raise = consRaiseStm(MISSING_MEMBER, memberName);
+//		ifChecks.setElseStm(raise);
+//
+//		if(parent instanceof AApplyExpCG && ((AApplyExpCG) parent).getRoot() == node)
+//		{
+//			transAssistant.replaceNodeWith(parent, resultVar);
+//		}
+//		else
+//		{
+//			transAssistant.replaceNodeWith(node, resultVar);
+//		}
+//		
+//		replacementBlock.getLocalDefs().add(resultDecl);
+//		replacementBlock.getStatements().add(ifChecks);
+//
+//		transAssistant.replaceNodeWith(enclosingStatement, replacementBlock);
+//		replacementBlock.getStatements().add(enclosingStatement);
+//		
+//		ifChecks.apply(this);
+//	}
 
 	private void setSubject(SExpCG fieldExp, SExpCG castedFieldExp)
 	{
@@ -593,7 +633,7 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 			{
 				ARecordTypeCG recordType = (ARecordTypeCG) currentType;
 
-				return transAssistant.getInfo().getDeclAssistant().getFieldDecl(transAssistant.getInfo().getClasses(), recordType, memberName) != null;
+				return DeclAssistantCG.getFieldDecl(transAssistant.getInfo().getClasses(), recordType, memberName) != null;
 			}
 		}
 		else if(fieldExp instanceof AFieldNumberExpCG && currentType instanceof ATupleTypeCG)
@@ -935,10 +975,44 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 			
 		checkAndCorrectTypes(exp, type);
 	}
+	
+	@Override
+	public void caseATernaryIfExpCG(ATernaryIfExpCG node) throws AnalysisException {
+		node.getCondition().apply(this);
+		node.getTrueValue().apply(this);
+		node.getFalseValue().apply(this);
+		
+		checkAndCorrectTypes(node.getTrueValue(), node.getType());
+		checkAndCorrectTypes(node.getFalseValue(), node.getType());
+	}
 
-	private boolean castNotNeeded(SExpCG exp, STypeCG type)
-	{
-		return type instanceof AUnknownTypeCG || exp instanceof ANullExpCG || exp instanceof AUndefinedExpCG;
+	private boolean castNotNeeded(SExpCG exp, STypeCG expectedType)
+	{		
+		STypeCG expType = exp.getType();
+		
+		return expectedType instanceof AUnknownTypeCG ||
+				exp instanceof ANullExpCG || 
+				exp instanceof AUndefinedExpCG ||
+				(TypeAssistantCG.isRealOrRat(expectedType) && TypeAssistantCG.isRealOrRat(expType)) ||
+				(TypeAssistantCG.isNatOrNat1(expectedType) && TypeAssistantCG.isNatOrNat1(expType)) ||
+				(exp instanceof ARealLiteralExpCG && TypeAssistantCG.isRealOrRat(expectedType));
+	}
+	
+	@Override
+	public void caseARecordModExpCG(ARecordModExpCG node) throws AnalysisException {
+		node.getRec().apply(this);
+		
+		ARecordTypeCG recordType = node.getRecType();
+		
+		for(ARecordModifierCG modifier: node.getModifiers()) {
+			modifier.getValue().apply(this);
+			STypeCG fieldType = DeclAssistantCG.getFieldDecl(transAssistant.getInfo().getClasses(), 
+																  recordType, 
+																  modifier.getName())
+																  .getType();
+			
+			checkAndCorrectTypes(modifier.getValue(), fieldType);
+		}
 	}
 
 	@Override

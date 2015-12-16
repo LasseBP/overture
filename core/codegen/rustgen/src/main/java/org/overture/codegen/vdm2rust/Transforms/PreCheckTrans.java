@@ -56,13 +56,23 @@ public class PreCheckTrans extends DepthFirstAnalysisAdaptor {
 		
 		if(method.getPreCond() instanceof AFuncDeclCG) {
 			AFuncDeclCG precondFunc = (AFuncDeclCG)method.getPreCond();			
+			SExpCG root;
 			
-			AFieldExpCG fieldExpr = new AFieldExpCG();
-			fieldExpr.setMemberName(precondFunc.getName());
-			fieldExpr.setObject(new ASelfExpCG());
-			fieldExpr.setType(precondFunc.getMethodType().clone());
+			if(method.getStatic()) {
+				AIdentifierVarExpCG identifierExpr = new AIdentifierVarExpCG();
+				identifierExpr.setIsLocal(false);
+				identifierExpr.setName(precondFunc.getName());
+				identifierExpr.setType(precondFunc.getMethodType().clone());
+				root = identifierExpr;
+			} else {
+				AFieldExpCG fieldExpr = new AFieldExpCG();
+				fieldExpr.setMemberName(precondFunc.getName());
+				fieldExpr.setObject(new ASelfExpCG());
+				fieldExpr.setType(precondFunc.getMethodType().clone());
+				root = fieldExpr;
+			}
 			
-			insertPreCondCheck(method, fieldExpr);
+			insertPreCondCheck(method, root);
 		}
 	}
 
@@ -82,7 +92,7 @@ public class PreCheckTrans extends DepthFirstAnalysisAdaptor {
 				
 				preCondCall.getArgs().add(identExpr);
 			} else {
-				//TODO: handle non-identifier patterns for preconds. Work around: wrap in func
+				//TODO: handle non-identifier patterns for preconds. Work around: wrap in operation
 				throw new AnalysisException("Only Identifier patterns are supported for methods with preconditions.");
 			}
 		}

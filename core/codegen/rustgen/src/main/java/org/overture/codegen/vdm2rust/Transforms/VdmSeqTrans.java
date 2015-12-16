@@ -26,6 +26,7 @@ import org.overture.codegen.cgast.statements.ACallObjectExpStmCG;
 import org.overture.codegen.cgast.statements.AMapSeqStateDesignatorCG;
 import org.overture.codegen.cgast.statements.AMapSeqUpdateStmCG;
 import org.overture.codegen.cgast.types.ACharBasicTypeCG;
+import org.overture.codegen.cgast.types.AMethodTypeCG;
 import org.overture.codegen.cgast.types.ASeqSeqTypeCG;
 import org.overture.codegen.cgast.types.AStringTypeCG;
 import org.overture.codegen.cgast.types.AVoidTypeCG;
@@ -42,10 +43,10 @@ public class VdmSeqTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
 	public void outAEnumSeqExpCG(AEnumSeqExpCG node) throws AnalysisException {
-		STypeCG declaredType = ExpAssistantCG.getDeclaredType(node, transAssistant.getInfo());
-		
+		STypeCG declaredType = ExpAssistantCG.getDeclaredType(node, transAssistant.getInfo());		
 		
 		STypeCG seqOf = declaredType != null && declaredType instanceof ASeqSeqTypeCG ? ((ASeqSeqTypeCG)declaredType).getSeqOf() : ((ASeqSeqTypeCG)node.getType()).getSeqOf();
+		((ASeqSeqTypeCG)node.getType()).setSeqOf(seqOf.clone());
 		
 		AApplyExpCG n = null;
 		
@@ -73,7 +74,7 @@ public class VdmSeqTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
 	public void outATailUnaryExpCG(ATailUnaryExpCG node) throws AnalysisException {
-		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "head");
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getExp(), "tail");
 		transAssistant.replaceNodeWith(node, n);
 	}
 	
@@ -108,10 +109,20 @@ public class VdmSeqTrans extends DepthFirstAnalysisAdaptor {
 	}
 	
 	@Override
-	public void outASeqConcatBinaryExpCG(ASeqConcatBinaryExpCG node)
-		throws AnalysisException {		
-		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "conc", node.getRight());
+	public void caseASeqConcatBinaryExpCG(ASeqConcatBinaryExpCG node)
+		throws AnalysisException {	
+		STypeCG declaredType = ExpAssistantCG.getDeclaredType(node, transAssistant.getInfo());
+		
+		ASeqSeqTypeCG seqType = declaredType != null && declaredType instanceof ASeqSeqTypeCG ? (ASeqSeqTypeCG)declaredType : (ASeqSeqTypeCG)node.getType();
+		
+		AMethodTypeCG methodType = new AMethodTypeCG();		
+		methodType.setResult(seqType.clone());
+		methodType.getParams().add(seqType.clone());
+		
+		SExpCG n = ConstructionUtils.consExpCall(node, node.getLeft(), "conc", methodType, node.getRight());
+		
 		transAssistant.replaceNodeWith(node, n);
+		n.apply(this);
 	}
 	
 	@Override
@@ -139,7 +150,7 @@ public class VdmSeqTrans extends DepthFirstAnalysisAdaptor {
 	public void outAMapSeqGetExpCG(AMapSeqGetExpCG node)
 			throws AnalysisException {
 		if(node.getCol().getType() instanceof ASeqSeqTypeCG) {
-			SExpCG n = ConstructionUtils.consExpCall(node, node.getCol(), "get", node.getIndex());
+			SExpCG n = ConstructionUtils.consExpCall(node, node.getCol(), "get_ref", node.getIndex());
 			transAssistant.replaceNodeWith(node, n);
 		}
 	}

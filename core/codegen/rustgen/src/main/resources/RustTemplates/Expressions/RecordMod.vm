@@ -1,0 +1,1 @@
+$RustFormat.format($node.getRecType()) { $RustFormat.formatList($node.getModifiers()), .. $RustFormat.format($node.getRec()) }

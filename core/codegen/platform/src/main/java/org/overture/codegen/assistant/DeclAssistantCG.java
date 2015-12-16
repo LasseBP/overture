@@ -415,7 +415,7 @@ public class DeclAssistantCG extends AssistantBase
 	}
 	
 	// This method assumes that the record is defined in definingClass and not a super class
-	public List<ARecordDeclCG> getRecords(SClassDeclCG definingClass)
+	public static List<ARecordDeclCG> getRecords(SClassDeclCG definingClass)
 	{
 		List<ARecordDeclCG> records = new LinkedList<ARecordDeclCG>();
 		
@@ -616,7 +616,7 @@ public class DeclAssistantCG extends AssistantBase
 		return null;
 	}
 
-	public AFieldDeclCG getFieldDecl(List<SClassDeclCG> classes,
+	public static AFieldDeclCG getFieldDecl(List<SClassDeclCG> classes,
 			ARecordTypeCG recordType, String memberName)
 	{
 		ATypeNameCG name = recordType.getName();
