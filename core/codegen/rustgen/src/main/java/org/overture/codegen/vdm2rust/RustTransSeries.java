@@ -131,9 +131,10 @@ public class RustTransSeries {
 		transformations.add(setTrans);	
 		transformations.add(mapTrans);
 		transformations.add(seqTrans);
-		//transformations.add(typeTrans);		
-		transformations.add(valueTrans);
+		//transformations.add(typeTrans);
 		transformations.add(borrowTrans);
+		transformations.add(valueTrans);
+		
 		transformations.add(typeTrans);
 		transformations.add(useTrans);
 		

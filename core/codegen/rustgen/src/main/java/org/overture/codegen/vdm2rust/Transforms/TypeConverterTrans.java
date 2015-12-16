@@ -8,7 +8,6 @@ import org.overture.ast.types.SMapType;
 import org.overture.ast.types.SSeqType;
 import org.overture.codegen.assistant.DeclAssistantCG;
 import org.overture.codegen.assistant.TypeAssistantCG;
-import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.SExpCG;
 import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
@@ -72,7 +71,6 @@ import org.overture.codegen.cgast.types.AMethodTypeCG;
 import org.overture.codegen.cgast.types.ARealNumericBasicTypeCG;
 import org.overture.codegen.cgast.types.ARecordTypeCG;
 import org.overture.codegen.cgast.types.AStringTypeCG;
-import org.overture.codegen.cgast.types.ATupleTypeCG;
 import org.overture.codegen.cgast.types.AUnionTypeCG;
 import org.overture.codegen.cgast.types.AUnknownTypeCG;
 import org.overture.codegen.cgast.types.SMapTypeCG;
@@ -606,60 +604,60 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 //		ifChecks.apply(this);
 //	}
 
-	private void setSubject(SExpCG fieldExp, SExpCG castedFieldExp)
-	{
-		if(fieldExp instanceof AFieldExpCG)
-		{
-			((AFieldExpCG) fieldExp).setObject(castedFieldExp);
-		}
-		else if(fieldExp instanceof AFieldNumberExpCG)
-		{
-			((AFieldNumberExpCG) fieldExp).setTuple(castedFieldExp);
-		}
-	}
+//	private void setSubject(SExpCG fieldExp, SExpCG castedFieldExp)
+//	{
+//		if(fieldExp instanceof AFieldExpCG)
+//		{
+//			((AFieldExpCG) fieldExp).setObject(castedFieldExp);
+//		}
+//		else if(fieldExp instanceof AFieldNumberExpCG)
+//		{
+//			((AFieldNumberExpCG) fieldExp).setTuple(castedFieldExp);
+//		}
+//	}
 
-	private boolean memberExists(String memberName, INode parent,
-			TypeAssistantCG typeAssistant, SExpCG fieldExp,
-			STypeCG currentType) throws AnalysisException
-	{
-		if (fieldExp instanceof AFieldExpCG)
-		{
-			if (currentType instanceof AClassTypeCG)
-			{
-				String className = ((AClassTypeCG) currentType).getName();
-
-				return memberExists(parent, typeAssistant, className, memberName);
-			} else if (currentType instanceof ARecordTypeCG)
-			{
-				ARecordTypeCG recordType = (ARecordTypeCG) currentType;
-
-				return DeclAssistantCG.getFieldDecl(transAssistant.getInfo().getClasses(), recordType, memberName) != null;
-			}
-		}
-		else if(fieldExp instanceof AFieldNumberExpCG && currentType instanceof ATupleTypeCG)
-		{
-			return true;
-			
-			// Could possibly be strengthened
-			// AFieldNumberExpCG fieldNumberExp = (AFieldNumberExpCG) fieldExp;
-			// return  fieldNumberExp.getField() <= ((ATupleTypeCG) currentType).getTypes().size();
-		}
-		
-		return false;
-	}
+//	private boolean memberExists(String memberName, INode parent,
+//			TypeAssistantCG typeAssistant, SExpCG fieldExp,
+//			STypeCG currentType) throws AnalysisException
+//	{
+//		if (fieldExp instanceof AFieldExpCG)
+//		{
+//			if (currentType instanceof AClassTypeCG)
+//			{
+//				String className = ((AClassTypeCG) currentType).getName();
+//
+//				return memberExists(parent, typeAssistant, className, memberName);
+//			} else if (currentType instanceof ARecordTypeCG)
+//			{
+//				ARecordTypeCG recordType = (ARecordTypeCG) currentType;
+//
+//				return DeclAssistantCG.getFieldDecl(transAssistant.getInfo().getClasses(), recordType, memberName) != null;
+//			}
+//		}
+//		else if(fieldExp instanceof AFieldNumberExpCG && currentType instanceof ATupleTypeCG)
+//		{
+//			return true;
+//			
+//			// Could possibly be strengthened
+//			// AFieldNumberExpCG fieldNumberExp = (AFieldNumberExpCG) fieldExp;
+//			// return  fieldNumberExp.getField() <= ((ATupleTypeCG) currentType).getTypes().size();
+//		}
+//		
+//		return false;
+//	}
 	
-	private boolean memberExists(INode parent, TypeAssistantCG typeAssistant,
-			String className, String memberName) throws AnalysisException
-	{
-		if(typeAssistant.getFieldType(transAssistant.getInfo().getClasses(), className, memberName) != null)
-		{
-			return true;
-		}
-		
-		List<SExpCG> args = ((AApplyExpCG) parent).getArgs();
-		
-		return typeAssistant.getMethodType(transAssistant.getInfo(), className, memberName, args) != null;
-	}
+//	private boolean memberExists(INode parent, TypeAssistantCG typeAssistant,
+//			String className, String memberName) throws AnalysisException
+//	{
+//		if(typeAssistant.getFieldType(transAssistant.getInfo().getClasses(), className, memberName) != null)
+//		{
+//			return true;
+//		}
+//		
+//		List<SExpCG> args = ((AApplyExpCG) parent).getArgs();
+//		
+//		return typeAssistant.getMethodType(transAssistant.getInfo(), className, memberName, args) != null;
+//	}
 
 	@Override
 	public void caseAApplyExpCG(AApplyExpCG node) throws AnalysisException
@@ -1098,94 +1096,94 @@ public class TypeConverterTrans extends DepthFirstAnalysisAdaptor
 		}
 	}
 	
-	private SExpCG getAssignmentExp(INode node, SExpCG fieldExp)
-	{
-		INode parent = node.parent();
-		
-		if(parent instanceof AApplyExpCG && ((AApplyExpCG) parent).getRoot() == node)
-		{
-			AApplyExpCG applyExp = (AApplyExpCG) parent.clone();
-			applyExp.setRoot(fieldExp);
-			
-			return applyExp;
-		}
-		else
-		{
-			return fieldExp;
-		}
-	}
+//	private SExpCG getAssignmentExp(INode node, SExpCG fieldExp)
+//	{
+//		INode parent = node.parent();
+//		
+//		if(parent instanceof AApplyExpCG && ((AApplyExpCG) parent).getRoot() == node)
+//		{
+//			AApplyExpCG applyExp = (AApplyExpCG) parent.clone();
+//			applyExp.setRoot(fieldExp);
+//			
+//			return applyExp;
+//		}
+//		else
+//		{
+//			return fieldExp;
+//		}
+//	}
 
-	private STypeCG getResultType(AFieldExpCG node, INode parent,
-			STypeCG fieldObjType, TypeAssistantCG typeAssistant)
-	{
-		if(parent instanceof SExpCG)
-		{
-			if (parent instanceof AApplyExpCG && ((AApplyExpCG) parent).getRoot() == node)
-			{
-				return ((SExpCG) parent).getType().clone();
-			}
-		}
+//	private STypeCG getResultType(AFieldExpCG node, INode parent,
+//			STypeCG fieldObjType, TypeAssistantCG typeAssistant)
+//	{
+//		if(parent instanceof SExpCG)
+//		{
+//			if (parent instanceof AApplyExpCG && ((AApplyExpCG) parent).getRoot() == node)
+//			{
+//				return ((SExpCG) parent).getType().clone();
+//			}
+//		}
+//
+//		return fieldType(node, fieldObjType, typeAssistant);
+//	}
 
-		return fieldType(node, fieldObjType, typeAssistant);
-	}
-
-	private STypeCG fieldType(AFieldExpCG node, STypeCG objectType,
-			TypeAssistantCG typeAssistant)
-	{
-		List<STypeCG> fieldTypes = new LinkedList<STypeCG>();
-		List<STypeCG> types = ((AUnionTypeCG)objectType).getTypes();
-		
-		for(STypeCG currentType : types)
-		{
-			String memberName = node.getMemberName();
-			STypeCG fieldType = null;
-			
-			if(currentType instanceof AClassTypeCG)
-			{
-				AClassTypeCG classType = (AClassTypeCG) currentType;
-				fieldType = typeAssistant.getFieldType(transAssistant.getInfo().getClasses(), classType.getName(), memberName);
-			}
-			else if(currentType instanceof ARecordTypeCG)
-			{
-				ARecordTypeCG recordType = (ARecordTypeCG) currentType;
-				fieldType = transAssistant.getInfo().getTypeAssistant().getFieldType(transAssistant.getInfo().getClasses(), recordType, memberName);
-			}
-			else{
-				//Can be the unknown type
-				continue;
-			}
-
-			if(fieldType == null)
-			{
-				// The field type may not be found if the member does not exist
-				// For example:
-				// 
-				// types
-				// R1 :: x : int;
-				// R2 :: y : int;
-				// ...
-				//let inlines : seq of Inline = [mk_R1(4), mk_R2(5)]
-				//in 
-				//		  return inlines(1).x + inlines(2).y;
-				continue;
-			}
-			
-			if(!typeAssistant.containsType(fieldTypes, fieldType))
-			{
-				fieldTypes.add(fieldType);
-			}
-		}
-		
-		if(fieldTypes.size() == 1)
-		{
-			return fieldTypes.get(0);
-		}
-		else
-		{
-			AUnionTypeCG unionTypes = new AUnionTypeCG();
-			unionTypes.setTypes(fieldTypes);
-			
-			return unionTypes;
-		}
-	}
+//	private STypeCG fieldType(AFieldExpCG node, STypeCG objectType,
+//			TypeAssistantCG typeAssistant)
+//	{
+//		List<STypeCG> fieldTypes = new LinkedList<STypeCG>();
+//		List<STypeCG> types = ((AUnionTypeCG)objectType).getTypes();
+//		
+//		for(STypeCG currentType : types)
+//		{
+//			String memberName = node.getMemberName();
+//			STypeCG fieldType = null;
+//			
+//			if(currentType instanceof AClassTypeCG)
+//			{
+//				AClassTypeCG classType = (AClassTypeCG) currentType;
+//				fieldType = typeAssistant.getFieldType(transAssistant.getInfo().getClasses(), classType.getName(), memberName);
+//			}
+//			else if(currentType instanceof ARecordTypeCG)
+//			{
+//				ARecordTypeCG recordType = (ARecordTypeCG) currentType;
+//				fieldType = transAssistant.getInfo().getTypeAssistant().getFieldType(transAssistant.getInfo().getClasses(), recordType, memberName);
+//			}
+//			else{
+//				//Can be the unknown type
+//				continue;
+//			}
+//
+//			if(fieldType == null)
+//			{
+//				// The field type may not be found if the member does not exist
+//				// For example:
+//				// 
+//				// types
+//				// R1 :: x : int;
+//				// R2 :: y : int;
+//				// ...
+//				//let inlines : seq of Inline = [mk_R1(4), mk_R2(5)]
+//				//in 
+//				//		  return inlines(1).x + inlines(2).y;
+//				continue;
+//			}
+//			
+//			if(!typeAssistant.containsType(fieldTypes, fieldType))
+//			{
+//				fieldTypes.add(fieldType);
+//			}
+//		}
+//		
+//		if(fieldTypes.size() == 1)
+//		{
+//			return fieldTypes.get(0);
+//		}
+//		else
+//		{
+//			AUnionTypeCG unionTypes = new AUnionTypeCG();
+//			unionTypes.setTypes(fieldTypes);
+//			
+//			return unionTypes;
+//		}
+//	}
 }

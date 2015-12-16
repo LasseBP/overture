@@ -4,6 +4,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.overture.ast.expressions.ADomainResByBinaryExp;
+import org.overture.ast.expressions.ADomainResToBinaryExp;
+import org.overture.ast.expressions.AInSetBinaryExp;
+import org.overture.ast.expressions.APlusPlusBinaryExp;
+import org.overture.ast.expressions.ARangeResByBinaryExp;
+import org.overture.ast.expressions.ARangeResToBinaryExp;
+import org.overture.ast.expressions.ASeqConcatBinaryExp;
+import org.overture.ast.expressions.ASetDifferenceBinaryExp;
+import org.overture.ast.expressions.ASetUnionBinaryExp;
 import org.overture.codegen.assistant.AssistantBase;
 import org.overture.codegen.assistant.StmAssistantCG;
 import org.overture.codegen.cgast.INode;
@@ -23,6 +32,8 @@ import org.overture.codegen.cgast.expressions.SLiteralExpCG;
 import org.overture.codegen.cgast.patterns.AIdentifierPatternCG;
 import org.overture.codegen.cgast.statements.ABlockStmCG;
 import org.overture.codegen.cgast.statements.ACallObjectExpStmCG;
+import org.overture.codegen.cgast.types.AClassTypeCG;
+import org.overture.codegen.ir.SourceNode;
 import org.overture.codegen.trans.assistants.TransAssistantCG;
 
 public class BorrowTrans extends DepthFirstAnalysisAdaptor {
@@ -36,8 +47,8 @@ public class BorrowTrans extends DepthFirstAnalysisAdaptor {
 	
 	@Override
 	public void outAApplyExpCG(AApplyExpCG node) throws AnalysisException {
-		
-		if(isBorrowSafe(node.getRoot(), node.getArgs())) {
+						
+		if(isBorrowSafe(node.getRoot(), node.getArgs(), node.getSourceNode())) {
 			return;
 		}
 		
@@ -79,7 +90,7 @@ public class BorrowTrans extends DepthFirstAnalysisAdaptor {
 		//check args for occurences of expressions in each arg.
 		//create temp vars for args, which contains expressions from the objExp.
 		
-		if(isBorrowSafe(node.getObj(), node.getArgs())) {
+		if(isBorrowSafe(node.getObj(), node.getArgs(), node.getSourceNode())) {
 			return;
 		}
 				
@@ -108,12 +119,37 @@ public class BorrowTrans extends DepthFirstAnalysisAdaptor {
 		}
 	}
 	
-	private static boolean isBorrowSafe(SExpCG root, LinkedList<SExpCG> args) {
+	private static boolean isBorrowSafe(SExpCG root, LinkedList<SExpCG> args, SourceNode source) {
+		//TODO: this is a mess.
 		return root instanceof AExternalExpCG ||
 			   root instanceof AExplicitVarExpCG ||
-			   root instanceof AStaticVarExpCG || 
-			   args.stream().allMatch(arg -> arg instanceof SLiteralExpCG) ||
+			   root instanceof AStaticVarExpCG ||
+			   borrowSafeRootSource(source) ||
+			   args.stream().allMatch(BorrowTrans::argIsBorrowSafe) ||
 			   (root instanceof ASelfExpCG && args.stream().noneMatch(arg -> hasDescendantOfType(arg, ASelfExpCG.class)));
+	}
+	
+	private static boolean argIsBorrowSafe(SExpCG arg) {
+		return arg instanceof SLiteralExpCG ||
+			   arg instanceof AExplicitVarExpCG ||
+			   arg instanceof AStaticVarExpCG ||
+			   (arg instanceof AIdentifierVarExpCG && ((AIdentifierVarExpCG)arg).getIsLocal() && !(arg.getType() instanceof AClassTypeCG));
+	}
+	
+	private static boolean borrowSafeRootSource(SourceNode source) {
+		if(source != null && source.getVdmNode() != null) {
+			org.overture.ast.node.INode sourceNode = source.getVdmNode();
+			return 	sourceNode instanceof ASeqConcatBinaryExp ||
+					sourceNode instanceof ASetDifferenceBinaryExp ||
+					sourceNode instanceof ASetUnionBinaryExp || 
+					sourceNode instanceof AInSetBinaryExp ||
+					sourceNode instanceof APlusPlusBinaryExp || //map override
+					sourceNode instanceof ADomainResByBinaryExp ||
+					sourceNode instanceof ADomainResToBinaryExp ||
+					sourceNode instanceof ARangeResByBinaryExp ||
+					sourceNode instanceof ARangeResToBinaryExp;
+		}		
+		return false;
 	}
 	
 	public static boolean hasDescendantOfType(INode ancestor, Class<? extends INode> type) {
