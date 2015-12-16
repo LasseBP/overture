@@ -1,4 +1,0 @@
-#set( $tuple = $RustFormat.format($node.getTuple()) )
-#set( $typeArgs = $RustFormat.formatTypeArgs($node.getTypes()) )
-##
-${tuple}.compatible(${typeArgs})

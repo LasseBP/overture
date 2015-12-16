@@ -1,7 +1,0 @@
-##Example: super.op(1, 1)
-##
-#set( $super = "super")
-##
-#set( $name = "$node.getName()")
-##
-${super}.${name}($RustFormat.formatList($node.getArgs()));

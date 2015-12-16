@@ -1,1 +1,0 @@
-$RustFormat.format($node.getExp()) instanceof $RustFormat.format($node.getCheckedType())

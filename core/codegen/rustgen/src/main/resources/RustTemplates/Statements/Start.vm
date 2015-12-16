@@ -1,2 +1,0 @@
-#set ($start = ".start()")
-${RustFormat.formatStartStmExp($node)}${start};

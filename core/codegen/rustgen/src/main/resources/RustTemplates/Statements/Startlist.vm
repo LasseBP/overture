@@ -1,9 +1,0 @@
-#set( $iterator = $RustFormat.genIteratorName() )
-#set( $exp = $RustFormat.format($node.getExp()) )
-#set( $var = $RustFormat.genThreadName() )
-##
-for (Iterator ${iterator} = ${exp}.iterator(); ${iterator}.hasNext();)
-{
-                Thread ${var} = (Thread) ${iterator}.next();
-                ${var}.start();
-}
