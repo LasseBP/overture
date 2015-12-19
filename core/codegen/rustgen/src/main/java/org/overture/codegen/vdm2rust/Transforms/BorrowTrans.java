@@ -2,6 +2,7 @@ package org.overture.codegen.vdm2rust.Transforms;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.overture.ast.expressions.ADomainResByBinaryExp;
@@ -23,6 +24,7 @@ import org.overture.codegen.cgast.declarations.AVarDeclCG;
 import org.overture.codegen.cgast.expressions.AApplyExpCG;
 import org.overture.codegen.cgast.expressions.AExplicitVarExpCG;
 import org.overture.codegen.cgast.expressions.AExternalExpCG;
+import org.overture.codegen.cgast.expressions.AFieldExpCG;
 import org.overture.codegen.cgast.expressions.AIdentifierVarExpCG;
 import org.overture.codegen.cgast.expressions.ALambdaExpCG;
 import org.overture.codegen.cgast.expressions.ALetDefExpCG;
@@ -33,6 +35,8 @@ import org.overture.codegen.cgast.patterns.AIdentifierPatternCG;
 import org.overture.codegen.cgast.statements.ABlockStmCG;
 import org.overture.codegen.cgast.statements.ACallObjectExpStmCG;
 import org.overture.codegen.cgast.types.AClassTypeCG;
+import org.overture.codegen.cgast.types.AMapMapTypeCG;
+import org.overture.codegen.cgast.types.ASeqSeqTypeCG;
 import org.overture.codegen.ir.SourceNode;
 import org.overture.codegen.trans.assistants.TransAssistantCG;
 
@@ -46,8 +50,12 @@ public class BorrowTrans extends DepthFirstAnalysisAdaptor {
 	}
 	
 	@Override
-	public void outAApplyExpCG(AApplyExpCG node) throws AnalysisException {
-						
+	public void outAApplyExpCG(AApplyExpCG node) throws AnalysisException {	
+				
+		if(!(node.getRoot() instanceof AFieldExpCG)) {
+			node.getRoot();
+		}
+		
 		if(isBorrowSafe(node.getRoot(), node.getArgs(), node.getSourceNode())) {
 			return;
 		}
@@ -89,7 +97,7 @@ public class BorrowTrans extends DepthFirstAnalysisAdaptor {
 		//break objExp into expressions.
 		//check args for occurences of expressions in each arg.
 		//create temp vars for args, which contains expressions from the objExp.
-		
+			
 		if(isBorrowSafe(node.getObj(), node.getArgs(), node.getSourceNode())) {
 			return;
 		}
@@ -125,15 +133,21 @@ public class BorrowTrans extends DepthFirstAnalysisAdaptor {
 			   root instanceof AExplicitVarExpCG ||
 			   root instanceof AStaticVarExpCG ||
 			   borrowSafeRootSource(source) ||
-			   args.stream().allMatch(BorrowTrans::argIsBorrowSafe) ||
-			   (root instanceof ASelfExpCG && args.stream().noneMatch(arg -> hasDescendantOfType(arg, ASelfExpCG.class)));
+			   args.stream().allMatch(BorrowTrans::argIsBorrowSafe) ||			   
+			   ((hasDescendantOfType(root, ASelfExpCG.class) || (root instanceof AIdentifierVarExpCG && !((AIdentifierVarExpCG)root).getIsLocal()
+					   )) && args.stream().noneMatch(arg -> hasDescendantOfType(arg, ASelfExpCG.class) || (arg instanceof AIdentifierVarExpCG && !((AIdentifierVarExpCG)arg).getIsLocal())));
 	}
 	
 	private static boolean argIsBorrowSafe(SExpCG arg) {
+		//TODO: needs better, more efficient rules
 		return arg instanceof SLiteralExpCG ||
 			   arg instanceof AExplicitVarExpCG ||
 			   arg instanceof AStaticVarExpCG ||
-			   (arg instanceof AIdentifierVarExpCG && ((AIdentifierVarExpCG)arg).getIsLocal() && !(arg.getType() instanceof AClassTypeCG));
+			   (arg instanceof AIdentifierVarExpCG && 
+					   ((AIdentifierVarExpCG)arg).getIsLocal() &&
+					   !(arg.getType() instanceof AClassTypeCG) &&
+					   !(arg.getType() instanceof ASeqSeqTypeCG) &&
+					   !(arg.getType() instanceof AMapMapTypeCG)) ;
 	}
 	
 	private static boolean borrowSafeRootSource(SourceNode source) {
@@ -150,6 +164,15 @@ public class BorrowTrans extends DepthFirstAnalysisAdaptor {
 					sourceNode instanceof ARangeResToBinaryExp;
 		}		
 		return false;
+	}
+	
+	public static boolean forallDescendants(INode ancestor, Predicate<INode> predicate) {
+		try {
+			return AssistantBase.forallDescendants(ancestor, predicate);
+		} catch (AnalysisException e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 	
 	public static boolean hasDescendantOfType(INode ancestor, Class<? extends INode> type) {

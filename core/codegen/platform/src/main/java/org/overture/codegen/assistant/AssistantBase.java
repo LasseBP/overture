@@ -23,6 +23,7 @@ package org.overture.codegen.assistant;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.overture.codegen.cgast.INode;
 import org.overture.codegen.cgast.analysis.AnalysisException;
@@ -65,57 +66,22 @@ public abstract class AssistantBase
 	 * @throws AnalysisException
 	 */
 	public static boolean isDescendant(INode possibleAncestor, INode possibleDescendant) throws AnalysisException {
-		return possibleAncestor.apply(new DescendantSeeker(), possibleDescendant);
-	}
-	
-	private static class DescendantSeeker extends QuestionAnswerAdaptor<INode,Boolean> {
-		
-		@Override
-		public Boolean defaultINode(INode node, INode question) throws AnalysisException {
-			if(node == question) {
-				return true;
-			}
-			return node.getChildren(true).values()
-										 .stream()
-										 .filter(child -> child instanceof INode) //only handle INode children
-										 .map(child -> (INode)child)
-										 .map(childNode -> isCorrectChild(childNode, question)) //look at all child nodes
-										 .filter(isCorrectChild -> isCorrectChild) //filter for correct child
-										 .findFirst()							   //stop looking when correct child is found 										  
-										 .orElse(false);						   //return false if not found
-		}
-		
-		private Boolean isCorrectChild(INode childNode, INode question) {
-			try {
-				return childNode.apply(this, question);
-			} catch (AnalysisException e) {
-				e.printStackTrace();
-				return false;
-			}
-		}
-		
-		@Override
-		public Boolean createNewReturnValue(INode node, INode question)
-				throws org.overture.codegen.cgast.analysis.AnalysisException {
-			return false;
-		}
-
-		@Override
-		public Boolean createNewReturnValue(Object node, INode question)
-				throws org.overture.codegen.cgast.analysis.AnalysisException {
-			return false;
-		}
+		return forallDescendants(possibleAncestor, node -> node == possibleDescendant);
 	}
 	
 	public static boolean hasDescendantOfType(INode ancestor, Class<? extends INode> type) throws AnalysisException {
-		return ancestor.apply(new TypeSeeker(), type);
+		return forallDescendants(ancestor, node -> node.getClass().equals(type));
 	}
 	
-	private static class TypeSeeker extends QuestionAnswerAdaptor<Class<? extends INode>,Boolean> {
+	public static boolean forallDescendants(INode ancestor, Predicate<INode> predicate) throws AnalysisException {
+		return ancestor.apply(new DescendantChecker(), predicate);
+	}
+	
+	private static class DescendantChecker extends QuestionAnswerAdaptor<Predicate<INode>,Boolean> {
 		
 		@Override
-		public Boolean defaultINode(INode node, Class<? extends INode> question) throws AnalysisException {
-			if(node.getClass().equals(question)) {
+		public Boolean defaultINode(INode node, Predicate<INode> question) throws AnalysisException {
+			if(question.test(node)) {
 				return true;
 			}
 			return node.getChildren(true).values()
@@ -128,25 +94,23 @@ public abstract class AssistantBase
 										 .orElse(false);						   //return false if not found
 		}
 		
-		private Boolean isCorrectChild(INode childNode, Class<? extends INode> question) {
+		private Boolean isCorrectChild(INode childNode, Predicate<INode> question) {
 			try {
 				return childNode.apply(this, question);
 			} catch (AnalysisException e) {
+				//must swallow exception. Throwing checked exceptions during stream eval is illegal.
 				e.printStackTrace();
 				return false;
 			}
 		}
 		
-
 		@Override
-		public Boolean createNewReturnValue(INode node, Class<? extends INode> question) throws AnalysisException {
-			// TODO Auto-generated method stub
+		public Boolean createNewReturnValue(INode node, Predicate<INode> question) throws AnalysisException {
 			return false;
 		}
 
 		@Override
-		public Boolean createNewReturnValue(Object node, Class<? extends INode> question) throws AnalysisException {
-			// TODO Auto-generated method stub
+		public Boolean createNewReturnValue(Object node, Predicate<INode> question) throws AnalysisException {
 			return false;
 		}
 	}

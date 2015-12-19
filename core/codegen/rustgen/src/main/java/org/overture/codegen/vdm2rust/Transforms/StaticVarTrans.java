@@ -6,21 +6,25 @@ import org.overture.codegen.cgast.STypeCG;
 import org.overture.codegen.cgast.analysis.AnalysisException;
 import org.overture.codegen.cgast.analysis.DepthFirstAnalysisAdaptor;
 import org.overture.codegen.cgast.declarations.AFieldDeclCG;
+import org.overture.codegen.cgast.declarations.AMethodDeclCG;
 import org.overture.codegen.cgast.declarations.SClassDeclCG;
 import org.overture.codegen.cgast.expressions.AExplicitVarExpCG;
 import org.overture.codegen.cgast.expressions.AFieldExpCG;
 import org.overture.codegen.cgast.expressions.AIdentifierVarExpCG;
+import org.overture.codegen.cgast.expressions.ASelfExpCG;
 import org.overture.codegen.cgast.expressions.AStaticVarExpCG;
 import org.overture.codegen.cgast.types.AClassTypeCG;
 import org.overture.codegen.ir.IRInfo;
-import org.overture.codegen.logging.Logger;
+import org.overture.codegen.trans.assistants.TransAssistantCG;
 
 public class StaticVarTrans extends DepthFirstAnalysisAdaptor {
 	
 	IRInfo irInfo;
+	TransAssistantCG transAssist;
 	
-	public StaticVarTrans(IRInfo irInfo) {
-		this.irInfo = irInfo;
+	public StaticVarTrans(TransAssistantCG transAssist) {
+		this.transAssist = transAssist;
+		this.irInfo = transAssist.getInfo();
 	}
 	
 	/*
@@ -36,7 +40,7 @@ public class StaticVarTrans extends DepthFirstAnalysisAdaptor {
 		
 		SClassDeclCG enclosingClass = node.getAncestor(SClassDeclCG.class);
 				
-		replaceIfStaticVarExp(node, node.getName(), enclosingClass);
+		replaceVarExp(node, node.getName(), enclosingClass);
 	}	
 	
 	@Override
@@ -44,7 +48,7 @@ public class StaticVarTrans extends DepthFirstAnalysisAdaptor {
 		SClassDeclCG declaringClass = irInfo.getClass(((AClassTypeCG)node.getClassType()).getName());
 		
 		if(declaringClass != null) {
-			replaceIfStaticVarExp(node, node.getName(), declaringClass);
+			replaceVarExp(node, node.getName(), declaringClass);
 		}
 	}
 	
@@ -56,72 +60,77 @@ public class StaticVarTrans extends DepthFirstAnalysisAdaptor {
 			
 			SClassDeclCG declaringClass = irInfo.getClass(classType.getName());
 			if(declaringClass != null) {
-				replaceIfStaticVarExp(node, node.getMemberName(), declaringClass);
+				replaceVarExp(node, node.getMemberName(), declaringClass);
 			}
 		}
 	}
 	
-	protected void replaceIfStaticVarExp(SExpCG node, String memberName, SClassDeclCG declaringClass) {
+	protected void replaceVarExp(SExpCG node, String memberName, SClassDeclCG declaringClass) {
+		if(DeclAssistantCG.isLibraryName(declaringClass.getName())) {
+			return;
+		}
+		
 		AFieldDeclCG fieldDecl = declaringClass.getFields()
 												.stream()
 												.filter(field -> field.getName().equals(memberName))
 												.findFirst()
 												.orElse(null);
 		
-		if(DeclAssistantCG.isLibraryName(declaringClass.getName())) {
-			return;
-		}
+		AMethodDeclCG methodDecl = declaringClass.getMethods()
+				.stream()
+				.filter(field -> field.getName().equals(memberName))
+				.findFirst()
+				.orElse(null);
 		
-//		 AFuncDeclCG funcDecl = declaringClass.getFunctions()
-//				.stream()
-//				.filter(func -> func.getName().equals(memberName))
-//				.findFirst()
-//				.orElse(null);
-//		 
-//		 // could be static operation
-//		 AMethodDeclCG methDecl = declaringClass.getMethods()
-//					.stream()
-//					.filter(meth -> meth.getName().equals(memberName))
-//					.findFirst()
-//					.orElse(null);
-		  
-		boolean replaceNode = false;
-		boolean isValue = true;
+		
+		
+		SExpCG newNode = null;
+		
+		if(node instanceof AIdentifierVarExpCG && methodDecl != null && !methodDecl.getStatic()) {
+			newNode = createSelfFieldExp(node, memberName, declaringClass);
+		}
 		
 		if(fieldDecl != null) {
-			isValue = fieldDecl.getStatic() && fieldDecl.getFinal();
-			replaceNode = isValue || fieldDecl.getStatic();			
-		}
-		
-//		if(funcDecl != null) {
-//			replaceNode = true;
-//			isValue = true;
-//		}
-//		
-//		if(methDecl != null) {
-//			replaceNode = methDecl.getStatic();
-//			isValue = true;
-//		}
+			boolean isValue = fieldDecl.getStatic() && fieldDecl.getFinal();
 			
-		if(replaceNode) {
-			AStaticVarExpCG staticVarExp = new AStaticVarExpCG();
-			staticVarExp.setIsFinal(isValue);
-			staticVarExp.setIsLocal(false);
-			staticVarExp.setIsLambda(false);
-			staticVarExp.setName(memberName);
-			
-			staticVarExp.setPackage(declaringClass.getPackage());
-			staticVarExp.setIsRootPackage(true);
-			
-			staticVarExp.setType(node.getType());
-			staticVarExp.setSourceNode(node.getSourceNode());
-			
-			if(node.parent() != null) {
-				node.parent().replaceChild(node, staticVarExp);
+			if(fieldDecl.getStatic()) {
+				AStaticVarExpCG staticVarExp = new AStaticVarExpCG();
+				staticVarExp.setIsFinal(isValue);
+				staticVarExp.setIsLocal(false);
+				staticVarExp.setIsLambda(false);
+				staticVarExp.setName(memberName);
+				
+				staticVarExp.setPackage(declaringClass.getPackage());
+				staticVarExp.setIsRootPackage(true);
+				
+				staticVarExp.setType(node.getType());
+				staticVarExp.setSourceNode(node.getSourceNode());
+				
+				newNode = staticVarExp;
+			} else {				
+				newNode = createSelfFieldExp(node, memberName, declaringClass);
 			}
-			else {
-				Logger.getLog().printErrorln("Could not find parent of " + node + " in " + "'" + this.getClass().getSimpleName() + "'" );
-			}				
-		}			
+		}	
+		
+		if(newNode != null) {
+			transAssist.replaceNodeWith(node, newNode);
+		}
+			
+					
+	}
+
+	protected AFieldExpCG createSelfFieldExp(SExpCG node, String memberName, SClassDeclCG declaringClass) {
+		AClassTypeCG classType = new AClassTypeCG();
+		classType.setName(declaringClass.getName());
+		
+		ASelfExpCG selfExp = new ASelfExpCG();
+		selfExp.setType(classType);
+		
+		AFieldExpCG fieldExp = new AFieldExpCG();
+		fieldExp.setMemberName(memberName);
+		fieldExp.setObject(selfExp);
+		fieldExp.setSourceNode(node.getSourceNode());
+		fieldExp.setType(node.getType().clone());
+		return fieldExp;
 	}
 }

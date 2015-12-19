@@ -82,7 +82,7 @@ public class RustTransSeries {
 		selfAndScope = new FuncScopeAdderTrans(transAssistant);
 		valueTrans = new ValueSemanticsTrans();
 		initExp = new InitialExpTrans();
-		staticVar = new StaticVarTrans(irInfo);
+		staticVar = new StaticVarTrans(transAssistant);
 		packageTrans = new PackageTrans();
 		compTrans = new ComprehensionAndQuantifierTrans();
 		unionTrans = new UnionDeclTrans();
